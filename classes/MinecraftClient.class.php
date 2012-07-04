@@ -244,7 +244,7 @@ class MinecraftClient{
 				$this->trigger("onEntitySpawn", $this->entities[$data["data"][0]]);
 				break;
 			case "15":
-				console("[+] Item (EID: ".$data["data"][0].") type ".$data["data"][1]." spawned at (".($data["data"][4] / 32).",".($data["data"]5] / 32).",".($data["data"][6] / 32).")");
+				console("[+] Item (EID: ".$data["data"][0].") type ".$data["data"][1]." spawned at (".($data["data"][4] / 32).",".($data["data"][5] / 32).",".($data["data"][6] / 32).")");
 				$this->entities[$data["data"][0]] = new Entity($data["data"][0], $data["data"][1], true);
 				$this->entities[$data["data"][0]]->setCoords($data["data"][4] / 32,$data["data"][5] / 32,$data["data"][6] / 32);
 				$this->trigger("onEntitySpawn", $this->entities[$data["data"][0]]);				
