@@ -14,7 +14,7 @@ define("CURRENT_PROTOCOL", 29);
 
 class MinecraftClient{
 	private $server, $port, $protocol, $auth, $player, $entities;
-	protected $events, $cnt, $responses, $info, $inventory, $time, $stop, $connected;
+	protected $events, $cnt, $responses, $info, $inventory, $time, $timeState, $stop, $connected;
 	
 	
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
@@ -180,7 +180,15 @@ class MinecraftClient{
 			case "onTimeChange": //actions that repeat every x time will go here
 				$this->player->setGround(true);
 				$this->send("0d",$this->player->packet("0d"));
-				break;		
+				break;
+			case "onPluginMessage_REGISTER":
+				$this->trigger("onPluginChannelRegister", $data);
+				$this->trigger("onPluginChannelRegister_".$data);
+				break;
+			case "onPluginMessage_UNREGISTER":
+				$this->trigger("onPluginChannelUnregister", $data);
+				$this->trigger("onPluginChannelUnegister_".$data);
+				break;
 		}	
 	}
 	
@@ -197,6 +205,16 @@ class MinecraftClient{
 				$this->time = $data["data"][0] % 24000;
 				console("[*] Time: ".((intval($this->time/1000+6) % 24)).':'.str_pad(intval(($this->time/1000-floor($this->time/1000))*60),2,"0",STR_PAD_LEFT).', '.(($this->time > 23100 or $this->time < 12900) ? "day":"night")."   \r", false, false);
 				$this->trigger("onTimeChange", $this->time);
+				$timeState = (($this->time > 23100 or $this->time < 12900) ? "day":"night");
+				if($this->timeState != $timeState){
+					$this->timeState = $timeState;
+					$this->trigger("onTimeStateChange", $this->timeState);
+					if($this->timeState == "day"){
+						$this->trigger("onDay");
+					}else{
+						$this->trigger("onNight");
+					}
+				}
 				break;
 			case "06":
 				$this->info["spawn"] = array("x" => $data["data"][0], "y" => $data["data"][1], "z" => $data["data"][2]);
@@ -322,7 +340,45 @@ class MinecraftClient{
 					console("[+] Recieved inventory");
 				}
 				break;
+			case "fa":
+				$this->trigger("onPluginMessage", array("channel" => $data["data"][0], "data" => $data["data"][2]));
+				$this->trigger("onPluginMessage_".$data["data"][0], $data["data"][2]);
+				break;
 		}
+	}
+
+
+	public function registerPluginChannel($channel){
+		if($this->protocol < 23){
+			return false;
+		}
+		$this->send("fa", array(
+			0 => "REGISTER",
+			1 => strlen($channel),
+			2 => $channel,			
+		));
+	}
+
+	public function unregisterPluginChannel($channel){
+		if($this->protocol < 23){
+			return false;
+		}
+		$this->send("fa", array(
+			0 => "REGISTER",
+			1 => strlen($channel),
+			2 => $channel,			
+		));
+	}
+	
+	public function pluginMessage($channel, $data){
+		if($this->protocol < 23){
+			return false;
+		}
+		$this->send("fa", array(
+			0 => $channel,
+			1 => strlen($data),
+			2 => $data,			
+		));
 	}
 	
 	protected function startHandlers(){
@@ -344,7 +400,10 @@ class MinecraftClient{
 		$this->event("recieved_47", "handler", true);
 		$this->event("recieved_67", "handler", true);
 		$this->event("recieved_68", "handler", true);
+		$this->event("recieved_fa", "handler", true);
 		$this->event("onTimeChange", "backgroundHandler", true);
+		$this->event("onPluginMessage_REGISTER", "backgroundHandler", true);
+		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
 		
 	}
 	
