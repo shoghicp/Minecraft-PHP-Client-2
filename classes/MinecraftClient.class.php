@@ -38,7 +38,7 @@ class MinecraftClient{
 		$this->close(array("data" => array(0 => $message)));
 	}
 	
-	public function close($data = ""){
+	protected function close($data = ""){
 		
 		if($data !== ""){
 			$this->trigger("onClose", $data["data"][0]);
@@ -86,7 +86,7 @@ class MinecraftClient{
 		}
 	}
 	
-	protected function trigger($event, $data = ""){
+	public function trigger($event, $data = ""){
 		console("[*] Event ". $event, true, true, 2);
 		if(isset($this->events[$event])){
 			foreach($this->events[$event] as $eid => $ev){
@@ -134,7 +134,7 @@ class MinecraftClient{
 			$this->send("fe");
 			$eid = $this->event("recieved_ff", 'ping', true);
 			$this->process();
-			return $eid;
+			return $this->response($eid);
 		}else{
 			return explode("\xa7", $data["data"][0]);
 			$this->close();
@@ -370,7 +370,7 @@ class MinecraftClient{
 		));
 	}
 	
-	public function pluginMessage($channel, $data){
+	public function sendPluginMessage($channel, $data){
 		if($this->protocol < 23){
 			return false;
 		}
