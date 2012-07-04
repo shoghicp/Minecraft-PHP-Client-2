@@ -1,0 +1,27 @@
+Events:
+
+sent_[PID]				array(pid => pid, data => pdata)		=> Fired when the packet PID is going to be sent
+recieved_[PID]			array(pid => pid, data => pdata)		=> Triggered when recieved the packet PID
+recievedPacket			PID
+sentPacket				PID
+onClose					message									=> Just before closing the client
+onChat					message
+onChatSent				message
+onTimeChange			time
+onSpawnChange			array coords
+onHealthChange			array(health => health, food => food)
+onRespawn				array data
+onMove					object Entity
+onPlayerSpawn			object Entity
+onEntitySpawn			object Entity
+onEntityMove			object Entity
+onEntityDespawn			EID
+onRainStart				time
+onRainStop				time
+onGamemodeChange		gamemode
+onThunderbolt			array(eid => eid, coords => coords)
+onInventorySlotChanged	array(slot => slot, data => sdata)
+onInventoryChanged		array inventory
+onConnect				null
+onUseEntity				array(eid => eid, left => left)
+onDropSlot				null

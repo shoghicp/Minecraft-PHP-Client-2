@@ -23,6 +23,10 @@ class Entity{
 		);
 	}
 	
+	public function getEID(){
+		return $this->eid;
+	}
+	
 	public function setName($name){
 		$this->name = $name;
 	}
@@ -31,6 +35,7 @@ class Entity{
 		$this->position["x"] = $x;
 		$this->position["y"] = $y;
 		$this->position["z"] = $z;
+		$this->updateStance();
 		return true;
 	}
 	
@@ -38,6 +43,7 @@ class Entity{
 		$this->position["x"] += $x;
 		$this->position["y"] += $y;
 		$this->position["z"] += $z;
+		$this->updateStance();
 		return true;
 	}
 	
@@ -54,6 +60,14 @@ class Entity{
 		return true;
 	}
 	
+	protected function updateStance(){
+		$this->position["stance"] = $this->position["y"] - 1.3;
+	}
+	
+	public function getPosition(){
+		return $this->position;
+	}
+	
 	public function setGround($ground){
 		$this->position["ground"] = $ground;
 	}
@@ -63,7 +77,7 @@ class Entity{
 	}
 	
 	public function getHealth(){
-		return $health;
+		return $this->health;
 	}
 	
 	public function setFood($food){
@@ -71,13 +85,22 @@ class Entity{
 	}
 
 	public function getFood(){
-		return $food;
+		return $this->food;
 	}
 	
 	public function packet($pid){
 		switch($pid){
 			case "0a":
 				return array(
+					$this->position["ground"],
+				);
+				break;
+			case "0b":
+				return array(
+					$this->position["x"],
+					$this->position["y"],
+					$this->position["stance"],
+					$this->position["z"],
 					$this->position["ground"],
 				);
 				break;

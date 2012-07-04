@@ -1,12 +1,14 @@
 <?php
 
-function console($message, $EOL = true, $log = true){
+function console($message, $EOL = true, $log = true, $level = 1){
 	//global $path;
 	$message .= $EOL == true ? PHP_EOL:"";
 	if($log){
 		logg($message, "console", false);
 	}
-	echo $message;
+	if(DEBUG >= $level){
+		echo $message;
+	}
 }
 
 function logg($message, $name, $EOL = true){
