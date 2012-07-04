@@ -1,9 +1,9 @@
 Events:
 
-sent_[PID]							array(pid => pid, data => pdata)		=> Fired when the packet PID is going to be sent
-recieved_[PID]						array(pid => pid, data => pdata)		=> Triggered when recieved the packet PID
-onRecievedPacket					PID
-onSentPacket						PID
+sent_[PID]							pdata									=> Fired when the packet PID is going to be sent
+recieved_[PID]						pdata									=> Triggered when recieved the packet PID
+onRecievedPacket					array(pid => PID, data => pdata)
+onSentPacket						array(pid => PID, data => pdata)
 onClose								message									=> Just before closing the client
 onChat								message
 onChatSent							message
@@ -34,3 +34,5 @@ onPluginChannelRegister				channel
 onPluginChannelRegister_[CHANNEL]	null
 onPluginChannelUnregister			channel
 onPluginChannelUnegister_[CHANNEL]	null
+onSpoutPacket_[PID]					array(version => version, data => data)
+onRecievedSpoutPacket				array(pid => PID, version => version, data => data)

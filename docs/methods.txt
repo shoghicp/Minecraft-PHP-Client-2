@@ -21,3 +21,4 @@ MinecraftClient methods:
 	void unregisterPluginChannel(string $channel)
 	void sendPluginMessage(string $channel, string $data)
 	void connect(string $user [, string $password = ""])
+	void activateSpout()

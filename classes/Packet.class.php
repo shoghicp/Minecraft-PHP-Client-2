@@ -16,10 +16,14 @@ class Packet{
 		$this->sock = $sock;
 	}
 	
-	public function create(){
+	public function create($raw = false){
 		foreach($this->struct as $field => $type){
 			if(!isset($this->data[$field])){
 				$this->data[$field] = "";
+			}
+			if($raw === true){
+				$this->addRaw($this->data[$field]);
+				continue;
 			}
 			switch($type){
 				case "float":
@@ -44,6 +48,9 @@ class Packet{
 					break;
 				case "short":
 					$this->addRaw(Utils::writeShort($this->data[$field]));
+					break;
+				case "byteArray":
+					$this->addRaw($this->data[$field]);
 					break;
 				case "string":
 					$len = strlen($this->data[$field]);
@@ -137,7 +144,11 @@ class Packet{
 					break;
 				case "byteArray":
 					$len = $this->data[$field - 1];
-					$this->data[] = array_map("Utils::readByte",str_split($this->get($len),1));
+					if($len <= 0){
+						$this->data[] = "";
+						break;
+					}
+					$this->data[] = $this->get($len);
 					break;
 				case "chunkArray":
 					$len = max(0,$this->data[6]);

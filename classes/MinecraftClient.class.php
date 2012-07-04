@@ -14,7 +14,7 @@ define("ACTION_MODE", 1); //1 => ticks, other by packets.
 
 class MinecraftClient{
 	private $server, $port, $protocol, $auth, $player, $entities;
-	protected $events, $cnt, $responses, $info, $inventory, $time, $timeState, $stop, $connected, $actions;
+	protected $spout, $events, $cnt, $responses, $info, $inventory, $time, $timeState, $stop, $connected, $actions;
 	
 	
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
@@ -31,6 +31,17 @@ class MinecraftClient{
 		$this->inventory = array();
 		$this->connected = true;
 		$this->actions = array();
+		$this->spout = false;
+	}
+	
+	public function activateSpout(){
+		$this->spout = true;
+		$this->interface->pstruct["c3"] = array(
+			"short",
+			"short",
+			"int",
+			"byteArray",	
+		);
 	}
 	
 	public function logout($message = "Quitting"){
@@ -42,8 +53,8 @@ class MinecraftClient{
 	protected function close($data = ""){
 		
 		if($data !== ""){
-			$this->trigger("onClose", $data["data"][0]);
-			console("[-] Kicked from server, ".$data["data"][0]);
+			$this->trigger("onClose", $data[0]);
+			console("[-] Kicked from server, ".$data[0]);
 		}else{
 			$this->trigger("onClose");
 		}
@@ -64,11 +75,11 @@ class MinecraftClient{
 		$this->send("10", array(0 => $id));	
 	}
 	
-	protected function send($pid, $data = array()){
+	protected function send($pid, $data = array(), $raw = false){
 		if($this->connected === true){
-			$this->trigger("sent_".$pid, array("pid" => $pid, "data" => $data));
-			$this->trigger("onSentPacket", $pid);
-			$this->interface->writePacket($pid, $data);
+			$this->trigger("sent_".$pid, $data);
+			$this->trigger("onSentPacket", array("pid" => $pid, "data" => $data));
+			$this->interface->writePacket($pid, $data, $raw);
 		}
 	}
 	
@@ -81,9 +92,9 @@ class MinecraftClient{
 		$this->stop = false;
 		while($pid != $stop and $this->stop === false and $this->connected === true){
 			$packet = $this->interface->readPacket();
-			$this->trigger("onRecievedPacket", $pid);
+			$this->trigger("onRecievedPacket", $packet);
 			$pid = $packet["pid"];
-			$this->trigger("recieved_".$pid, $packet);
+			$this->trigger("recieved_".$pid, $packet["data"]);
 		}
 	}
 	
@@ -140,7 +151,7 @@ class MinecraftClient{
 			$this->process();
 			return $this->response($eid);
 		}else{
-			return explode("\xa7", $data["data"][0]);
+			return explode("\xa7", $data[0]);
 			$this->close();
 		}
 	}
@@ -207,17 +218,18 @@ class MinecraftClient{
 		}	
 	}
 	
-	private function handler($data){
-		switch($data["pid"]){
+	private function handler($data, $event){
+		$pid = str_replace("recieved_", "", $event);
+		switch($pid){
 			case "00":
-				$this->send("00", array(0 => $data["data"][0]));
+				$this->send("00", array(0 => $data[0]));
 				break;
 			case "03":
-				console("[*] Chat: ".$data["data"][0]);
-				$this->trigger("onChat", $data["data"][0]);
+				console("[*] Chat: ".$data[0]);
+				$this->trigger("onChat", $data[0]);
 				break;
 			case "04":
-				$this->time = $data["data"][0] % 24000;
+				$this->time = $data[0] % 24000;
 				console("[*] Time: ".((intval($this->time/1000+6) % 24)).':'.str_pad(intval(($this->time/1000-floor($this->time/1000))*60),2,"0",STR_PAD_LEFT).', '.(($this->time > 23100 or $this->time < 12900) ? "day":"night")."   \r", false, false);
 				$this->trigger("onTimeChange", $this->time);
 				$timeState = (($this->time > 23100 or $this->time < 12900) ? "day":"night");
@@ -232,20 +244,20 @@ class MinecraftClient{
 				}
 				break;
 			case "06":
-				$this->info["spawn"] = array("x" => $data["data"][0], "y" => $data["data"][1], "z" => $data["data"][2]);
-				console("[+] Got spawn: (".$data["data"][0].",".$data["data"][1].",".$data["data"][2].")");
+				$this->info["spawn"] = array("x" => $data[0], "y" => $data[1], "z" => $data[2]);
+				console("[+] Got spawn: (".$data[0].",".$data[1].",".$data[2].")");
 				$this->trigger("onSpawnChange", $this->info["spawn"]);
 				break;
 			case "08":
-				$this->player->setHealth($data["data"][0]);
-				if(isset($data["data"][1])){ //Food
-					$this->player->setFood($data["data"][1]);
-					console("[*] Health: ".$data["data"][0].", Food: ". $data["data"][1]);
+				$this->player->setHealth($data[0]);
+				if(isset($data[1])){ //Food
+					$this->player->setFood($data[1]);
+					console("[*] Health: ".$data[0].", Food: ". $data[1]);
 				}else{
-					console("[*] Health: ".$data["data"][0]);
+					console("[*] Health: ".$data[0]);
 				}
 				$this->trigger("onHealthChange", array("health" => $this->player->getHealth(), "food" => $this->player->getFood()));
-				if($data["data"][0] <= 0){ //Respawn
+				if($data[0] <= 0){ //Respawn
 					$d = array(					
 						0 => $this->info["dimension"],
 						1 => 1,
@@ -262,53 +274,53 @@ class MinecraftClient{
 				}
 				break;
 			case "0d":
-				$this->player->setPosition($data["data"][0], $data["data"][2], $data["data"][3], $data["data"][1], $data["data"][4], $data["data"][5], $data["data"][6]);
+				$this->player->setPosition($data[0], $data[2], $data[3], $data[1], $data[4], $data[5], $data[6]);
 				$this->send("0d",$this->player->packet("0d"));
-				console("[+] Got position: (".$data["data"][0].",".$data["data"][2].",".$data["data"][3].")");
+				console("[+] Got position: (".$data[0].",".$data[2].",".$data[3].")");
 				$this->trigger("onMove", $this->player);
 				$this->trigger("onEntityMove", $this->player);
 				break;
 			case "14":
-				$this->entities[$data["data"][0]] = new Entity($data["data"][0], 0);
-				$this->entities[$data["data"][0]]->setName($data["data"][1]);
-				$this->entities[$data["data"][0]]->setCoords($data["data"][2] / 32,$data["data"][3] / 32,$data["data"][4] / 32);
-				console("[+] Player \"".$data["data"][1]."\" (EID: ".$data["data"][0].") spawned at (".($data["data"][2] / 32).",".($data["data"][3] / 32).",".($data["data"][4] / 32).")");
-				$this->trigger("onPlayerSpawn", $this->entities[$data["data"][0]]);
-				$this->trigger("onEntitySpawn", $this->entities[$data["data"][0]]);
+				$this->entities[$data[0]] = new Entity($data[0], 0);
+				$this->entities[$data[0]]->setName($data[1]);
+				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
+				console("[+] Player \"".$data[1]."\" (EID: ".$data[0].") spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")");
+				$this->trigger("onPlayerSpawn", $this->entities[$data[0]]);
+				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "15":
-				console("[+] Item (EID: ".$data["data"][0].") type ".$data["data"][1]." spawned at (".($data["data"][4] / 32).",".($data["data"][5] / 32).",".($data["data"][6] / 32).")");
-				$this->entities[$data["data"][0]] = new Entity($data["data"][0], $data["data"][1], true);
-				$this->entities[$data["data"][0]]->setCoords($data["data"][4] / 32,$data["data"][5] / 32,$data["data"][6] / 32);
-				$this->trigger("onEntitySpawn", $this->entities[$data["data"][0]]);				
+				console("[+] Item (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[4] / 32).",".($data[5] / 32).",".($data[6] / 32).")");
+				$this->entities[$data[0]] = new Entity($data[0], $data[1], true);
+				$this->entities[$data[0]]->setCoords($data[4] / 32,$data[5] / 32,$data[6] / 32);
+				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);				
 				break;
 			case "17":
 			case "18":
-				console("[+] Entity (EID: ".$data["data"][0].") type ".$data["data"][1]." spawned at (".($data["data"][2] / 32).",".($data["data"][3] / 32).",".($data["data"][4] / 32).")");
-				$this->entities[$data["data"][0]] = new Entity($data["data"][0], $data["data"][1], ($data["pid"] === "17" ? true:false));
-				$this->entities[$data["data"][0]]->setCoords($data["data"][2] / 32,$data["data"][3] / 32,$data["data"][4] / 32);
-				$this->trigger("onEntitySpawn", $this->entities[$data["data"][0]]);
+				console("[+] Entity (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")");
+				$this->entities[$data[0]] = new Entity($data[0], $data[1], ($pid === "17" ? true:false));
+				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
+				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "1d":
-				console("[*] EID ".$data["data"][0]." despawned");
-				$this->trigger("onEntityDespawn", $data["data"][0]);
-				unset($this->entities[$data["data"][0]]);
+				console("[*] EID ".$data[0]." despawned");
+				$this->trigger("onEntityDespawn", $data[0]);
+				unset($this->entities[$data[0]]);
 				break;
 			case "1f":
 			case "21":
-				if(isset($this->entities[$data["data"][0]])){
-					$this->entities[$data["data"][0]]->move($data["data"][1] / 32,$data["data"][2] / 32,$data["data"][3] / 32);
-					$this->trigger("onEntityMove", $this->entities[$data["data"][0]]);
+				if(isset($this->entities[$data[0]])){
+					$this->entities[$data[0]]->move($data[1] / 32,$data[2] / 32,$data[3] / 32);
+					$this->trigger("onEntityMove", $this->entities[$data[0]]);
 				}
 				break;
 			case "22":
-				if(isset($this->entities[$data["data"][0]])){
-					$this->entities[$data["data"][0]]->setCoords($data["data"][1] / 32,$data["data"][2] / 32,$data["data"][3] / 32);
-					$this->trigger("onEntityMove", $this->entities[$data["data"][0]]);
+				if(isset($this->entities[$data[0]])){
+					$this->entities[$data[0]]->setCoords($data[1] / 32,$data[2] / 32,$data[3] / 32);
+					$this->trigger("onEntityMove", $this->entities[$data[0]]);
 				}
 				break;
 			case "46";
-				switch($data["data"][0]){
+				switch($data[0]){
 					case 0:
 						$m = "Invalid bed";
 						break;
@@ -321,8 +333,8 @@ class MinecraftClient{
 						$this->trigger("onRainStop", $this->time);
 						break;
 					case 3:
-						$m = "Gamemode changed: ".($data["data"][1]==0 ? "survival":"creative");
-						$this->trigger("onGamemodeChange", $data["data"][1]);
+						$m = "Gamemode changed: ".($data[1]==0 ? "survival":"creative");
+						$this->trigger("onGamemodeChange", $data[1]);
 						break;
 					case 4:
 						$m = "Entered credits";
@@ -331,24 +343,24 @@ class MinecraftClient{
 				console("[*] ".$m);
 				break;
 			case "47":
-				console("[*] Thunderbolt at (".($data["data"][2] / 32).",".($data["data"][3] / 32).",".($data["data"][4] / 32).")");
-				$this->trigger("onThunderbolt", array("eid" => $data["data"][0], "coords" => array("x" => $data["data"][2] / 32, "y" => $data["data"][3] / 32, "z" => $data["data"][4] / 32)));				
+				console("[*] Thunderbolt at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")");
+				$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] / 32, "y" => $data[3] / 32, "z" => $data[4] / 32)));				
 				break;
 			case "67":
-				if($data["data"][0] == 0){
-					if(!isset($data["data"][2][0])){
-						$this->inventory[$data["data"][1]] = array(0,0,0);
+				if($data[0] == 0){
+					if(!isset($data[2][0])){
+						$this->inventory[$data[1]] = array(0,0,0);
 					}else{
-						$this->inventory[$data["data"][1]] = $data["data"][2][0];
+						$this->inventory[$data[1]] = $data[2][0];
 					}
-					$this->trigger("onInventorySlotChanged", array("slot" => $data["data"][1], "data" => $this->getInventorySlot($data["data"][1])));
+					$this->trigger("onInventorySlotChanged", array("slot" => $data[1], "data" => $this->getInventorySlot($data[1])));
 					$this->trigger("onInventoryChanged", $this->getInventory());
-					console("[*] Changed inventory slot ".$data["data"][1]);
+					console("[*] Changed inventory slot ".$data[1]);
 				}
 				break;				
 			case "68":
-				if($data["data"][0] == 0){
-					foreach($data["data"][2] as $i => $slot){
+				if($data[0] == 0){
+					foreach($data[2] as $i => $slot){
 						$this->inventory[$i] = $slot;
 					}
 					$this->trigger("onInventoryChanged", $this->getInventory());
@@ -356,8 +368,8 @@ class MinecraftClient{
 				}
 				break;
 			case "fa":
-				$this->trigger("onPluginMessage", array("channel" => $data["data"][0], "data" => $data["data"][2]));
-				$this->trigger("onPluginMessage_".$data["data"][0], $data["data"][2]);
+				$this->trigger("onPluginMessage", array("channel" => $data[0], "data" => $data[2]));
+				$this->trigger("onPluginMessage_".$data[0], $data[2]);
 				break;
 		}
 	}
@@ -379,7 +391,7 @@ class MinecraftClient{
 			return false;
 		}
 		$this->send("fa", array(
-			0 => "REGISTER",
+			0 => "UNREGISTER",
 			1 => strlen($channel),
 			2 => $channel,			
 		));
@@ -431,10 +443,11 @@ class MinecraftClient{
 		
 	}
 	
-	protected function authentication($data){
-		switch($data["pid"]){
+	protected function authentication($data, $event){
+		$pid = str_replace("recieved_", "", $event);
+		switch($pid){
 			case "02":
-				$hash = $data["data"][0];
+				$hash = $data[0];
 				if($hash != "-" and $hash != "+"){
 					console("[*] Server is Premium (SID: ".$hash.")");
 					if($hash == "" or strpos($hash, "&") !== false){
@@ -481,15 +494,15 @@ class MinecraftClient{
 				$this->event("recieved_01", 'authentication', true);
 				break;
 			case "01":
-				$this->info["seed"] = $data["data"][2];
-				$this->info["level_type"] = $this->protocol >= 23 ? $data["data"][3]:0;
-				$this->info["mode"] = $this->protocol <= 23 ? $data["data"][4]:$data["data"][3];
-				$this->info["dimension"] = $this->protocol <= 23 ? $data["data"][5]:$data["data"][4];
-				$this->info["difficulty"] = $this->protocol <= 23 ? $data["data"][6]:$data["data"][5];
-				$this->info["height"] = $this->protocol <= 23 ? $data["data"][7]:$data["data"][6];
-				$this->info["max_players"] = $this->protocol <= 23 ? $data["data"][8]:$data["data"][7];
-				$this->entities[$data["data"][0]] = new Entity($data["data"][0], 0);
-				$this->player =& $this->entities[$data["data"][0]];				
+				$this->info["seed"] = $data[2];
+				$this->info["level_type"] = $this->protocol >= 23 ? $data[3]:0;
+				$this->info["mode"] = $this->protocol <= 23 ? $data[4]:$data[3];
+				$this->info["dimension"] = $this->protocol <= 23 ? $data[5]:$data[4];
+				$this->info["difficulty"] = $this->protocol <= 23 ? $data[6]:$data[5];
+				$this->info["height"] = $this->protocol <= 23 ? $data[7]:$data[6];
+				$this->info["max_players"] = $this->protocol <= 23 ? $data[8]:$data[7];
+				$this->entities[$data[0]] = new Entity($data[0], 0);
+				$this->player =& $this->entities[$data[0]];				
 				$this->player->setName($this->auth["user"]);
 				console("[+] EID: ".$this->player->getEID());
 				$this->startHandlers();
@@ -501,6 +514,14 @@ class MinecraftClient{
 	
 	public function connect($user, $password = ""){
 		$this->auth = array("user" => $user, "password" => $password);
+		if($this->spout == true){
+			/*$this->registerPluginChannel("AutoProto:HShake");
+			$this->registerPluginChannel("ChkCache:setHash");
+			$this->sendPluginMessage("AutoProto:HShake", "VanillaProtocol");
+			$this->event("onPluginChannelRegister_WECUI", "spoutHandler", true);*/
+			$this->event("onConnect", "spoutHandler", true);
+			$this->event("recieved_c3", "spoutHandler", true);
+		}
 		$this->send("02", array(
 			0 => $user.($this->protocol >= 28 ? ";".$this->server.":".$this->port:""),
 		));
@@ -508,16 +529,35 @@ class MinecraftClient{
 		$this->process("0d");
 	}
 	
+	public function spoutHandler($data, $event){
+		switch($event){
+			case "recieved_c3":
+				$packetId = $data[0];
+				$version = $data[1];
+				$packet = $data[3];
+				console("[*] Recieved Spout packet ".$packetId, true, true, 2);
+				$this->trigger("onSpoutPacket_".$packetId, array("version" => $version, "data" => $packet));
+				$this->trigger("onRecievedSpoutPacket", array("id" => $packetId, "version" => $version, "data" => $packet));
+				break;
+			case "onPluginChannelRegister_WECUI":
+				
+				break;
+			case "onConnect":
+				$this->send("12", array(
+					0 => -42,
+					1 => 1,				
+				));
+				break;		
+		}
 	
+	}	
 
 }
 
-
-
-
 class MinecraftInterface{
 	private $server;
-	protected $pstruct, $protocol;
+	protected $protocol;
+	var $pstruct;
 	
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
 		$this->server = new Socket($server, $port);
@@ -547,7 +587,7 @@ class MinecraftInterface{
 		if($struct === false){
 			$this->server->unblock();
 			$p = "==".time()."==> ERROR Bad packet id $pid :".PHP_EOL;
-			$p .= hexdump($this->server->read(512), false, false, true);
+			$p .= hexdump(Utils::hexToStr($pid).$this->server->read(512), false, false, true);
 			$p .= PHP_EOL . "--------------- (512 byte extract) ----------" .PHP_EOL .PHP_EOL;
 			logg($p, "packets");
 			
@@ -569,11 +609,11 @@ class MinecraftInterface{
 		return array("pid" => $pid, "data" => $packet->data);
 	}
 	
-	public function writePacket($pid, $data = array()){
+	public function writePacket($pid, $data = array(), $raw = false){
 		$struct = $this->getStruct($pid);
 		$packet = new Packet($pid, $struct);
 		$packet->data = $data;
-		$packet->create();
+		$packet->create($raw);
 		$this->server->write($packet->raw);
 		
 		$len = strlen($packet->raw);

@@ -2,21 +2,24 @@
 
 function console($message, $EOL = true, $log = true, $level = 1){
 	//global $path;
-	$message .= $EOL == true ? PHP_EOL:"";
-	if($log){
-		logg($message, "console", false);
-	}
 	if(DEBUG >= $level){
+		$message .= $EOL == true ? PHP_EOL:"";
+		if($log){
+			logg($message, "console", false);
+		}
+	
 		echo $message;
 	}
 }
 
 function logg($message, $name, $EOL = true){
-	$message .= $EOL == true ? PHP_EOL:"";
-	file_put_contents(dirname(__FILE__)."/".$name.".log", $message, FILE_APPEND);
+	if(DEBUG >= 1){
+		$message .= $EOL == true ? PHP_EOL:"";
+		file_put_contents(dirname(__FILE__)."/".$name.".log", $message, FILE_APPEND);
+	}
 }
 
-function hexdump ($data, $htmloutput = true, $uppercase = false, $return = false)
+function hexdump($data, $htmloutput = true, $uppercase = false, $return = false)
 {
     // Init
     $hexi   = '';
