@@ -1,8 +1,6 @@
 <?php
 
 require_once("classes/MinecraftClient.class.php");
-
-
 define("DEBUG", 1); //0 none, 1 messages, 2 all
 
 

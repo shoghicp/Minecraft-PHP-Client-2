@@ -2,8 +2,8 @@ Events:
 
 sent_[PID]							array(pid => pid, data => pdata)		=> Fired when the packet PID is going to be sent
 recieved_[PID]						array(pid => pid, data => pdata)		=> Triggered when recieved the packet PID
-recievedPacket						PID
-sentPacket							PID
+onRecievedPacket					PID
+onSentPacket						PID
 onClose								message									=> Just before closing the client
 onChat								message
 onChatSent							message

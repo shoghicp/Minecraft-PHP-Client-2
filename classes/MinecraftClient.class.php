@@ -14,7 +14,7 @@ define("CURRENT_PROTOCOL", 29);
 
 class MinecraftClient{
 	private $server, $port, $protocol, $auth, $player, $entities;
-	protected $events, $cnt, $responses, $info, $inventory, $time, $timeState, $stop, $connected;
+	protected $events, $cnt, $responses, $info, $inventory, $time, $timeState, $stop, $connected, $actions;
 	
 	
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
@@ -30,6 +30,7 @@ class MinecraftClient{
 		$this->entities = array();
 		$this->inventory = array();
 		$this->connected = true;
+		$this->actions = array();
 	}
 	
 	public function logout($message = "Quitting"){
@@ -66,7 +67,7 @@ class MinecraftClient{
 	protected function send($pid, $data = array()){
 		if($this->connected === true){
 			$this->trigger("sent_".$pid, array("pid" => $pid, "data" => $data));
-			$this->trigger("sentPacket", $pid);
+			$this->trigger("onSentPacket", $pid);
 			$this->interface->writePacket($pid, $data);
 		}
 	}
@@ -80,7 +81,7 @@ class MinecraftClient{
 		$this->stop = false;
 		while($pid != $stop and $this->stop === false and $this->connected === true){
 			$packet = $this->interface->readPacket();
-			$this->trigger("recievedPacket", $pid);
+			$this->trigger("onRecievedPacket", $pid);
 			$pid = $packet["pid"];
 			$this->trigger("recieved_".$pid, $packet);
 		}
@@ -107,6 +108,10 @@ class MinecraftClient{
 		}
 		return false;
 	}
+
+	public function action($microseconds, $code){
+		$this->actions[] = array($microseconds, $last, $code);
+	}
 	
 	public function event($event, $func, $in = false){
 		++$this->cnt;
@@ -126,7 +131,6 @@ class MinecraftClient{
 				unset($this->events[$event]);
 			}
 		}
-		
 	}
 	
 	public function ping($data = ""){
@@ -177,9 +181,15 @@ class MinecraftClient{
 	
 	private function backgroundHandler($data, $event){
 		switch($event){
-			case "onTimeChange": //actions that repeat every x time will go here
-				$this->player->setGround(true);
-				$this->send("0d",$this->player->packet("0d"));
+			case "onRecievedPacket": //actions that repeat every x time will go here
+				$time = explode(" ",microtime());
+				$time = $time[1] + floatval($time[0]);
+				foreach($this->actions as $id => $action){
+					if($action[1] <= ($time - ($action[0] / 1000000))){
+						$this->actions[$id][1] = $time;
+						eval($action[2]);
+					}
+				}
 				break;
 			case "onPluginMessage_REGISTER":
 				$this->trigger("onPluginChannelRegister", $data);
@@ -401,9 +411,10 @@ class MinecraftClient{
 		$this->event("recieved_67", "handler", true);
 		$this->event("recieved_68", "handler", true);
 		$this->event("recieved_fa", "handler", true);
-		$this->event("onTimeChange", "backgroundHandler", true);
+		$this->event("onRecievedPacket", "backgroundHandler", true);
 		$this->event("onPluginMessage_REGISTER", "backgroundHandler", true);
 		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
+		$this->action(50000, '$this->player->setGround(true); $this->send("0d",$this->player->packet("0d"));');
 		
 	}
 	
