@@ -2,7 +2,8 @@
 
 require_once("classes/MinecraftClient.class.php");
 define("DEBUG", 1); //0 none, 1 messages, 2 all
-
+define("CURRENT_PROTOCOL", 29);
+define("ACTION_MODE", 1); //1 => ticks, other by packets. 
 
 file_put_contents("console.log", "");
 file_put_contents("packets.log", "");

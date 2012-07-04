@@ -20,6 +20,7 @@ class Socket{
 			$this->connected = false;
 		}else{
 			$this->connected = true;
+			$this->buffer = "";
 			$this->unblock();
 			socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);
 			socket_set_option($this->sock, SOL_TCP, TCP_NODELAY, 1);

@@ -22,3 +22,4 @@ MinecraftClient methods:
 	void sendPluginMessage(string $channel, string $data)
 	void connect(string $user [, string $password = ""])
 	void activateSpout()
+	void sendSpoutMessage(int PID, int version, string data)

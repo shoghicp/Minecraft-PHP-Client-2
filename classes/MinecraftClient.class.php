@@ -8,10 +8,6 @@ require_once(dirname(__FILE__)."/Entity.class.php");
 require_once(dirname(__FILE__)."/../functions.php");
 
 
-define("CURRENT_PROTOCOL", 29);
-define("ACTION_MODE", 1); //1 => ticks, other by packets. 
-
-
 class MinecraftClient{
 	private $server, $port, $protocol, $auth, $player, $entities;
 	protected $spout, $events, $cnt, $responses, $info, $inventory, $time, $timeState, $stop, $connected, $actions;
@@ -397,6 +393,7 @@ class MinecraftClient{
 		));
 	}
 	
+	
 	public function sendPluginMessage($channel, $data){
 		if($this->protocol < 23){
 			return false;
@@ -528,7 +525,14 @@ class MinecraftClient{
 		$this->event("recieved_02", 'authentication', true);
 		$this->process("0d");
 	}
-	
+	public function sendSpoutMessage($pid, $version, $data){
+		$this->send("c3", array(
+			0 => $pid,
+			1 => $version,
+			2 => strlen($data),
+			3 => $data,
+		));	
+	}
 	public function spoutHandler($data, $event){
 		switch($event){
 			case "recieved_c3":
@@ -547,6 +551,9 @@ class MinecraftClient{
 					0 => -42,
 					1 => 1,				
 				));
+				$this->sendSpoutMessage(5,0,"\x02\xff\xff");
+				$this->sendSpoutMessage(33,0,"\x00\x04".Utils::writeString("1000"));
+				$this->sendSpoutMessage(56,0,"\x00\x00");
 				break;		
 		}
 	
