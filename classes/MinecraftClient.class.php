@@ -9,7 +9,7 @@ require_once(dirname(__FILE__)."/../functions.php");
 
 
 define("CURRENT_PROTOCOL", 29);
-
+define("ACTION_MODE", 1); //1 => ticks, other by packets. 
 
 
 class MinecraftClient{
@@ -110,7 +110,7 @@ class MinecraftClient{
 	}
 
 	public function action($microseconds, $code){
-		$this->actions[] = array($microseconds, $last, $code);
+		$this->actions[] = array($microseconds, 0, $code);
 	}
 	
 	public function event($event, $func, $in = false){
@@ -179,17 +179,22 @@ class MinecraftClient{
 		));		
 	}
 	
+	public function tickerFunction(){
+		//actions that repeat every x time will go here
+		$time = explode(" ",microtime());
+		$time = $time[1] + floatval($time[0]);
+		foreach($this->actions as $id => $action){
+			if($action[1] <= ($time - ($action[0] / 1000000))){
+				$this->actions[$id][1] = $time;
+				eval($action[2]);
+			}
+		}	
+	}
+	
 	private function backgroundHandler($data, $event){
 		switch($event){
-			case "onRecievedPacket": //actions that repeat every x time will go here
-				$time = explode(" ",microtime());
-				$time = $time[1] + floatval($time[0]);
-				foreach($this->actions as $id => $action){
-					if($action[1] <= ($time - ($action[0] / 1000000))){
-						$this->actions[$id][1] = $time;
-						eval($action[2]);
-					}
-				}
+			case "onRecievedPacket":
+				tickerFunction();
 				break;
 			case "onPluginMessage_REGISTER":
 				$this->trigger("onPluginChannelRegister", $data);
@@ -411,10 +416,16 @@ class MinecraftClient{
 		$this->event("recieved_67", "handler", true);
 		$this->event("recieved_68", "handler", true);
 		$this->event("recieved_fa", "handler", true);
-		$this->event("onRecievedPacket", "backgroundHandler", true);
 		$this->event("onPluginMessage_REGISTER", "backgroundHandler", true);
 		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
-		$this->action(50000, '$this->player->setGround(true); $this->send("0d",$this->player->packet("0d"));');
+		
+		if(ACTION_MODE === 1){
+			declare(ticks=5);
+			register_tick_function(array($this, "tickerFunction"));
+			$this->action(50000, '$this->player->setGround(true); $this->send("0d",$this->player->packet("0d"));');			
+		}else{
+			$this->event("onRecievedPacket", "backgroundHandler", true);
+		}
 		
 	}
 	
