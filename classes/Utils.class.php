@@ -20,7 +20,11 @@ define("ENDIANNESS", (pack('d', 1) == "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN:LITTLE_
 
 class Utils{
 
-
+	public static function microtime(){
+		$time = explode(" ",microtime());
+		$time = $time[1] + floatval($time[0]);
+		return $time;
+	}
 	public static function curl_get($page){
 		$ch = curl_init ($page);
 		curl_setopt ($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client'));

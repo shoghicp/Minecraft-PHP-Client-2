@@ -11,7 +11,9 @@ class Packet{
 		$this->pid = $pid;
 		$this->raw = "";
 		$this->data = array();
-		$this->addRaw(Utils::hexToStr($pid));
+		if($pid !== false){
+			$this->addRaw(Utils::hexToStr($pid));
+		}
 		$this->struct = $struct;
 		$this->sock = $sock;
 	}

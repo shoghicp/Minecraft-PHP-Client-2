@@ -61,7 +61,7 @@ class Entity{
 	}
 	
 	protected function updateStance(){
-		$this->position["stance"] = $this->position["y"] - 1.3;
+		$this->position["stance"] = $this->position["y"] + 1.3;
 	}
 	
 	public function getPosition(){

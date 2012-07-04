@@ -1,5 +1,8 @@
 Events:
 
+
+	EVENT								DATA									DESCRIPTION
+	
 sent_[PID]							pdata									=> Fired when the packet PID is going to be sent
 recieved_[PID]						pdata									=> Triggered when recieved the packet PID
 onRecievedPacket					array(pid => PID, data => pdata)
@@ -13,11 +16,13 @@ onDay								null
 onNight								null
 onSpawnChange						array coords
 onHealthChange						array(health => health, food => food)
+onDeath								null
 onRespawn							array data
 onMove								object Entity
 onPlayerSpawn						object Entity
 onEntitySpawn						object Entity
 onEntityMove						object Entity
+onEntityMove_[EID]					object Entity
 onEntityDespawn						EID
 onRainStart							time
 onRainStop							time
@@ -36,3 +41,5 @@ onPluginChannelUnregister			channel
 onPluginChannelUnegister_[CHANNEL]	null
 onSpoutPacket_[PID]					array(version => version, data => data)
 onRecievedSpoutPacket				array(pid => PID, version => version, data => data)
+onSignUpdate						array(coords => array coords, text => text)
+onTick								time
