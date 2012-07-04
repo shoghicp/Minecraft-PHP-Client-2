@@ -194,7 +194,7 @@ class MinecraftClient{
 	private function backgroundHandler($data, $event){
 		switch($event){
 			case "onRecievedPacket":
-				tickerFunction();
+				$this->tickerFunction();
 				break;
 			case "onPluginMessage_REGISTER":
 				$this->trigger("onPluginChannelRegister", $data);
@@ -397,6 +397,14 @@ class MinecraftClient{
 	}
 	
 	protected function startHandlers(){
+	
+		if(ACTION_MODE === 1){
+			declare(ticks=15);
+			register_tick_function(array($this, "tickerFunction"));		
+		}else{
+			$this->event("onRecievedPacket", "backgroundHandler", true);
+		}
+		
 		$this->event("recieved_00", "handler", true);
 		$this->event("recieved_03", "handler", true);
 		$this->event("recieved_04", "handler", true);
@@ -419,13 +427,7 @@ class MinecraftClient{
 		$this->event("onPluginMessage_REGISTER", "backgroundHandler", true);
 		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
 		
-		if(ACTION_MODE === 1){
-			declare(ticks=5);
-			register_tick_function(array($this, "tickerFunction"));
-			$this->action(50000, '$this->player->setGround(true); $this->send("0d",$this->player->packet("0d"));');			
-		}else{
-			$this->event("onRecievedPacket", "backgroundHandler", true);
-		}
+		$this->action(50000, '$this->player->setGround(true); $this->send("0d",$this->player->packet("0d"));');	
 		
 	}
 	
