@@ -1,5 +1,7 @@
 <?php
 
+
+
 require_once("classes/MinecraftClient.class.php");
 include_once("plugin/Record.plugin.php");
 include_once("plugin/Follow.plugin.php");

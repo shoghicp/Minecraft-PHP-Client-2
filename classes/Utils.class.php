@@ -20,11 +20,54 @@ define("ENDIANNESS", (pack('d', 1) == "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN:LITTLE_
 
 class Utils{
 
+
+	public static function sha1($input){
+		$hash = Utils::hexToStr(sha1($input));
+		$binary = "";
+		$len = strlen($hash);
+		for($i = 0; $i < $len; ++$i){
+			$binary .= str_pad(decbin(ord($hash{$i})),8,"0",STR_PAD_LEFT);
+		}
+		$negative = false;
+		$len = strlen($binary);
+		if($binary{0} == "1"){
+			$negative = true;
+			for($i = 0; $i < $len; ++$i){
+				$binary{$i} = $binary{$i} == "1" ? "0":"1";
+			}
+			for($i = strlen($binary) - 1; $i >= 0; --$i){
+				if($binary{$i} == "1"){
+					$binary{$i} = "0";
+				}else{
+					$binary{$i} = "1";
+					break;
+				}
+			}
+		}
+		
+		$hash = "";
+		for($i = 0; $i < $len; $i += 8){
+			$hash .= chr(bindec(substr($binary,$i,8)));
+		}
+		$hash = Utils::strToHex($hash);
+		$len = strlen($hash);
+		for($i = 0; $i < $len; ++$i){
+			if($hash{$i} == "0"){
+				$hash{$i} = "x";
+			}else{
+				break;
+			}
+		}
+		
+		return ($negative == true ? "-":"").str_replace("x", "", $hash);
+	}
+	
 	public static function microtime(){
 		$time = explode(" ",microtime());
 		$time = $time[1] + floatval($time[0]);
 		return $time;
 	}
+	
 	public static function curl_get($page){
 		$ch = curl_init ($page);
 		curl_setopt ($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client'));

@@ -36,18 +36,18 @@ class NoHunger{
 		$this->client = $client;
 		$this->player = $this->client->getPlayer();
 		$this->client->event("onHealthChange", "handler", $this);
+		$this->client->event("onInventoryChanged", "handler", $this);
 		$this->only_food = $only_food;
 	}
 	
 	public function setOnlyFood($only_food){
 		$this->only_food = $only_food;
-	}
-	
-	public function handler($health){
+	}	
+	public function handler($health, $event){
 		include(dirname(__FILE__)."/../materials.php");
 		for($i=36;$i<=44;++$i){
 			$slot = $this->client->getInventorySlot($i);
-			if(isset($food[$slot[0]]) == true and ($health["food"] + $food[$slot[0]]) <= 20){
+			if($event == "onHealthChange" and isset($food[$slot[0]]) == true and ($health["food"] + $food[$slot[0]]) <= 20){
 				$this->client->changeSlot($i-36);
 				$this->client->eatSlot();
 				$eat = true;

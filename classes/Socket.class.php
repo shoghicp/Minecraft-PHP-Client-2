@@ -10,9 +10,8 @@ define("HALF_BUFFER_BYTES", MAX_BUFFER_BYTES / 2);
 
 
 class Socket{
-	private $sock;
-	protected $connected;
-	var $buffer;
+	private $sock, $encrypt, $decrypt, $encryption;
+	var $buffer, $connected;
 
 	function __construct($server, $port){
 		$this->sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -22,13 +21,41 @@ class Socket{
 			$this->connected = true;
 			$this->buffer = "";
 			$this->unblock();
+			$this->encryption = false;
 			socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);
 			socket_set_option($this->sock, SOL_TCP, TCP_NODELAY, 1);
+			//socket_set_option($this->sock, SOL_TCP, SO_SNDBUF, 1);
 		}	
 	}
 	
-	public function close(){
+	function startAES($key){
+		console("[INFO] [Socket] Activating AES-".(strlen($key)*8)." CFB8 encryption");
+		require_once("Crypt/AES.php");
+		$this->encrypt = new Crypt_AES(CRYPT_AES_MODE_CFB);
+		$this->encrypt->setKey($key);
+		$this->encrypt->setIV($key);
+		$this->encrypt->enableContinuousBuffer();
+		$this->decrypt =& $this->encrypt;
+		$this->encryption = true;
+	}
+
+	function startRC4($key){
+		console("[INFO] [Socket] Activating RC4-".(strlen($key)*8)." encryption");
+		require_once("Crypt/RC4.php");
+		$this->encrypt = new Crypt_RC4();
+		$this->encrypt->setKey($key);
+		//$this->encrypt->setIV($key);
+		$this->encrypt->enableContinuousBuffer();
+		$this->decrypt = new Crypt_RC4();
+		$this->decrypt->setKey($key);
+		//$this->decrypt->setIV($key);
+		$this->decrypt->enableContinuousBuffer();
+		$this->encryption = true;
+	}	
+	
+	public function close($error = 125){
 		$this->connected = false;
+		console("[ERROR] [Socket] Socket closed, Error $error: ".socket_strerror($error));
 		return @socket_close($this->sock);
 	}
 	
@@ -41,11 +68,11 @@ class Socket{
 	}
 	
 	public function read($len){
-		if($len <= 0){
+		if($len <= 0 or $this->connected === false){
 			return "";
 		}
-		while(!isset($this->buffer{$len-1}) and $this->connected){
-			$this->get();		
+		while(!isset($this->buffer{$len-1}) and $this->connected === true){
+			$this->get();
 		}
 		$ret = substr($this->buffer, 0, $len);
 		$this->buffer = substr($this->buffer, $len);
@@ -54,15 +81,22 @@ class Socket{
 	}
 	
 	public function recieve($str){ //Auto write a packet
-		$this->buffer .= $str;
-		return true;
+		if($str != ""){
+			$str = $this->encryption === true ? $this->decrypt->decrypt($str):$str;
+			$this->buffer .= $str;
+			return true;
+		}
 	}
 	
 	public function write($str){
-		return @socket_write($this->sock, $str);
+		if($str != ""){
+			$str = $this->encryption === true ? $this->encrypt->encrypt($str):$str;
+			return @socket_write($this->sock, $str);
+		}
 	}
 	
 	function get(){
+		$errors = range(88,125);
 		if(!isset($this->buffer{HALF_BUFFER_BYTES}) and $this->connected === true){
 			/*if(!isset($this->buffer{MIN_BUFFER_BYTES})){
 				$this->block();
@@ -74,8 +108,8 @@ class Socket{
 			$read = @socket_read($this->sock,HALF_BUFFER_BYTES, PHP_BINARY_READ);
 			if($read !== false and $read !== ""){
 				$this->recieve($read);
-			}elseif(socket_last_error($this->sock) == 104){
-				$this->connected = false;
+			}elseif($read === false and in_array(socket_last_error($this->sock), $errors)){
+				$this->close(socket_last_error($this->sock));
 			}		
 		}
 	}

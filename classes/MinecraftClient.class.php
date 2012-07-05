@@ -1,5 +1,8 @@
 <?php
 require_once(dirname(__FILE__)."/Utils.class.php");
+set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__)."/phpseclib/");
+require_once("Crypt/RSA.php");
+
 require_once(dirname(__FILE__)."/Packet.class.php");
 require_once(dirname(__FILE__)."/Socket.class.php");
 
@@ -9,7 +12,7 @@ require_once(dirname(__FILE__)."/../functions.php");
 
 
 class MinecraftClient{
-	private $server, $port, $protocol, $auth, $player, $entities, $players;
+	private $server, $port, $protocol, $auth, $player, $entities, $players, $key;
 	protected $spout, $events, $cnt, $responses, $info, $inventory, $time, $timeState, $stop, $connected, $actions;
 	
 	
@@ -409,6 +412,7 @@ class MinecraftClient{
 				if($data[0] == 0){
 					foreach($data[2] as $i => $slot){
 						$this->inventory[$i] = $slot;
+						$this->trigger("onInventorySlotChanged", array("slot" => $i, "data" => $slot));
 					}
 					$this->trigger("onInventoryChanged", $this->getInventory());
 					console("[INFO] Recieved inventory");
@@ -504,48 +508,14 @@ class MinecraftClient{
 				$hash = $data[0];
 				if($hash != "-" and $hash != "+"){
 					console("[INFO] Server is Premium (SID: ".$hash.")");
-					if($hash == "" or strpos($hash, "&") !== false){
-						console("[!] NAME SPOOF DETECTED");
-					}
-					$secure = true;
-					if($secure !== false){
-						$proto = "https";
-						console("[INFO] Using secure HTTPS connection");
-					}else{
-						$proto = "http";
-					}
-						
-					$response = Utils::curl_get($proto."://login.minecraft.net/?user=".$this->auth["user"]."&password=".$this->auth["password"]."&version=12");
-					switch($response){
-						case 'Bad login':
-						case 'Bad Login':
-							console("[ERROR] Bad login");
-							$this->close();
-							break;
-						case "Old Version":
-							console("[ERROR] Old Version");
-							$this->close();
-							break;
-						default:
-							$content = explode(":",$response);
-							if(!is_array($content)){
-								console("[ERROR] Unknown Login Error: \"".$response."\"");
-								$this->close();
-							}
-							console("[INFO] Logged into minecraft.net");
-							break;
-					}
-					$res = Utils::curl_get("http://session.minecraft.net/game/joinserver.jsp?user=".$this->auth["user"]."&sessionId=".$content[3]."&serverId=".$hash); //User check
-					if($res != "OK"){
-						console("[ERROR] Error in User Check: \"".$res."\"");
-						$this->close();
-					}
+					$this->loginMinecraft($hash);
 				}
 				$this->send("01", array(
 					0 => $this->protocol,
 					1 => $this->auth["user"],
 				));
 				$this->event("recieved_01", 'authentication', true);
+				$this->process("01");
 				break;
 			case "01":
 				$this->info["seed"] = $data[2];
@@ -567,6 +537,144 @@ class MinecraftClient{
 		}
 	}
 	
+	public function loginMinecraft($hash){
+		if($hash == "" or strpos($hash, "&") !== false){
+			console("[WARNING] NAME SPOOF DETECTED");
+		}
+		$secure = true;
+		if($secure !== false){
+			$proto = "https";
+			console("[INFO] Using secure HTTPS connection");
+		}else{
+			$proto = "http";
+		}
+			
+		$response = Utils::curl_get($proto."://login.minecraft.net/?user=".$this->auth["user"]."&password=".$this->auth["password"]."&version=12");
+		switch($response){
+			case 'Bad login':
+			case 'Bad Login':
+				console("[ERROR] Bad Login");
+				$this->close();
+				break;
+			case "Old Version":
+				console("[ERROR] Old Version");
+				$this->close();
+				break;
+			default:
+				$content = explode(":",$response);
+				if(!is_array($content)){
+					console("[ERROR] Unknown Login Error: \"".$response."\"");
+					$this->close();
+				}
+				console("[INFO] Logged into minecraft.net");
+				$res = Utils::curl_get("http://session.minecraft.net/game/joinserver.jsp?user=".$this->auth["user"]."&sessionId=".$content[3]."&serverId=".$hash); //User check
+				if($res != "OK"){
+					console("[ERROR] Error in User Check: \"".$res."\"");
+					$this->close();
+				}else{
+					console("[INFO] Sent join server request");
+				}
+				break;
+		}
+	}
+	
+	protected function generateKey($startEntropy = ""){
+		//not much entropy, but works ^^
+		$entropy = array(
+			lcg_value(),
+			implode(mt_rand(0,394),get_defined_constants()),
+			get_current_user(),
+			print_r(ini_get_all(),true),
+			(string) memory_get_usage(),
+			php_uname(),
+			phpversion(),
+			zend_version(),
+		);
+		$value = Utils::hexToStr(md5((string) $startEntropy));
+		unset($startEntropy);
+		foreach($entropy as $c){
+			$value ^= Utils::hexToStr(md5($c.lcg_value().mt_rand(0,mt_getrandmax())));
+		}
+		console("[INFO] 128-bit Simmetric Key generated: 0x".strtoupper(Utils::strToHex($value)));
+		$this->key = $value;
+	}
+	
+	protected function newAuthentication($data, $event){
+		$pid = str_replace("recieved_", "", $event);
+		switch($pid){
+			case "fd":
+				$this->generateKey($data[0].$data[4]);				
+				$publicKey = "-----BEGIN PUBLIC KEY-----".PHP_EOL.implode(PHP_EOL,str_split(base64_encode($data[2]),64)).PHP_EOL."-----END PUBLIC KEY-----";
+				console("[INFO] Public key:");
+				foreach(explode(PHP_EOL,$publicKey) as $line){
+					console("[INFO] ".$line);
+				}
+				$rsa = new Crypt_RSA();
+				$rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
+				$rsa->loadKey($publicKey, CRYPT_RSA_PUBLIC_FORMAT_PKCS1);				
+				$encryptedKey = $rsa->encrypt($this->key);
+				$encryptedToken = $rsa->encrypt($data[4]);
+				$hash = $data[0];
+				if($hash != "-" and $hash != "+"){
+					console("[INFO] Server is Premium (SID: ".$hash.")");
+					$hash = Utils::sha1($hash.$this->key.$data[2]);
+					console("[INFO] Authentication hash: ".$hash);					
+					$this->loginMinecraft($hash);
+				}else{
+					console("[WARNING] Server is NOT Premium");
+				}
+				$this->send("fc", array(
+					0 => strlen($encryptedKey),
+					1 => $encryptedKey,
+					2 => strlen($encryptedToken),
+					3 => $encryptedToken,
+				));
+				console("[INFO] Encrypted shared secret and token sent");
+				$this->event("recieved_fc", 'newAuthentication', true);
+				$this->process("fc");
+				break;
+			case "fc":
+				if($this->protocol >= 34){
+					$this->interface->server->startAES($this->key);
+					$this->send("cd", array(0));
+				}elseif($this->protocol <= 32){
+					$this->interface->server->startRC4($this->key);
+					$this->send("01", array());
+				}
+				$this->event("recieved_01", 'newAuthentication', true);
+				$this->process("01");
+				break;
+			case "01":
+				$this->info["seed"] = $data[2];
+				$this->info["level_type"] = $this->protocol >= 23 ? $data[3]:0;
+				$this->info["mode"] = $this->protocol <= 23 ? $data[4]:$data[3];
+				$this->info["dimension"] = $this->protocol <= 23 ? $data[5]:$data[4];
+				$this->info["difficulty"] = $this->protocol <= 23 ? $data[6]:$data[5];
+				$this->info["height"] = $this->protocol <= 23 ? $data[7]:$data[6];
+				$this->info["max_players"] = $this->protocol <= 23 ? $data[8]:$data[7];
+				$this->entities[$data[0]] = new Entity($data[0], 0);
+				$this->player =& $this->entities[$data[0]];	
+				$this->players[$this->player->getName()] =& $this->player;		
+				$this->player->setName($this->auth["user"]);
+				console("[INFO] EID: ".$this->player->getEID());
+				$this->startHandlers();
+				$this->trigger("onConnect");
+				$this->process();
+				break;		
+		}
+	}	
+	
+	public function newConnect(){
+		$this->send("02", array(
+			0 => $this->protocol,
+			1 => $this->auth["user"],
+			2 => $this->server,
+			3 => $this->port,
+		));
+		$this->event("recieved_fd", 'newAuthentication', true);
+		$this->process("fd");
+	}
+	
 	public function connect($user, $password = ""){
 		$this->auth = array("user" => $user, "password" => $password);
 		if($this->spout == true){
@@ -577,11 +685,15 @@ class MinecraftClient{
 			$this->event("onConnect", "spoutHandler", true);
 			$this->event("recieved_c3", "spoutHandler", true);
 		}
+		if($this->protocol >= 31){
+			$this->newConnect();
+			return;
+		}
 		$this->send("02", array(
 			0 => $user.($this->protocol >= 28 ? ";".$this->server.":".$this->port:""),
 		));
 		$this->event("recieved_02", 'authentication', true);
-		$this->process("0d");
+		$this->process("02");
 	}
 	public function sendSpoutMessage($pid, $version, $data){
 		include(dirname(__FILE__)."/../pstruct/spout.php");
@@ -624,9 +736,8 @@ class MinecraftClient{
 }
 
 class MinecraftInterface{
-	private $server;
 	protected $protocol;
-	var $pstruct;
+	var $pstruct, $server;
 	
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
 		$this->server = new Socket($server, $port);
@@ -650,7 +761,10 @@ class MinecraftInterface{
 		return false;
 	}
 	
-	public function readPacket(){		
+	public function readPacket(){
+		if($this->server->connected === false){
+			return array("pid" => "ff", "data" => array(0 => 'Connection error'));
+		}
 		$pid = $this->getPID($this->server->read(1));
 		$struct = $this->getStruct($pid);
 		if($struct === false){
@@ -661,9 +775,9 @@ class MinecraftInterface{
 			logg($p, "packets");
 			
 			$this->buffer = "";
-			$this->server->recieve("\xff".Utils::writeString('Kicked from server, "Bad packet id '.$pid.'"'));
-			$this->writePacket("ff", array(0 => Utils::writeString('Kicked from server, "Bad packet id '.$pid.'"')));
-			return array("pid" => "ff", "data" => array(0 => 'Kicked from server, "Bad packet id '.$pid.'"'));
+			$this->server->recieve("\xff".Utils::writeString('Bad packet id '.$pid.''));
+			$this->writePacket("ff", array(0 => Utils::writeString('Bad packet id '.$pid.'')));
+			return array("pid" => "ff", "data" => array(0 => 'Bad packet id '.$pid.''));
 		}
 		
 		$packet = new Packet($pid, $struct, $this->server);
@@ -680,13 +794,18 @@ class MinecraftInterface{
 	
 	public function writePacket($pid, $data = array(), $raw = false){
 		$struct = $this->getStruct($pid);
+		if($this->protocol >= 32){
+			if($pid == "01"){
+				$struct = array();
+			}
+		}
 		$packet = new Packet($pid, $struct);
 		$packet->data = $data;
 		$packet->create($raw);
-		$this->server->write($packet->raw);
+		$write = $this->server->write($packet->raw);
 		
 		$len = strlen($packet->raw);
-		$p = "==".time()."==> SENT Packet $pid, lenght $len:".PHP_EOL;
+		$p = "==".time()."==> SENT Packet $pid, lenght $len (write ".$write."):".PHP_EOL;
 		$p .= hexdump($packet->raw, false, false, true);
 		$p .= PHP_EOL .PHP_EOL;
 		logg($p, "packets", false);		
