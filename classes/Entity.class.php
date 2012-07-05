@@ -27,6 +27,10 @@ class Entity{
 		return $this->eid;
 	}
 	
+	public function getName(){
+		return $this->name;
+	}
+	
 	public function setName($name){
 		$this->name = $name;
 	}

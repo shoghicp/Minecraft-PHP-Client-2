@@ -41,9 +41,11 @@ class MinecraftClient{
 		);
 	}
 	
-	public function getPlayer($name){
-		if(isset($this->players[$name])){
+	public function getPlayer($name = ""){
+		if(isset($this->players[$name]) and $name !== ""){
 			return $this->players[$name];
+		}elseif($name === ""){
+			return $this->player;
 		}
 	}
 	
@@ -71,11 +73,18 @@ class MinecraftClient{
 	}
 	
 	public function getInventorySlot($id){
+		if(!isset($this->inventory[$id])){
+			return array(0,0,0);
+		}
 		return $this->inventory[$id];
 	}
 	
 	public function changeSlot($id){
 		$this->send("10", array(0 => $id));	
+	}
+	
+	public function animation($id){
+		$this->send("12", array(0 => $this->player->getEID(), 1 => $id));
 	}
 	
 	protected function send($pid, $data = array(), $raw = false){
@@ -141,7 +150,7 @@ class MinecraftClient{
 			unset($this->events[$event]);
 		}else{
 			unset($this->events[$event][$id]);
-			if(count($this->events[$event]) == 0){
+			if(isset($this->events[$event]) and count($this->events[$event]) == 0){
 				unset($this->events[$event]);
 			}
 		}
@@ -159,11 +168,29 @@ class MinecraftClient{
 		}
 	}
 	
-	public function say($message){
+	public function say($message, $owner = false){
+		if($owner != false){
+			foreach(explode("\n", wordwrap($message,100-strlen("/tell $owner "), "\n")) as $mess){
+				$this->send("03", array(
+					0 => "/tell $owner ".$mess,
+				));			
+			}
+		}else{
+			foreach(explode("\n", wordwrap($message,100, "\n")) as $mess){
+				$this->send("03", array(
+					0 => $mess,
+				));	
+			}
+		}		
 		$this->trigger("onChatSent", $message);
-		$this->send("03", array(
-			0 => $message,
-		));
+	}
+
+	public function jump(){
+		$this->player->move(0, 1, 0);
+		$this->send("0b",$this->player->packet("0b"));
+		$this->trigger("onMove", $this->player);
+		$this->trigger("onEntityMove", $this->player);
+		$this->trigger("onEntityMove_".$this->player->getEID(), $this->player);
 	}
 	
 	public function move($x, $y, $z, $ground = true){
@@ -191,6 +218,17 @@ class MinecraftClient{
 			1 => 0,
 			2 => 0,
 			3 => 0,
+		));		
+	}
+	
+	public function eatSlot(){
+		$this->trigger("onEatSlot");
+		$this->send("0f", array(
+			0 => -1,
+			1 => -1,
+			2 => -1,
+			3 => -1,
+			4 => -1,
 		));		
 	}
 	
@@ -378,7 +416,7 @@ class MinecraftClient{
 				break;
 			case "82":
 				$text = $data[3].PHP_EOL.$data[4].PHP_EOL.$data[5].PHP_EOL.$data[6];
-				console("[INFO] Sign at (".$data[0].",".$data[1].",".$data[2].")".PHP_EOL.implode(PHP_EOL."\t",explode(PHP_EOL,$text)));
+				console("[INFO] Sign at (".$data[0].",".$data[1].",".$data[2].")".PHP_EOL.implode(PHP_EOL."\t",explode(PHP_EOL,$text)), true, true, 2);
 				$this->trigger("onSignUpdate", array("coords" => array("x" => $data[0], "y" => $data[1], "z" => $data[2]), "text" => $text));
 				break;
 			case "fa":
@@ -518,7 +556,8 @@ class MinecraftClient{
 				$this->info["height"] = $this->protocol <= 23 ? $data[7]:$data[6];
 				$this->info["max_players"] = $this->protocol <= 23 ? $data[8]:$data[7];
 				$this->entities[$data[0]] = new Entity($data[0], 0);
-				$this->player =& $this->entities[$data[0]];				
+				$this->player =& $this->entities[$data[0]];	
+				$this->players[$this->player->getName()] =& $this->player;		
 				$this->player->setName($this->auth["user"]);
 				console("[INFO] EID: ".$this->player->getEID());
 				$this->startHandlers();

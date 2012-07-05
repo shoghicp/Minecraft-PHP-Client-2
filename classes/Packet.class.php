@@ -59,6 +59,9 @@ class Packet{
 					$this->addRaw(Utils::writeShort($len));
 					$this->addRaw(Utils::writeString($this->data[$field]));
 					break;
+				default:
+					$this->addRaw(Utils::writeByte($this->data[$field]));
+					break;
 			}			
 		}
 	}
