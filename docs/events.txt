@@ -43,3 +43,10 @@ onSpoutPacket_[PID]					array(version => version, data => data)
 onRecievedSpoutPacket				array(pid => PID, version => version, data => data)
 onSignUpdate						array(coords => array coords, text => text)
 onTick								time
+
+
+
+Special events:
+
+onChatHandler						array info							=> Fired by plugin ChatHandler
+onChatCommand_[COMMAND]				array parameters					=> Fired by plugin ChatCommand
