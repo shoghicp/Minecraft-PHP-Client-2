@@ -13,7 +13,7 @@ function console($message, $EOL = true, $log = true, $level = 1){
 	}
 }
 
-function logg($message, $name, $EOL = true, $level = 1){
+function logg($message, $name, $EOL = true, $level = 2){
 	if(DEBUG >= $level and LOG == true){
 		$message .= $EOL == true ? PHP_EOL:"";
 		file_put_contents(dirname(__FILE__)."/".$name.".log", $message, FILE_APPEND);

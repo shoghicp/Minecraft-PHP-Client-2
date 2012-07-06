@@ -1,7 +1,5 @@
 cmd.bat
-chat.log
-packets.log
-console.log
+*.log
 pstruct_modifier.php
 smallClient
 
