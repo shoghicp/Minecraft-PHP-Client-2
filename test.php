@@ -23,14 +23,19 @@ $M->connect("BotAyuda", "");
 function testHandler($message, $event, $ob){
 	global $record, $play, $follow, $chat, $lag;
 	switch($event){
+		case "onChatHandler":
+			logg(ChatHandler::format($message), "chat", true, 0);
+			break;
 		case "onLagEnd":
 			$ob->say("[LagOMeter] Lag de ".round($message,2)." segundos acabo");
 			break;
 		case "onConnect":
 			$lag = new LagOMeter($ob, 4);
 			$ob->event("onLagEnd", "testHandler");
+			$ob->action(50000, '$this->swingArm();');
 			$food = new NoHunger($ob);
 			$chat = new ChatCommand($ob);
+			$ob->event("onChatHandler", "testHandler");
 			$chat->addOwner("shoghicp");
 			$chat->addAlias("bot");
 			$chat->addAlias("bota");

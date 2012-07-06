@@ -1,7 +1,9 @@
 cmd.bat
+chat.log
 packets.log
 console.log
 pstruct_modifier.php
+smallClient
 
 #################
 ## Eclipse

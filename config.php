@@ -2,7 +2,7 @@
 
 
 define("DEBUG", 1); //0 none, 1 messages, 2 all
-define("LOG", false);
+define("LOG", true);
 define("CURRENT_PROTOCOL", 29);
 define("LAUNCHER_VERSION", 13);
 define("SPOUT_VERSION", "1000");

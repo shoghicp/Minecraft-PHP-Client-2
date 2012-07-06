@@ -89,8 +89,12 @@ class ChatHandler{
 			$message = implode(" ", $message);
 		}
 		$info = array("owner" => $owner, "group" => $group, "world" => $world, "message" => $message, "type" => $type);
-		console("[INFO] [ChatHandler] ".($group != "" ? "[".$group."] ":"").($owner != "" ? "<".$owner.($type == "private" ? " -> me":"")."> ":"").$message);
+		console("[INFO] [ChatHandler] ".ChatHandler::format($info));
 		$this->client->trigger("onChatHandler", $info);
+	}
+	
+	public static function format($info){
+		return ($info["group"] != "" ? "[".$info["group"]."] ":"").($info["owner"] != "" ? "<".$info["owner"].($info["type"] == "private" ? " -> me":"")."> ":"").$info["message"];
 	}
 
 

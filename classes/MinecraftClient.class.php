@@ -228,6 +228,13 @@ class MinecraftClient{
 			3 => 0,
 		));		
 	}
+
+	public function swingArm(){
+		$this->send("12", array(
+			0 => $this->player->getEID(),
+			1 => 1,
+		));		
+	}
 	
 	public function eatSlot(){
 		$this->trigger("onEatSlot");
@@ -860,9 +867,9 @@ class MinecraftInterface{
 		$struct = $this->getStruct($pid);
 		if($struct === false){
 			$this->server->unblock();
-			$p = "==".time()."==> ERROR Bad packet id $pid :".PHP_EOL;
+			$p = "[".round(Utils::microtime(),4)."] [ERROR]: Bad packet id 0x$pid".PHP_EOL;
 			$p .= hexdump(Utils::hexToStr($pid).$this->server->read(512), false, false, true);
-			$p .= PHP_EOL . "--------------- (512 byte extract) ----------" .PHP_EOL .PHP_EOL;
+			$p .= PHP_EOL . "--------------- (512 byte max extract) ----------" .PHP_EOL;
 			logg($p, "packets");
 			
 			$this->buffer = "";
@@ -875,9 +882,9 @@ class MinecraftInterface{
 		$packet->parse();
 		
 		$len = strlen($packet->raw);
-		$p = "==".time()."==> RECIEVED Packet $pid, lenght $len:".PHP_EOL;
+		$p = "[".round(Utils::microtime(),4)."] [SERVER->CLIENT]: 0x$pid (lenght $len)".PHP_EOL;
 		$p .= hexdump($packet->raw, false, false, true);
-		$p .= PHP_EOL .PHP_EOL;
+		$p .= PHP_EOL;
 		logg($p, "packets", false);
 		
 		return array("pid" => $pid, "data" => $packet->data);
@@ -896,9 +903,9 @@ class MinecraftInterface{
 		$write = $this->server->write($packet->raw);
 		
 		$len = strlen($packet->raw);
-		$p = "==".time()."==> SENT Packet $pid, lenght $len (write ".$write."):".PHP_EOL;
+		$p = "[".round(Utils::microtime(),4)."] [CLIENT->SERVER]: 0x$pid (lenght $len)".PHP_EOL;
 		$p .= hexdump($packet->raw, false, false, true);
-		$p .= PHP_EOL .PHP_EOL;
+		$p .= PHP_EOL;
 		logg($p, "packets", false);		
 		return true;
 	}
