@@ -5,7 +5,7 @@ function console($message, $EOL = true, $log = true, $level = 1){
 	if(DEBUG >= $level){
 		$message .= $EOL == true ? PHP_EOL:"";
 		$message = date("H:i:s"). " ". $message;
-		if($log){
+		if($log and LOG == true){
 			logg($message, "console", false);
 		}
 	

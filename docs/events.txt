@@ -39,8 +39,16 @@ onPluginChannelRegister				channel
 onPluginChannelRegister_[CHANNEL]	null
 onPluginChannelUnregister			channel
 onPluginChannelUnegister_[CHANNEL]	null
-onSpoutPacket_[PID]					array(version => version, data => data)
+onRecievedSpoutPacket_[PID]			array(version => version, data => data)
 onRecievedSpoutPacket				array(pid => PID, version => version, data => data)
+onSentSpoutPacket_[PID]				array(version => version, data => data)
+onSentSpoutPacket					array(pid => PID, version => version, data => data)
+onSpoutBlock						array(id => BID, data => data, name => name)
+onSpoutBlock_[BID]					array(data => data, name => name)
+onSpoutPlugins						array plugins
+onSpoutPreCacheCompleted			null
+onSpoutPermissions					array permissions
+onSpoutWaypoint						array(coords => array coords, name => name, death => death)
 onSignUpdate						array(coords => array coords, text => text)
 onTick								time
 
@@ -50,3 +58,5 @@ Special events:
 
 onChatHandler						array info							=> Fired by plugin ChatHandler
 onChatCommand_[COMMAND]				array parameters					=> Fired by plugin ChatCommand
+onLagStart							null								=> Fired by plugin LagOMeter
+onLagEnd							time								=> Fired by plugin LagOMeter

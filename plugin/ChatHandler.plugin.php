@@ -9,7 +9,7 @@ class ChatHandler{
 			$this->client->deleteEvent("onChat");
 		}
 		$this->event = $this->client->event("onChat", "handler", $this);
-		console("[INFO] ChatHandler started");
+		console("[INFO] [ChatHandler] Started");
 	}
 	
 	public function stop(){
@@ -43,6 +43,7 @@ class ChatHandler{
 				$world = array_shift($group);
 			}
 			$group = implode($group);
+			array_shift($message);
 			array_shift($message);
 			array_shift($message);
 			$message = implode(" ", $message);
@@ -88,7 +89,7 @@ class ChatHandler{
 			$message = implode(" ", $message);
 		}
 		$info = array("owner" => $owner, "group" => $group, "world" => $world, "message" => $message, "type" => $type);
-		console("[INFO] ".($group != "" ? "[".$group."] ":"").($owner != "" ? "<".$owner.($type == "private" ? " -> me":"")."> ":"").$message);
+		console("[INFO] [ChatHandler] ".($group != "" ? "[".$group."] ":"").($owner != "" ? "<".$owner.($type == "private" ? " -> me":"")."> ":"").$message);
 		$this->client->trigger("onChatHandler", $info);
 	}
 

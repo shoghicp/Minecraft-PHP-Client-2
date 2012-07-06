@@ -13,7 +13,7 @@ class ChatCommand{
 		$this->client->event("onChatHandler", "handler", $this);
 		$this->chat = new ChatHandler($this->client, true);
 		$this->addAlias($this->client->getPlayer()->getName());
-		console("[INFO] ChatCommand started");
+		console("[INFO] [ChatCommand] Loaded");
 	}
 	
 	public function addOwner($owner){
@@ -48,7 +48,7 @@ class ChatCommand{
 			}
 		}
 		if(isset($this->commands[$command])){
-			console("[INFO] Chat command by ".$owner.": ".$command);
+			console("[INFO] [ChatCommand] Command by ".$owner.": ".$command);
 			foreach($this->commands[$command] as $c){
 				if(($c[1] == false or ($c[1] == true and isset($this->owners[$owner]))) and (($c[0] == true and $info["type"] == "private") or $c[0] == false)){		
 					$this->client->trigger("onChatCommand_".$command, array("text" => implode(" ", $message), "owner" => $owner));

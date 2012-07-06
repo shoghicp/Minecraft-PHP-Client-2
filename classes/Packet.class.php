@@ -59,6 +59,13 @@ class Packet{
 					$this->addRaw(Utils::writeShort($len));
 					$this->addRaw(Utils::writeString($this->data[$field]));
 					break;
+				case "slotData":
+					$this->addRaw(Utils::writeShort($this->data[$field][0]));
+					if($this->data[$field][0]!=-1){
+						$this->addRaw(Utils::writeByte($this->data[$field][1]));
+						$this->addRaw(Utils::writeShort($this->data[$field][2]));
+					}
+					break;
 				default:
 					$this->addRaw(Utils::writeByte($this->data[$field]));
 					break;

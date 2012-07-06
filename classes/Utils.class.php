@@ -169,7 +169,7 @@ class Utils{
 			return false;
 		}
 		if($c < 0 and $c >= -0x80){
-			$c = 0xff + $c - 1;
+			$c = 0xff + $c + 1;
 		}
 		return chr($c);
 	}

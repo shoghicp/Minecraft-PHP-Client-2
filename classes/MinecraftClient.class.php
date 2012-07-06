@@ -35,7 +35,12 @@ class MinecraftClient{
 	}
 	
 	public function activateSpout(){
-		$this->spout = true;
+		/*$this->registerPluginChannel("AutoProto:HShake");
+		$this->registerPluginChannel("ChkCache:setHash");
+		$this->sendPluginMessage("AutoProto:HShake", "VanillaProtocol");
+		$this->event("onPluginChannelRegister_WECUI", "spoutHandler", true);*/
+		$this->event("onConnect", "spoutHandler", true);
+		$this->event("recieved_c3", "spoutHandler", true);
 		$this->interface->pstruct["c3"] = array(
 			"short",
 			"short",
@@ -231,7 +236,7 @@ class MinecraftClient{
 			1 => -1,
 			2 => -1,
 			3 => -1,
-			4 => -1,
+			4 => array(-1),
 		));		
 	}
 	
@@ -266,6 +271,8 @@ class MinecraftClient{
 	private function handler($data, $event){
 		$pid = str_replace("recieved_", "", $event);
 		switch($pid){
+			case "c9":
+				break;
 			case "00":
 				$this->send("00", array(0 => $data[0]));
 				break;
@@ -494,10 +501,13 @@ class MinecraftClient{
 		$this->event("recieved_68", "handler", true);
 		$this->event("recieved_82", "handler", true);
 		$this->event("recieved_fa", "handler", true);
+		$this->event("recieved_c9", "handler", true);
 		$this->event("onPluginMessage_REGISTER", "backgroundHandler", true);
-		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
-		
-		$this->action(50000, '$this->player->setGround(true); $this->send("0d",$this->player->packet("0d"));');	
+		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);		
+		$this->action(50000, '$this->player->setGround(true); $this->send("0d",$this->player->packet("0d"));');
+		if(isset($this->auth["session_id"])){
+			$this->action(300000000, 'Utils::curl_get("https://login.minecraft.net/session?name=".$this->auth["user"]."&session=".$this->auth["session_id"]);');
+		}
 		
 	}
 	
@@ -549,7 +559,7 @@ class MinecraftClient{
 			$proto = "http";
 		}
 			
-		$response = Utils::curl_get($proto."://login.minecraft.net/?user=".$this->auth["user"]."&password=".$this->auth["password"]."&version=12");
+		$response = Utils::curl_get($proto."://login.minecraft.net/?user=".$this->auth["user"]."&password=".$this->auth["password"]."&version=".LAUNCHER_VERSION);
 		switch($response){
 			case 'Bad login':
 			case 'Bad Login':
@@ -565,9 +575,12 @@ class MinecraftClient{
 				if(!is_array($content)){
 					console("[ERROR] Unknown Login Error: \"".$response."\"");
 					$this->close();
+					break;
 				}
 				console("[INFO] Logged into minecraft.net");
-				$res = Utils::curl_get("http://session.minecraft.net/game/joinserver.jsp?user=".$this->auth["user"]."&sessionId=".$content[3]."&serverId=".$hash); //User check
+				$this->auth["user"] = $content[2];
+				$this->auth["session_id"] = $content[3];
+				$res = Utils::curl_get("http://session.minecraft.net/game/joinserver.jsp?user=".$this->auth["user"]."&sessionId=".$this->auth["session_id"]."&serverId=".$hash); //User check
 				if($res != "OK"){
 					console("[ERROR] Error in User Check: \"".$res."\"");
 					$this->close();
@@ -677,14 +690,6 @@ class MinecraftClient{
 	
 	public function connect($user, $password = ""){
 		$this->auth = array("user" => $user, "password" => $password);
-		if($this->spout == true){
-			/*$this->registerPluginChannel("AutoProto:HShake");
-			$this->registerPluginChannel("ChkCache:setHash");
-			$this->sendPluginMessage("AutoProto:HShake", "VanillaProtocol");
-			$this->event("onPluginChannelRegister_WECUI", "spoutHandler", true);*/
-			$this->event("onConnect", "spoutHandler", true);
-			$this->event("recieved_c3", "spoutHandler", true);
-		}
 		if($this->protocol >= 31){
 			$this->newConnect();
 			return;
@@ -696,38 +701,124 @@ class MinecraftClient{
 		$this->process("02");
 	}
 	public function sendSpoutMessage($pid, $version, $data){
-		include(dirname(__FILE__)."/../pstruct/spout.php");
-		$p = new Packet(false, $pstruct_spout[$pid]);
-		$p->data = $data;
-		$p->create();
-		
-		$this->send("c3", array(
-			0 => $pid,
-			1 => $version,
-			2 => strlen($p->raw),
-			3 => $p->raw,
-		));	
+		if($this->spout == true){
+			include(dirname(__FILE__)."/../pstruct/spout.php");
+			$p = new Packet(false, $pstruct_spout[$pid]);
+			$p->data = $data;
+			$p->create();
+			$this->trigger("onSentSpoutPacket_".$pid, array("version" => $version, "data" => $data));
+			$this->trigger("onSentSpoutPacket", array("id" => $pid, "version" => $version, "data" => $data));
+			console("[DEBUG] [Spout] Sent packet ".$pid, true, true, 2);
+			$this->send("c3", array(
+				0 => $pid,
+				1 => $version,
+				2 => strlen($p->raw),
+				3 => $p->raw,
+			));	
+		}
 	}
+	
 	public function spoutHandler($data, $event){
 		switch($event){
+			case "onRecievedSpoutPacket_13":
+				$offset = 0;
+				$BID = Utils::readInt(substr($data["data"], $offset,4));
+				$offset += 4;
+				$info = Utils::readShort(substr($data["data"], $offset,2));
+				$offset += 2;
+				$len = Utils::readShort(substr($data["data"], $offset,2));
+				$offset += 2;
+				$name = Utils::readString(substr($data["data"], $offset,$len * 2));
+				$offset += $len * 2;
+				console("[DEBUG] [Spout] Got block ".$name." (ID ".$BID." DATA ".$info.")", true, true, 2);
+				$this->trigger("onSpoutBlock", array("id" => $BID, "data" => $info, "name" => $name));
+				$this->trigger("onSpoutBlock_".$BID, array("data" => $info, "name" => $name));
+				break;
+			case "onRecievedSpoutPacket_30":
+				console("[INFO] [Spout] Pre-cache Completed");
+				$this->trigger("onSpoutPreCacheCompleted");
+				break;
+			case "onRecievedSpoutPacket_44":
+				$offset = 0;
+				$cnt = Utils::readShort(substr($data["data"], $offset,2));
+				$offset += 2;
+				$plugins = array();
+				console("[INFO] [Spout] Recieved server plugins");
+				for($i = 0; $i < $cnt; ++$i){
+					$len = Utils::readShort(substr($data["data"], $offset,2));
+					$offset += 2;
+					$p = Utils::readString(substr($data["data"], $offset,$len * 2));
+					$offset += $len * 2;
+					$len = Utils::readShort(substr($data["data"], $offset,2));
+					$offset += 2;
+					$v = Utils::readString(substr($data["data"], $offset,$len * 2));
+					$offset += $len * 2;
+					$plugins[$p] = $v;
+					console("[INFO] [Spout] ".$p." => ".$v);
+				}				
+				$this->trigger("onSpoutPlugins", $plugins);
+				break;
+			case "onRecievedSpoutPacket_57":
+				$offset = 0;
+				$cnt = Utils::readInt(substr($data["data"], $offset,4));
+				$offset += 4;
+				$permissions = array();
+				console("[INFO] [Spout] Updated Permissions");
+				for($i = 0; $i < $cnt; ++$i){
+					$len = Utils::readShort(substr($data["data"], $offset,2));
+					$offset += 2;
+					$key = Utils::readString(substr($data["data"], $offset, $len * 2));
+					$offset += $len * 2;
+					$value = Utils::readByte(substr($data["data"], $offset,1)) == 1 ? true:false;
+					$offset += 1;
+					$permissions[$key] = $value;
+					console("[DEBUG] [Spout] ".$key." => ".$value, true, true, 2);
+				}
+				$this->trigger("onSpoutPermissions", $permissions);
+				break;
+			case "onRecievedSpoutPacket_60":
+				$offset = 0;
+				$x = Utils::readDouble(substr($data["data"], $offset,8));
+				$offset += 8;
+				$y = Utils::readDouble(substr($data["data"], $offset,8));
+				$offset += 8;
+				$z = Utils::readDouble(substr($data["data"], $offset,8));
+				$offset += 8;				
+				$len = Utils::readShort(substr($data["data"], $offset,2));
+				$offset += 2;
+				$name = Utils::readString(substr($data["data"], $offset,$len * 2));
+				$offset += $len * 2;
+				$death = Utils::readByte(substr($data["data"], $offset,1)) == 1 ? true:false;
+				$offset += 1;
+				console("[INFO] [Spout] Got waypoint ".$name." (".$x.",".$y.",".$z.")".($death === true ? " DEATH":""));
+				$this->trigger("onSpoutWaypoint", array("coords" => array("x" => $x, "y" => $y, "z" => $z), "name" => $name, "death" => $death));
+				break;
 			case "recieved_c3":
 				$packetId = $data[0];
 				$version = $data[1];
 				$packet = $data[3];
-				console("[INFO] Recieved Spout packet ".$packetId, true, true, 2);
-				$this->trigger("onSpoutPacket_".$packetId, array("version" => $version, "data" => $packet));
+				console("[DEBUG] [Spout] Recieved packet ".$packetId, true, true, 2);
+				$this->trigger("onRecievedSpoutPacket_".$packetId, array("version" => $version, "data" => $packet));
 				$this->trigger("onRecievedSpoutPacket", array("id" => $packetId, "version" => $version, "data" => $packet));
 				break;
-			case "onPluginChannelRegister_WECUI":
-				
+			case "recieved_12":
+				if($data[0] == -42){
+					$this->spout = true;
+					$this->sendSpoutMessage(33,0,array(0 => SPOUT_VERSION));
+					console("[INFO] [Spout] Authenticated as a ".SPOUT_VERSION." Spout client");
+					$this->event("onRecievedSpoutPacket_13", "spoutHandler", true);
+					$this->event("onRecievedSpoutPacket_30", "spoutHandler", true);
+					$this->event("onRecievedSpoutPacket_44", "spoutHandler", true);
+					$this->event("onRecievedSpoutPacket_57", "spoutHandler", true);
+					$this->event("onRecievedSpoutPacket_60", "spoutHandler", true);
+				}
 				break;
 			case "onConnect":
 				$this->send("12", array(
 					0 => -42,
 					1 => 1,				
 				));
-				$this->sendSpoutMessage(33,0,array(0 => "1000"));
-				console("[INFO] Authenticated as a Spout client");
+				$this->event("recieved_12", 'spoutHandler', true);			
 				break;		
 		}
 	

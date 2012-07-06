@@ -38,6 +38,7 @@ class NoHunger{
 		$this->client->event("onHealthChange", "handler", $this);
 		$this->client->event("onInventoryChanged", "handler", $this);
 		$this->only_food = $only_food;
+		console("[INFO] [NoHunger] Loaded");
 	}
 	
 	public function setOnlyFood($only_food){
@@ -51,6 +52,7 @@ class NoHunger{
 				$this->client->changeSlot($i-36);
 				$this->client->eatSlot();
 				$eat = true;
+				console("[INFO] [NoHunger] Eated ".$slot[0]);
 				break;
 			}elseif(!isset($food[$slot[0]]) and $this->only_food == true){
 				for($a=0;$a<min(3,$slot[1]);++$a){

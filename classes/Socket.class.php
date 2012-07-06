@@ -1,11 +1,7 @@
 <?php
 
 
-define("MAX_BUFFER_BYTES", 1024 * 1024 * 4); //4MB max of buffer
-define("MIN_BUFFER_BYTES", 64);
-ini_set("memory_limit", "512M");
 
-define("HALF_BUFFER_BYTES", MAX_BUFFER_BYTES / 2);
 
 
 

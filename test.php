@@ -1,16 +1,14 @@
 <?php
 
 
-
+require("config.php");
 require_once("classes/MinecraftClient.class.php");
 include_once("plugin/Record.plugin.php");
 include_once("plugin/Follow.plugin.php");
 include_once("plugin/ChatCommand.plugin.php");
 include_once("plugin/NoHunger.plugin.php");
+include_once("plugin/LagOMeter.plugin.php");
 
-define("DEBUG", 1); //0 none, 1 messages, 2 all
-define("CURRENT_PROTOCOL", 29);
-define("ACTION_MODE", 1); //1 => ticks, other by packets. 
 
 file_put_contents("console.log", "");
 file_put_contents("packets.log", "");
@@ -23,9 +21,14 @@ $M->event("onPluginMessage", "testHandler");
 $M->connect("BotAyuda", "");
 
 function testHandler($message, $event, $ob){
-	global $record, $play, $follow, $chat;
+	global $record, $play, $follow, $chat, $lag;
 	switch($event){
+		case "onLagEnd":
+			$ob->say("[LagOMeter] Lag de ".round($message,2)." segundos acabo");
+			break;
 		case "onConnect":
+			$lag = new LagOMeter($ob, 4);
+			$ob->event("onLagEnd", "testHandler");
 			$food = new NoHunger($ob);
 			$chat = new ChatCommand($ob);
 			$chat->addOwner("shoghicp");
@@ -42,6 +45,7 @@ function testHandler($message, $event, $ob){
 			$chat->addCommand("chiste", "testHandler");
 			$chat->addCommand("dado", "testHandler");
 			$chat->addCommand("jump", "testHandler");
+			$chat->addCommand("coord", "testHandler");
 			break;
 		case "onChatCommand_jump":
 			$ob->jump();
@@ -51,6 +55,13 @@ function testHandler($message, $event, $ob){
 			break;
 		case 'onChatCommand_tonto':
 			$ob->say($message["owner"].', tu mas', $message["owner"]);
+			break;
+		case 'onChatCommand_coord':
+			$p = $ob->getPlayer($message["owner"]);
+			if(is_object($p)){
+				$coords = $p->getPosition();
+				$ob->say("Tus ultimas coordenadas conocidas: x = ".$coords["x"].", y = ".$coords["y"].", z = ".$coords["z"], $message["owner"]);
+			}
 			break;	
 		case 'onChatCommand_chiste':
 			$chiste = array(
