@@ -352,12 +352,11 @@ $pstruct = array(
 	),
 	
 	"3d" => array(
-		"string",
 		"int",
 		"int",
-		"int",
-		"float",
 		"byte",
+		"int",
+		"int",
 	),
 	
 	"3e" => array(
