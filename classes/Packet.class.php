@@ -140,6 +140,7 @@ class Packet{
 				case "double":
 					$this->data[] = Utils::readDouble($this->get(8));
 					break;
+				case "ushort":
 				case "short":
 					$this->data[] = Utils::readShort($this->get(2));
 					break;
@@ -161,6 +162,18 @@ class Packet{
 						break;
 					}
 					$this->data[] = $this->get($len);
+					break;
+				case "intArray":
+					$len = $this->data[$field - 1];
+					if($len <= 0){
+						$this->data[] = "";
+						break;
+					}
+					$this->data[] = array_map("Utils::readInt",str_split($this->get($len * 4),4));
+					break;
+				case "chunkInfo":
+					$n = $this->data[0];
+					$this->data[] = $this->get($n*12);
 					break;
 				case "chunkArray":
 					$len = max(0,$this->data[6]);

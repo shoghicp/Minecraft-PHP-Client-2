@@ -17,7 +17,7 @@ class LagOMeter{
 		$this->last = Utils::microtime();
 	}
 	
-	public function meter($data){
+	public function meter(){
 		if($this->lag === true){
 			if($this->last > $this->start){
 				$this->lag = false;

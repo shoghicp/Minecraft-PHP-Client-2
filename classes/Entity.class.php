@@ -12,15 +12,7 @@ class Entity{
 		$this->type = intval($type);
 		$this->health = 20;
 		$this->food = 20;
-		$this->position = array(
-			"x" => 0,
-			"y" => 0,
-			"z" => 0,
-			"stance" => 0,
-			"yaw" => 0,
-			"pitch" => 0,
-			"ground" => true,
-		);
+		$this->position = array();
 	}
 	
 	public function getEID(){

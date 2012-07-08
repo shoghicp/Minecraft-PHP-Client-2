@@ -36,8 +36,7 @@ $pstruct = array(
 	"05" => array(
 		"int",
 		"short",
-		"short",
-		"short",
+		"slotData",
 	),
 	
 	"06" => array(
@@ -107,7 +106,10 @@ $pstruct = array(
 		"ubyte",
 		"int",
 		"byte",
-		"slotData",	
+		"slotData",
+		"byte",
+		"byte",
+		"byte",
 	),
 	
 	"10" => array(
@@ -182,6 +184,9 @@ $pstruct = array(
 		"byte",
 		"byte",
 		"byte",
+		"short",
+		"short",
+		"short",
 		"entityMetadata",
 	),
 	
@@ -210,7 +215,8 @@ $pstruct = array(
 	),
 	
 	"1d" => array(
-		"int",
+		"byte",
+		"intArray",
 	),
 	
 	"1e" => array(
@@ -286,21 +292,14 @@ $pstruct = array(
 		"short",
 	),
 	
-	"32" => array(
-		"int",
-		"int",
-		"bool",
-	),
-	
 	"33" => array(
 		"int",
 		"int",
 		"bool",
-		"short",
-		"short",
+		"ushort",
+		"ushort",
 		"int",
-		"int",
-		"newChunkArray",
+		"byteArray",
 	),
 	
 	"34" => array(
@@ -325,6 +324,22 @@ $pstruct = array(
 		"int",
 		"byte",
 		"byte",
+		"byte",
+	),
+	
+	"37" => array(
+		"int",
+		"int",
+		"int",
+		"int",
+		"byte",
+	),
+	
+	"38" => array(
+		"short",
+		"int",
+		"byteArray",
+		"chunkInfo",
 	),
 	
 	"3c" => array(
@@ -337,6 +352,15 @@ $pstruct = array(
 	),
 	
 	"3d" => array(
+		"string",
+		"int",
+		"int",
+		"int",
+		"float",
+		"byte",
+	),
+	
+	"3e" => array(
 		"int",
 		"int",
 		"byte",
@@ -450,13 +474,16 @@ $pstruct = array(
 	),
 	
 	"ca" => array(
-		"bool",
-		"bool",
-		"bool",
-		"bool",
+		"byte",
+		"byte",
+		"byte",
 	),
 	
 	"cb" => array(
+		"string",
+	),
+	
+	"cc" => array(
 		"string",
 	),
 	
