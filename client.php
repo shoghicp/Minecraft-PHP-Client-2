@@ -76,7 +76,7 @@ Parameters:
 \tpassword => password to use in minecraft.net, if PREMIUM
 \tlog => log the data from console and packets to file (default true)
 \tping => ping (packet 0xFE) a server, and returns info
-\tdebug => debug level (0 => only errors, 1 => default, 2 => debug info and packets, 3 => weird data)
+\tdebug => debug level (none => only errors, info => default, debug => debug info and packets, all => weird data)
 \towner => set owner username
 \tspout => enables or disables spout (default true)
 \tonly-food => only accept food as inventory items (default false)
@@ -102,8 +102,19 @@ $spout		= arg("spout", true);
 $owner		= arg("owner", "shoghicp"); // ;)
 $only_food	= arg("only-food", false);
 define("ACTION_MODE", arg("tick-mode", "internal") === "packets" ? 2:1);
-define("LOG", arg("log", true));
-define("DEBUG", arg("debug", 1));
+define("LOG", arg("log", true) == true ? true:false);
+$debug = trim(strtolower(arg("debug", "info")));
+if(strlen(str_replace(array("info", "all", "debug","none"), "", $debug)) != 0){
+$debug = "info";
+}
+$debug_level = array(
+	"none" => 0,
+	"info" => 1,
+	"debug" => 2,
+	"all" => 3,
+);
+
+define("DEBUG", $debug_level[$debug]);
 
 if($version !== false){
 	if(isset($versions[$version])){

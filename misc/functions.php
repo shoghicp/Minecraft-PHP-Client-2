@@ -45,7 +45,7 @@ function arguments ( $args ){
     );
 
     foreach ( $args as $arg ) {
-
+		var_dump($arg);
         // Is it a command? (prefixed with --)
         if ( substr( $arg, 0, 2 ) === '--' ) {
 
