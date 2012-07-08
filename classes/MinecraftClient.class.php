@@ -876,6 +876,20 @@ class MinecraftInterface{
 		return false;
 	}
 	
+	protected function writeDump($pid, $raw, $data, $origin = "client"){
+		if(LOG === true and DEBUG >= 2){
+			$len = strlen($raw);
+			$p = "[".str_pad(round(Utils::microtime(),4),4,"0",STR_PAD_RIGHT)."] [".($origin === "client" ? "CLIENT->SERVER":"SERVER->CLIENT")."]: ".$this->name[$pid]." (0x$pid) [lenght $len]".PHP_EOL;
+			$p .= hexdump($raw, false, false, true);
+			foreach($data as $i => $d){
+				$p .= $i ." => ".(!is_array($d) ? $this->pstruct[$pid][$i]."(".(($this->pstruct[$pid][$i] === "byteArray" or $this->pstruct[$pid][$i] === "newChunkArray" or $this->pstruct[$pid][$i] === "chunkArray" or $this->pstruct[$pid][$i] === "chunkInfo" or $this->pstruct[$pid][$i] === "multiblockArray" or $this->pstruct[$pid][$i] === "newMultiblockArray") ? Utils::strToHex($d):$d).")":$this->pstruct[$pid][$i]."(***)").PHP_EOL;
+			}
+			$p .= PHP_EOL;
+			logg($p, "packets", false);	
+		}
+	
+	}
+	
 	public function readPacket(){
 		if($this->server->connected === false){
 			return array("pid" => "ff", "data" => array(0 => 'Connection error'));
@@ -898,11 +912,7 @@ class MinecraftInterface{
 		$packet = new Packet($pid, $struct, $this->server);
 		$packet->parse();
 		
-		$len = strlen($packet->raw);
-		$p = "[".round(Utils::microtime(),4)."] [SERVER->CLIENT]: ".$this->name[$pid]." 0x$pid (lenght $len)".PHP_EOL;
-		$p .= hexdump($packet->raw, false, false, true);
-		$p .= PHP_EOL;
-		logg($p, "packets", false);
+		$this->writeDump($pid, $packet->raw, $packet->data, "server");
 		
 		return array("pid" => $pid, "data" => $packet->data);
 	}
@@ -919,11 +929,7 @@ class MinecraftInterface{
 		$packet->create($raw);
 		$write = $this->server->write($packet->raw);
 		
-		$len = strlen($packet->raw);
-		$p = "[".round(Utils::microtime(),4)."] [CLIENT->SERVER]: ".$this->name[$pid]." 0x$pid (lenght $len)".PHP_EOL;
-		$p .= hexdump($packet->raw, false, false, true);
-		$p .= PHP_EOL;
-		logg($p, "packets", false);		
+		$this->writeDump($pid, $packet->raw, $data, "client");	
 		return true;
 	}
 	

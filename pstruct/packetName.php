@@ -50,8 +50,12 @@ $packetName = array(
 	"34" => "Multi Block Change",
 	"35" => "Block Change",
 	"36" => "Block Action",
+	"37" => "Block Break Animation",
+	"38" => "Map Chunk Bulk",	
+	
 	"3c" => "Explosion",
 	"3d" => "Sound/Particle Effect",
+	"3e" => "Named Sound Effect",
 	
 	"46" => "Change Game State",
 	"47" => "Thunderbolt",
@@ -62,14 +66,26 @@ $packetName = array(
 	"67" => "Set Slot",
 	"68" => "Set Window Items",
 	"69" => "Update Window Property",
-	"6a" => "Confirm Transaction", 
+	"6a" => "Confirm Transaction",
+	"6b" => "Creative Inventory Action",
+	"6c" => "Enchant Item",
 	
+	"82" => "Update Sign",
+	"83" => "Item Data",
+	"84" => "Update Tile Entity",
 	
-	
+	"c8" => "Increment Statistic",
+	"c9" => "Player List Item",	
 	"ca" => "Player Abilities",
-	"cd" => "Client Status",
+	"cb" => "Tab-complete",
+	"cc" => "Locale and View Distance",
+	"cd" => "Client Statuses",
+	
+	"fa" => "Plugin Message",
+	
 	"fc" => "Encryption Key Response",
 	"fd" => "Encryption Key Request",
+	"fe" => "Server List Ping",
 	"ff" => "Kick",
 	
 );

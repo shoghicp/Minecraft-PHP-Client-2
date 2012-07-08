@@ -39,7 +39,7 @@ function hexdump($data, $htmloutput = true, $uppercase = false, $return = false)
         $hexi .= sprintf("%02$x ", ord($data[$i]));
  
         // Replace non-viewable bytes with '.'
-        if (ord($data[$i]) >= 32) {
+        if (ord($data[$i]) >= 32 and ord($data[$i]) < 0x80) {
             $ascii .= ($htmloutput === true) ?
                             htmlentities($data[$i]) :
                             $data[$i];
