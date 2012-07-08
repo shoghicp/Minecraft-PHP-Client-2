@@ -6,6 +6,7 @@ require_once("classes/MinecraftClient.class.php");
 include_once("plugin/Record.plugin.php");
 include_once("plugin/Follow.plugin.php");
 include_once("plugin/ChatCommand.plugin.php");
+include_once("plugin/ChatHandler.plugin.php");
 include_once("plugin/NoHunger.plugin.php");
 include_once("plugin/LagOMeter.plugin.php");
 

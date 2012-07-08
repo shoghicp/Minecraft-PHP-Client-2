@@ -356,20 +356,20 @@ class MinecraftClient{
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "15":
-				console("[INFO] Item (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[4] / 32).",".($data[5] / 32).",".($data[6] / 32).")");
+				console("[DEBUG] Item (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[4] / 32).",".($data[5] / 32).",".($data[6] / 32).")", true, true, 2);
 				$this->entities[$data[0]] = new Entity($data[0], $data[1], true);
 				$this->entities[$data[0]]->setCoords($data[4] / 32,$data[5] / 32,$data[6] / 32);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);				
 				break;
 			case "17":
 			case "18":
-				console("[INFO] Entity (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")");
+				console("[DEBUG] Entity (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
 				$this->entities[$data[0]] = new Entity($data[0], $data[1], ($pid === "17" ? true:false));
 				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "1d":
-				console("[INFO] EID ".$data[0]." despawned");
+				console("[DEBUG] EID ".$data[0]." despawned", true, true, 2);
 				$this->trigger("onEntityDespawn", $data[0]);
 				unset($this->entities[$data[0]]);
 				break;
