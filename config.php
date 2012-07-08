@@ -1,8 +1,9 @@
 <?php
 
 
-define("DEBUG", 2); //0 none, 1 messages, 2 all
+define("DEBUG", 1); //0 none, 1 messages, 2 all. Anything more that 1 makes the client slow
 define("LOG", true);
+define("FILE_PATH", dirname(__FILE__));
 define("CURRENT_PROTOCOL", 29);
 define("LAUNCHER_VERSION", 13);
 define("SPOUT_VERSION", "1000");
