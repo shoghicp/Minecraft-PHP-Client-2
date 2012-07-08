@@ -910,6 +910,7 @@ class MinecraftInterface{
 		}
 		
 		$packet = new Packet($pid, $struct, $this->server);
+		$packet->protocol = $this->protocol;
 		$packet->parse();
 		
 		$this->writeDump($pid, $packet->raw, $packet->data, "server");
@@ -925,6 +926,7 @@ class MinecraftInterface{
 			}
 		}
 		$packet = new Packet($pid, $struct);
+		$packet->protocol = $this->protocol;
 		$packet->data = $data;
 		$packet->create($raw);
 		$write = $this->server->write($packet->raw);

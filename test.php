@@ -13,6 +13,7 @@ include_once("plugin/LagOMeter.plugin.php");
 file_put_contents("console.log", "");
 file_put_contents("packets.log", "");
 $M = new MinecraftClient("127.0.0.1");
+$chat = new ChatHandler($M, true);
 $M->activateSpout();
 $M->event("onDeath", "testHandler");
 $M->event("onConnect", "testHandler");

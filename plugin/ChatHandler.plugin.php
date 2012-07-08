@@ -47,6 +47,18 @@ class ChatHandler{
 			array_shift($message);
 			array_shift($message);
 			$message = implode(" ", $message);
+		}elseif(isset($message[1]) and isset($message[2]) and isset($message[3]) and preg_match("/\[(.*)\] .* ([a-zA-Z0-9_]{2,16}):/",$message[0]." ".$message[1].$message[2]." ".$message[3],$username) > 0){ //Essentials
+			$owner = $username[2];
+			$group = explode("|", $username[1]);
+			if(count($group) > 1){
+				$world = array_shift($group);
+			}
+			$group = implode($group);
+			array_shift($message);
+			array_shift($message);
+			array_shift($message);
+			array_shift($message);
+			$message = implode(" ", $message);
 		}elseif(isset($message[1]) and isset($message[2]) and preg_match("/(.*)\[(.*)\]([a-zA-Z0-9_]{2,16}):/",$message[0].$message[1].$message[2],$username) > 0){ //Essentials
 			$world = $username[1];
 			$owner = $username[3];

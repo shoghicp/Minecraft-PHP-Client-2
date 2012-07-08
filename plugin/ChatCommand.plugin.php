@@ -1,7 +1,5 @@
 <?php
 
-require_once(dirname(__FILE__)."/ChatHandler.plugin.php");
-
 class ChatCommand{
 	protected $owners, $client, $commands, $chat, $alias;
 	
@@ -11,7 +9,6 @@ class ChatCommand{
 		$this->commands = array();
 		$this->alias = array();
 		$this->client->event("onChatHandler", "handler", $this);
-		$this->chat = new ChatHandler($this->client, true);
 		$this->addAlias($this->client->getPlayer()->getName());
 		console("[INFO] [ChatCommand] Loaded");
 	}
