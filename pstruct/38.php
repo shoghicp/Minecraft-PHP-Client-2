@@ -361,11 +361,12 @@ $pstruct = array(
 	),
 	
 	"3e" => array(
+		"string",
 		"int",
 		"int",
+		"int",
+		"float",
 		"byte",
-		"int",
-		"int",
 	),
 	
 	"46" => array(

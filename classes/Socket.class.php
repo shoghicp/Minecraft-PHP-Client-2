@@ -43,7 +43,7 @@ class Socket{
 	function startAES($key){
 		console("[INFO] [Socket] Secure channel with AES-".(strlen($key)*8)."-CFB8 encryption established");
 		require_once(dirname(__FILE__)."/AES.class.php");
-		$this->encrypt = new AES(128, "CFB8");
+		$this->encrypt = new AES(128, "CFB8", 8);
 		$this->encrypt->setKey($key);
 		$this->encrypt->setIV($key);
 		$this->decrypt =& $this->encrypt;
