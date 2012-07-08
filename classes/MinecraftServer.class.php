@@ -9,7 +9,7 @@ require_once(dirname(__FILE__)."/Socket.class.php");
 
 require_once(dirname(__FILE__)."/Entity.class.php");
 
-require_once(dirname(__FILE__)."/../functions.php");
+require_once(dirname(__FILE__)."/../misc/functions.php");
 
 
 class MinecraftServer{

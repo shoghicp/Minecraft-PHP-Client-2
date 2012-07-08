@@ -45,7 +45,7 @@ class NoHunger{
 		$this->only_food = $only_food;
 	}	
 	public function handler($health, $event){
-		include(dirname(__FILE__)."/../materials.php");
+		include("misc/materials.php");
 		for($i=36;$i<=44;++$i){
 			$slot = $this->client->getInventorySlot($i);
 			if($event == "onHealthChange" and isset($food[$slot[0]]) == true and ($health["food"] + $food[$slot[0]]) <= 20){

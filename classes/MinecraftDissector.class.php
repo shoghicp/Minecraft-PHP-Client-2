@@ -3,7 +3,7 @@
 require_once(dirname(__FILE__)."/Utils.class.php");
 require_once(dirname(__FILE__)."/Packet.class.php");
 
-require_once(dirname(__FILE__)."/../functions.php");
+require_once(dirname(__FILE__)."/../misc/functions.php");
 
 class MinecraftDissector{
 	private $server;

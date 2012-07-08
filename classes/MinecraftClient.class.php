@@ -1,14 +1,14 @@
 <?php
-require_once(dirname(__FILE__)."/Utils.class.php");
+
 set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__)."/phpseclib/");
 require_once("Crypt/RSA.php");
 
-require_once(dirname(__FILE__)."/Packet.class.php");
-require_once(dirname(__FILE__)."/Socket.class.php");
+require_once("Utils.class.php");
+require_once("classes/Packet.class.php");
+require_once("classes/Socket.class.php");
+require_once("classes/Entity.class.php");
 
-require_once(dirname(__FILE__)."/Entity.class.php");
-
-require_once(dirname(__FILE__)."/../functions.php");
+require_once("misc/functions.php");
 
 
 class MinecraftClient{
@@ -729,7 +729,7 @@ class MinecraftClient{
 	}
 	public function sendSpoutMessage($pid, $version, $data){
 		if($this->spout == true){
-			include(dirname(__FILE__)."/../pstruct/spout.php");
+			require("pstruct/spout.php");
 			$p = new Packet(false, $pstruct_spout[$pid]);
 			$p->data = $data;
 			$p->create();
@@ -860,8 +860,8 @@ class MinecraftInterface{
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
 		$this->server = new Socket($server, $port);
 		$this->protocol = intval($protocol);
-		include(dirname(__FILE__)."/../pstruct/".$this->protocol.".php");
-		include(dirname(__FILE__)."/../pstruct/packetName.php");
+		require("pstruct/".$this->protocol.".php");
+		require("pstruct/packetName.php");
 		$this->pstruct = $pstruct;
 		$this->name = $packetName;
 	}
