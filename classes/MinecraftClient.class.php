@@ -121,7 +121,7 @@ class MinecraftClient{
 	}
 	
 	public function trigger($event, $data = ""){
-		console("[INFO] Event ". $event, true, true, 3);
+		console("[INTERNAL] Event ". $event, true, true, 3);
 		if(isset($this->events[$event])){
 			foreach($this->events[$event] as $eid => $ev){
 				if(isset($ev[1]) and ($ev[1] === true or is_object($ev[1]))){
@@ -169,7 +169,8 @@ class MinecraftClient{
 	public function ping($data = ""){
 		if($data === ""){
 			$this->send("fe");
-			$eid = $this->event("recieved_ff", 'ping', true);
+			$this->deleteEvent("recieved_ff");
+			$eid = $this->event("recieved_ff", "ping", true);
 			$this->process();
 			return $this->response($eid);
 		}else{
@@ -286,12 +287,12 @@ class MinecraftClient{
 				$this->send("00", array(0 => $data[0]));
 				break;
 			case "03":
-				console("[INFO] Chat: ".$data[0]);
+				console("[DEBUG] Chat: ".$data[0], true, true, 2);
 				$this->trigger("onChat", $data[0]);
 				break;
 			case "04":
 				$this->time = $data[0] % 24000;
-				console("[INFO] Time: ".((intval($this->time/1000+6) % 24)).':'.str_pad(intval(($this->time/1000-floor($this->time/1000))*60),2,"0",STR_PAD_LEFT).', '.(($this->time > 23100 or $this->time < 12900) ? "day":"night")."   \r", false, false);
+				console("[DEBUG] Time: ".((intval($this->time/1000+6) % 24)).':'.str_pad(intval(($this->time/1000-floor($this->time/1000))*60),2,"0",STR_PAD_LEFT).', '.(($this->time > 23100 or $this->time < 12900) ? "day":"night"), true, true, 2);
 				$this->trigger("onTimeChange", $this->time);
 				$timeState = (($this->time > 23100 or $this->time < 12900) ? "day":"night");
 				if($this->timeState != $timeState){
@@ -409,10 +410,10 @@ class MinecraftClient{
 						$m = "Entered credits";
 						break;
 				}
-				console("[INFO] ".$m);
+				console("[INFO] Changed game state: ".$m);
 				break;
 			case "47":
-				console("[INFO] Thunderbolt at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")");
+				console("[INFO] Thunderbolt at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
 				$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] / 32, "y" => $data[3] / 32, "z" => $data[4] / 32)));				
 				break;
 			case "67":
@@ -424,7 +425,7 @@ class MinecraftClient{
 					}
 					$this->trigger("onInventorySlotChanged", array("slot" => $data[1], "data" => $this->getInventorySlot($data[1])));
 					$this->trigger("onInventoryChanged", $this->getInventory());
-					console("[INFO] Changed inventory slot ".$data[1]);
+					console("[DEBUG] Changed inventory slot ".$data[1], true, true, 2);
 				}
 				break;				
 			case "68":
@@ -434,12 +435,12 @@ class MinecraftClient{
 						$this->trigger("onInventorySlotChanged", array("slot" => $i, "data" => $slot));
 					}
 					$this->trigger("onInventoryChanged", $this->getInventory());
-					console("[INFO] Recieved inventory");
+					console("[INFO] Recieved complete inventory");
 				}
 				break;
 			case "82":
 				$text = $data[3].PHP_EOL.$data[4].PHP_EOL.$data[5].PHP_EOL.$data[6];
-				console("[INFO] Sign at (".$data[0].",".$data[1].",".$data[2].")".PHP_EOL.implode(PHP_EOL."\t",explode(PHP_EOL,$text)), true, true, 2);
+				console("[DEBUG] Sign at (".$data[0].",".$data[1].",".$data[2].")".PHP_EOL.implode(PHP_EOL."[DEBUG]\t",explode(PHP_EOL,$text)), true, true, 2);
 				$this->trigger("onSignUpdate", array("coords" => array("x" => $data[0], "y" => $data[1], "z" => $data[2]), "text" => $text));
 				break;
 			case "fa":
@@ -550,7 +551,8 @@ class MinecraftClient{
 				$this->player =& $this->entities[$data[0]];	
 				$this->players[$this->player->getName()] =& $this->player;		
 				$this->player->setName($this->auth["user"]);
-				console("[INFO] EID: ".$this->player->getEID());
+				console("[INFO] Logged in as ".$this->auth["user"]);
+				console("[INFO] Player EID: ".$this->player->getEID());
 				$this->startHandlers();
 				$this->trigger("onConnect");
 				$this->process();
@@ -565,7 +567,7 @@ class MinecraftClient{
 		$secure = true;
 		if($secure !== false){
 			$proto = "https";
-			console("[INFO] Using secure HTTPS connection");
+			console("[DEBUG] Using secure HTTPS connection", true, true, 2);
 		}else{
 			$proto = "http";
 		}
@@ -590,14 +592,14 @@ class MinecraftClient{
 				}
 				$this->auth["user"] = $content[2];
 				$this->auth["session_id"] = $content[3];
-				console("[INFO] Logged into minecraft.net");
+				console("[INFO] Logged into minecraft.net as ".$this->auth["user"]);
 				console("[DEBUG] minecraft.net Session ID: ".$this->auth["session_id"], true, true, 2);
 				$res = Utils::curl_get("http://session.minecraft.net/game/joinserver.jsp?user=".$this->auth["user"]."&sessionId=".$this->auth["session_id"]."&serverId=".$hash); //User check
 				if($res != "OK"){
 					console("[ERROR] Error in User Check: \"".$res."\"", true, true, 0);
 					$this->close();
 				}else{
-					console("[INFO] Sent join server request");
+					console("[DEBUG] Sent join server request", true, true, 2);
 				}
 				break;
 		}
@@ -664,7 +666,7 @@ class MinecraftClient{
 					2 => strlen($encryptedToken),
 					3 => $encryptedToken,
 				));
-				console("[INFO] [RSA-1024] Sent encrypted shared secret and token");
+				console("[DEBUG] [RSA-1024] Sent encrypted shared secret and token", true, true, 2);
 				$this->event("recieved_fc", 'newAuthentication', true);
 				$this->process("fc");
 				break;
@@ -691,7 +693,8 @@ class MinecraftClient{
 				$this->player =& $this->entities[$data[0]];	
 				$this->players[$this->player->getName()] =& $this->player;		
 				$this->player->setName($this->auth["user"]);
-				console("[INFO] EID: ".$this->player->getEID());
+				console("[INFO] Logged in as ".$this->auth["user"]);
+				console("[INFO] Player EID: ".$this->player->getEID());
 				$this->startHandlers();
 				$this->trigger("onConnect");
 				$this->process();
@@ -700,6 +703,7 @@ class MinecraftClient{
 	}	
 	
 	public function newConnect(){
+		console("[DEBUG] Sending Handshake", true, true, 2);
 		$this->send("02", array(
 			0 => $this->protocol,
 			1 => $this->auth["user"],
@@ -716,6 +720,7 @@ class MinecraftClient{
 			$this->newConnect();
 			return;
 		}
+		console("[DEBUG] Sending Handshake", true, true, 2);
 		$this->send("02", array(
 			0 => $user.($this->protocol >= 28 ? ";".$this->server.":".$this->port:""),
 		));
@@ -757,7 +762,7 @@ class MinecraftClient{
 				$this->trigger("onSpoutBlock_".$BID, array("data" => $info, "name" => $name));
 				break;
 			case "onRecievedSpoutPacket_30":
-				console("[INFO] [Spout] Pre-cache Completed");
+				console("[DEBUG] [Spout] Pre-cache Completed", true, true, 2);
 				$this->trigger("onSpoutPreCacheCompleted");
 				break;
 			case "onRecievedSpoutPacket_44":
@@ -765,7 +770,7 @@ class MinecraftClient{
 				$cnt = Utils::readShort(substr($data["data"], $offset,2));
 				$offset += 2;
 				$plugins = array();
-				console("[INFO] [Spout] Recieved server plugins");
+				console("[DEBUG] [Spout] Recieved server plugins", true, true, 2);
 				for($i = 0; $i < $cnt; ++$i){
 					$len = Utils::readShort(substr($data["data"], $offset,2));
 					$offset += 2;
@@ -776,7 +781,7 @@ class MinecraftClient{
 					$v = Utils::readString(substr($data["data"], $offset,$len * 2));
 					$offset += $len * 2;
 					$plugins[$p] = $v;
-					console("[INFO] [Spout] ".$p." => ".$v);
+					console("[DEBUG] [Spout] ".$p." => ".$v, true, true, 2);
 				}				
 				$this->trigger("onSpoutPlugins", $plugins);
 				break;
@@ -785,7 +790,7 @@ class MinecraftClient{
 				$cnt = Utils::readInt(substr($data["data"], $offset,4));
 				$offset += 4;
 				$permissions = array();
-				console("[INFO] [Spout] Updated Permissions");
+				console("[DEBUG] [Spout] Updated Permissions", true, true, 2);
 				for($i = 0; $i < $cnt; ++$i){
 					$len = Utils::readShort(substr($data["data"], $offset,2));
 					$offset += 2;
@@ -812,7 +817,7 @@ class MinecraftClient{
 				$offset += $len * 2;
 				$death = Utils::readByte(substr($data["data"], $offset,1)) == 1 ? true:false;
 				$offset += 1;
-				console("[INFO] [Spout] Got waypoint ".$name." (".$x.",".$y.",".$z.")".($death === true ? " DEATH":""));
+				console("[DEBUG] [Spout] Got waypoint ".$name." (".$x.",".$y.",".$z.")".($death === true ? " DEATH":""), true, true, 2);
 				$this->trigger("onSpoutWaypoint", array("coords" => array("x" => $x, "y" => $y, "z" => $z), "name" => $name, "death" => $death));
 				break;
 			case "recieved_c3":

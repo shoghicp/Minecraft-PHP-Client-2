@@ -23,13 +23,13 @@ class LagOMeter{
 			if($this->last > $this->start){
 				$this->lag = false;
 				$this->client->trigger("onLagEnd", Utils::microtime() - $this->start);
-				console("[INFO] [LagOMeter] Lag ended (".(Utils::microtime() - $this->start)." sec)");
+				console("[DEBUG] [LagOMeter] Lag ended (".(Utils::microtime() - $this->start)." sec)", true, true, 2);
 			}
 		}elseif((Utils::microtime() - $this->last) >= $this->minTime){
 			$this->lag = true;
 			$this->start = $this->last;
 			$this->client->trigger("onLagStart");
-			console("[INFO] [LagOMeter] Lag started");
+			console("[DEBUG] [LagOMeter] Lag started", true, true, 2);
 		}
 	}
 	

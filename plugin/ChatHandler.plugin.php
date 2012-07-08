@@ -9,7 +9,7 @@ class ChatHandler{
 			$this->client->deleteEvent("onChat");
 		}
 		$this->event = $this->client->event("onChat", "handler", $this);
-		console("[INFO] [ChatHandler] Started");
+		console("[INFO] [ChatHandler] Loaded");
 	}
 	
 	public function stop(){
@@ -101,7 +101,7 @@ class ChatHandler{
 			$message = implode(" ", $message);
 		}
 		$info = array("owner" => $owner, "group" => $group, "world" => $world, "message" => $message, "type" => $type);
-		console("[INFO] [ChatHandler] ".ChatHandler::format($info));
+		console("[DEBUG] [ChatHandler] ".ChatHandler::format($info), true, true, 2);
 		$this->client->trigger("onChatHandler", $info);
 	}
 	

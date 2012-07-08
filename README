@@ -28,3 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          \ | /
          
 	by @shoghicp
+
+	
+Run "php client.php --help" in console for more info
+Also check the "docs" folder if you want info on events and methods of the Client class
