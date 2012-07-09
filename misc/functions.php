@@ -78,7 +78,7 @@ function console($message, $EOL = true, $log = true, $level = 1){
 		$message .= $EOL == true ? PHP_EOL:"";
 		$message = date("H:i:s"). " ". $message;
 		if($log and LOG == true){
-			logg($message, "console", false);
+			logg($message, "console", false, $level);
 		}
 	
 		echo $message;
