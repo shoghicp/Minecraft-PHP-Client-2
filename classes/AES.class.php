@@ -29,8 +29,11 @@ class AES{
 	}
 	
 	protected function _shiftIV($IV, $str){
-		$len = min($this->IVLenght, strlen($str));
-		return substr($IV, $len).substr($str, -$len);
+		if(!isset($str{$this->IVLenght})){
+			$len = min($this->IVLenght, strlen($str));
+			return substr($IV, $len).substr($str, -$len);
+		}
+		return substr($str, -$this->IVLenght);
 	}
 	
 	public function encrypt($plaintext){
