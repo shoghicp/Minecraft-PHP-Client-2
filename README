@@ -1,4 +1,4 @@
-This program is free software: you can redistribute it and/or modify
+ï»¿This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -19,9 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /         PHP         \
 |\       CLIENT      /|
 |.   \     2     /   .|
-| ´.     \   /     .´ |
-|    ´.    |    .´    |
-|       ´. | .´       |
+| Â´.     \   /     .Â´ |
+|    Â´.    |    .Â´    |
+|       Â´. | .Â´       |
 \          |          /
    \       |       /
       \    |    /
@@ -40,7 +40,7 @@ Also check the "docs" folder if you want info on events and methods of the Clien
 
 --- SPANISH ---
 Este cliente de Minecraft ha sido reescrito desde mi anterior cliente para que sea modular y mantenible.
-Esta orientado a objetos, tiene un sistema de eventos y acciones para poder diseñar plugins y clientes con el
+Esta orientado a objetos, tiene un sistema de eventos y acciones para poder diseÃ±ar plugins y clientes con el
 dacilmente. Soporta Spoutcraft
 
 Ejecuta "php client.php --help" en la consola para mas informacion
