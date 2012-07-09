@@ -44,6 +44,12 @@ $pstruct = array(
 		"int",
 	),
 	
+	"07" => array(
+		"int",
+		"int",
+		"bool",
+	),
+	
 	"08" => array(
 		"short",
 		"short",
@@ -58,6 +64,24 @@ $pstruct = array(
 		"string",
 	),
 	
+	"0a" => array(
+		"bool",
+	),
+	
+	"0b" => array(
+		"double",
+		"double",
+		"double",
+		"double",
+		"bool",
+	),
+
+	"0c" => array(
+		"float",
+		"float",
+		"bool",
+	),
+	
 	"0d" => array(
 		"double",
 		"double",
@@ -66,6 +90,22 @@ $pstruct = array(
 		"float",
 		"float",
 		"bool",
+	),
+	
+	"0e" => array(
+		"byte",
+		"int",
+		"byte",
+		"int",
+		"byte",	
+	),
+
+	"0f" => array(
+		"int",
+		"ubyte",
+		"int",
+		"byte",
+		"slotData",	
 	),
 	
 	"10" => array(
@@ -83,6 +123,11 @@ $pstruct = array(
 	"12" => array(
 		"int",
 		"byte",
+	),
+	
+	"13" => array(
+		"int",
+		"byte",	
 	),
 	
 	"14" => array(
@@ -320,6 +365,15 @@ $pstruct = array(
 	"65" => array(
 		"byte",
 	),
+
+	"66" => array(
+		"byte",
+		"short",
+		"byte",
+		"short",
+		"bool",
+		"slotData",
+	),
 	
 	"67" => array(
 		"byte",
@@ -352,7 +406,7 @@ $pstruct = array(
 	
 	"6c" => array(
 		"byte",
-		
+		"byte",
 	),
 	
 	"82" => array(
@@ -404,7 +458,6 @@ $pstruct = array(
 	),
 	
 	"fe" => array(
-		"string",
 	),
 	
 	"ff" => array(

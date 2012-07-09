@@ -29,6 +29,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          
 	by @shoghicp
 
+--- ENGLISH ---	
+This Minecraft Client is a rewrite of my "Minecraft PHP Client", so it becomes modular and maintenable.
+It's object-oriented, and have an event system and action system to create plugins and bots easily.
+Supports Spoutcraft
 	
 Run "php client.php --help" in console for more info
 Also check the "docs" folder if you want info on events and methods of the Client class
+
+
+--- SPANISH ---
+Este cliente de Minecraft ha sido reescrito desde mi anterior cliente para que sea modular y mantenible.
+Esta orientado a objetos, tiene un sistema de eventos y acciones para poder diseñar plugins y clientes con el
+dacilmente. Soporta Spoutcraft
+
+Ejecuta "php client.php --help" en la consola para mas informacion
+tambien mira la carpeta "docs" si quieres mas informacion sobre eventos y metodos de la clase Cliente
