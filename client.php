@@ -13,23 +13,19 @@ define("HALF_BUFFER_BYTES", MAX_BUFFER_BYTES / 2);
 require_once("classes/MinecraftClient.class.php");
 
 $versions = array(
+	"1.3" => 38,
 	"1.2.5" => 29,
 	"1.2.4" => 29,
 	"1.2.3" => 28,
 	"1.2.2" => 28,
 	"1.2.1" => 28,
 	"1.2.0" => 28,
+	"1.2" => 28,
 	"1.1.0" => 23,
+	"1.1" => 23,
 	"1.0.1" => 22,
 	"1.0.0" => 22,
-/*	"b1.8.1" => 17,
-	"b1.8" => 17,
-	"b1.7.3" => 14,
-	"b1.7.2" => 14,
-	"b1.7_01" => 14,
-	"b1.7" => 14,
-	"b1.6.6" => 12,
-	"b1.6" => 12,*/
+	"1.0" => 22,
 );
 
 
@@ -57,7 +53,6 @@ This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
-
 
 
 INFO;
