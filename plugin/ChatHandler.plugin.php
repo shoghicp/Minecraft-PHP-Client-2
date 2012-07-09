@@ -92,7 +92,9 @@ class ChatHandler{
 			$message = implode(" ", $message);
 		}elseif(isset($message[1]) and preg_match("/\[([a-zA-Z0-9_]{2,16})\->/",$message[0].$message[1],$username) > 0){ //Essentials MP
 			$owner = $username[1];
-			$type = "private";
+			if($owner != "me" and $owner != "yo"){
+				$type = "private";
+			}
 			array_shift($message);
 			array_shift($message);
 			array_shift($message);
