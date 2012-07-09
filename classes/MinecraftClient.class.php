@@ -13,7 +13,8 @@ require_once("misc/functions.php");
 
 class MinecraftClient{
 	private $server, $port, $protocol, $auth, $player, $entities, $players, $key;
-	protected $spout, $events, $cnt, $responses, $info, $inventory, $time, $timeState, $stop, $connected, $actions;
+	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions;
+	var $time;
 	
 	
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){

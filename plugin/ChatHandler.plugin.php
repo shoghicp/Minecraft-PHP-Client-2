@@ -99,6 +99,11 @@ class ChatHandler{
 			array_shift($message);
 			array_shift($message);
 			$message = implode(" ", $message);
+		}elseif(isset($message[1]) and isset($message[2]) and isset($message[3]) and preg_match("/([a-zA-Z0-9_]{2,16}) joined the game/",$message[0]." ".$message[1]." ".$message[2]." ".$message[3],$username) > 0){ //Essentials MP
+			$owner = $username[1];
+			$type = "join";
+			array_shift($message);
+			$message = implode(" ", $message);
 		}else{
 			$message = implode(" ", $message);
 		}
