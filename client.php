@@ -63,11 +63,11 @@ echo <<<USAGE
 Usage: php {$argv[0]} [parameters]
 
 Parameters:
-\tserver => Server to connect, default "127.0.0.1"
-\tport => Port to connect, default "25565"
-\tversion => Version of server, default "$lastver"
+\tserver => Server to connect (default 127.0.0.1)
+\tport => Port to connect (default 25565)
+\tversion => Version of server
 \tprotocol => Protocol version of minecraft, supersedes --version
-\tusername => username to use in server and minecraft.net (if PREMIUM), default "Player"
+\tusername => username to use in server and minecraft.net if PREMIUM (default Player)
 \tpassword => password to use in minecraft.net, if PREMIUM
 \tlog => log the data from console and packets to file (default true)
 \tping => ping (packet 0xFE) a server, and returns info
@@ -75,7 +75,7 @@ Parameters:
 \towner => set owner username
 \tspout => enables or disables spout (default true)
 \tonly-food => only accept food as inventory items (default false)
-\ttick-mode => ticks in client mode (internal => default, packets => when recieved a packet)
+\taction-mode => Actions in client mode (internal => default, packets => when recieved a packet)
 
 Example:
 php {$argv[0]} --server=127.0.0.1 --username=Player --version=1.2.5 --debug=1
@@ -96,7 +96,7 @@ $protocol	= intval(arg("protocol", CURRENT_PROTOCOL));
 $spout		= arg("spout", true);
 $owner		= arg("owner", "shoghicp"); // ;)
 $only_food	= arg("only-food", false);
-define("ACTION_MODE", arg("tick-mode", "internal") === "packets" ? 2:1);
+define("ACTION_MODE", arg("action-mode", "internal") === "packets" ? 2:1);
 define("LOG", arg("log", true) == true ? true:false);
 $debug = trim(strtolower(arg("debug", "info")));
 if(strlen(str_replace(array("info", "all", "debug","none"), "", $debug)) != 0){

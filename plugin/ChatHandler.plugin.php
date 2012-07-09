@@ -40,7 +40,7 @@ class ChatHandler{
 			$owner = $username[2];
 			$group = explode("|", $username[1]);
 			if(count($group) > 1){
-				$world = array_shift($group);
+				$world = array_pop($group);
 			}
 			$group = implode($group);
 			array_shift($message);
@@ -51,7 +51,7 @@ class ChatHandler{
 			$owner = $username[2];
 			$group = explode("|", $username[1]);
 			if(count($group) > 1){
-				$world = array_shift($group);
+				$world = array_pop($group);
 			}
 			$group = implode($group);
 			array_shift($message);
@@ -92,9 +92,16 @@ class ChatHandler{
 			$message = implode(" ", $message);
 		}elseif(isset($message[1]) and preg_match("/\[([a-zA-Z0-9_]{2,16})\->/",$message[0].$message[1],$username) > 0){ //Essentials MP
 			$owner = $username[1];
-			$type = "private";
+			if($owner != "me" and $owner != "yo"){
+				$type = "private";
+			}
 			array_shift($message);
 			array_shift($message);
+			array_shift($message);
+			$message = implode(" ", $message);
+		}elseif(isset($message[1]) and isset($message[2]) and isset($message[3]) and preg_match("/([a-zA-Z0-9_]{2,16}) joined the game/",$message[0]." ".$message[1]." ".$message[2]." ".$message[3],$username) > 0){ //Essentials MP
+			$owner = $username[1];
+			$type = "join";
 			array_shift($message);
 			$message = implode(" ", $message);
 		}else{
