@@ -150,7 +150,7 @@ function clientHandler($message, $event, $ob){
 			console("[INFO] [Chat] ".ChatHandler::format($message));
 			break;
 		case "onLagEnd":
-			$ob->console("[INFO] [LagOMeter] Lag of ".round($message,2)." seconds ended");
+			console("[INFO] [LagOMeter] Lag of ".round($message,2)." seconds ended");
 			break;
 		case "onConnect":
 			require_once("plugin/LagOMeter.plugin.php");
