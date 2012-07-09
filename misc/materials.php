@@ -66,7 +66,7 @@
 		265 => 2, //Raw Chicken
 		357 => 1, //Cookie
 		367 => 4, //Flesh
-		375 => 2, //Spider eye,		
+		375 => 2, //Spider eye,	
 	);
 	
 
