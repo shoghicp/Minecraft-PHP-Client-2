@@ -40,7 +40,7 @@ class ChatHandler{
 			$owner = $username[2];
 			$group = explode("|", $username[1]);
 			if(count($group) > 1){
-				$world = array_shift($group);
+				$world = array_pop($group);
 			}
 			$group = implode($group);
 			array_shift($message);
@@ -51,7 +51,7 @@ class ChatHandler{
 			$owner = $username[2];
 			$group = explode("|", $username[1]);
 			if(count($group) > 1){
-				$world = array_shift($group);
+				$world = array_pop($group);
 			}
 			$group = implode($group);
 			array_shift($message);
