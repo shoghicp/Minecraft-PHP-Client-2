@@ -51,6 +51,7 @@ onSpoutPermissions					array permissions
 onSpoutWaypoint						array(coords => array coords, name => name, death => death)
 onSignUpdate						array(coords => array coords, text => text)
 onTick								time
+onEntityAction_[ID]					object Entity
 
 
 

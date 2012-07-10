@@ -70,12 +70,13 @@ class Utils{
 	
 	public static function curl_get($page){
 		$ch = curl_init ($page);
-		curl_setopt ($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client'));
+		curl_setopt ($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client 2'));
 		curl_setopt ($ch, CURLOPT_AUTOREFERER, true);
 		curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 2);
 		curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 10);
 		return curl_exec ($ch);
 	}
 	
@@ -85,8 +86,9 @@ class Utils{
 		curl_setopt ($ch, CURLOPT_POSTFIELDS, $args);
 		curl_setopt ($ch, CURLOPT_AUTOREFERER, true);
 		curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, true);
-		curl_setopt ($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client'));
+		curl_setopt ($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client 2'));
 		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 10);
 		return curl_exec($ch);
 	}
 

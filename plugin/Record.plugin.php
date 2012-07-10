@@ -28,7 +28,7 @@ class PlayPath{
 	function __construct($client, $path){
 		$this->client = $client;
 		$this->start = Utils::microtime();
-		$this->event = $this->client->event("onTick", "followPath", $this);
+		$this->event = $this->client->event("onRecievedPacket", "followPath", $this);
 		$this->path = $path;
 	}	
 	public function followPath($time, $event, $ob){
@@ -44,6 +44,6 @@ class PlayPath{
 		}
 	}
 	public function stop(){
-		$this->client->deleteEvent("onTick", $this->event);
+		$this->client->deleteEvent("onRecievedPacket", $this->event);
 	}
 }

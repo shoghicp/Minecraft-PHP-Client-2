@@ -1,4 +1,4 @@
-<?php
+ï»¿<?php
 
 set_time_limit(0);
 error_reporting(E_ALL ^ E_NOTICE);
@@ -38,9 +38,9 @@ echo <<<INFO
 /         PHP         \
 |\       CLIENT      /|
 |.   \     2     /   .|
-| ´.     \   /     .´ |
-|    ´.    |    .´    |
-|       ´. | .´       |
+| ..     \   /     .. |
+|    ..    |    ..    |
+|       .. | ..       |
 \          |          /
    \       |       /
       \    |    /
@@ -97,7 +97,7 @@ $spout		= arg("spout", true);
 $owner		= arg("owner", "shoghicp"); // ;)
 $only_food	= arg("only-food", false);
 define("ACTION_MODE", arg("action-mode", "internal") === "packets" ? 2:1);
-define("LOG", arg("log", true) == true ? true:false);
+define("LOG", arg("log", true) === true ? true:false);
 $debug = trim(strtolower(arg("debug", "info")));
 if(strlen(str_replace(array("info", "all", "debug","none"), "", $debug)) != 0){
 $debug = "info";

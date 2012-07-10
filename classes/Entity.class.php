@@ -35,10 +35,14 @@ class Entity{
 		return true;
 	}
 	
-	public function move($x, $y, $z){
+	public function move($x, $y, $z, $yaw = 0, $pitch = 0){
 		$this->position["x"] += $x;
 		$this->position["y"] += $y;
 		$this->position["z"] += $z;
+		$this->position["yaw"] += $yaw;
+		$this->position["yaw"] = $this->position["yaw"] < 0 ? (360 - $this->position["yaw"]):($this->position["yaw"] > 360 ? ($this->position["yaw"] - 360):$this->position["yaw"]);
+		$this->position["pitch"] += $pitch;
+		$this->position["pitch"] = $this->position["pitch"] > 90 ? 90:($this->position["pitch"] < -90 ? -90:$this->position["pitch"]);
 		$this->updateStance();
 		return true;
 	}

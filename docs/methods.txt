@@ -23,3 +23,8 @@ MinecraftClient methods:
 	void connect(string $user [, string $password = ""])
 	void activateSpout()
 	void sendSpoutMessage(int PID, int version, string data)
+
+MapInterface methods
+	array block getBlock($x, $y, $z)
+	array blocks getZone($x1, $y1, $z1, $x2, $y2, $z2)
+	array blocks getRadius($x, $y, $z [, $radius = 4])
