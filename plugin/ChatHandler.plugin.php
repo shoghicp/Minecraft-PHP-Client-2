@@ -3,11 +3,13 @@
 
 class ChatHandler{
 	protected $client, $event, $callback;
-	function __construct($client, $only = true){
+	var $blacklist;
+	function __construct($client, $only = true, $blacklist = array()){
 		$this->client = $client;
 		if($only == true){
 			$this->client->deleteEvent("onChat");
 		}
+		$this->blacklist = $blacklist;
 		$this->event = $this->client->event("onChat", "handler", $this);
 		console("[INFO] [ChatHandler] Loaded");
 	}
@@ -109,6 +111,9 @@ class ChatHandler{
 		}
 		$info = array("owner" => $owner, "group" => $group, "world" => $world, "message" => $message, "type" => $type);
 		console("[DEBUG] [ChatHandler] ".ChatHandler::format($info), true, true, 2);
+		if(isset($this->blacklist[$owner])){
+			return;
+		}
 		$this->client->trigger("onChatHandler", $info);
 	}
 	

@@ -95,7 +95,7 @@ class QuestionFAQ{
 				arsort($best);
 				$p = reset($best);
 				$best = key($best);
-				console("[DEBUG] [QuestionFAQ] Choosed response with punctuation ".$p." over ".count($best)." responses", true, true, 2);
+				console("[DEBUG] [QuestionFAQ] Chosen response with punctuation ".$p." over ".count($best)." responses", true, true, 2);
 				$this->client->say($this->response[$best][4], $owner);
 			}
 		}	

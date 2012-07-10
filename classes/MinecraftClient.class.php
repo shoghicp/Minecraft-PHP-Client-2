@@ -144,7 +144,7 @@ class MinecraftClient{
 	}
 
 	public function action($microseconds, $code){
-		$this->actions[] = array($microseconds, 0, $code);
+		$this->actions[] = array($microseconds, Utils::microtime(), $code);
 		console("[INTERNAL] Attached to action ".$event, true, true, 3);
 	}
 	
@@ -202,6 +202,14 @@ class MinecraftClient{
 	public function jump(){
 		$this->player->move(0, 1, 0);
 		$this->send("0b",$this->player->packet("0b"));
+		$this->trigger("onMove", $this->player);
+		$this->trigger("onEntityMove", $this->player);
+		$this->trigger("onEntityMove_".$this->player->getEID(), $this->player);
+	}
+
+	public function moveFromHere($x, $y, $z, $yaw = 0, $pitch = 0){
+		$this->player->move($x, $y, $z, $yaw, $pitch);
+		$this->send("0d",$this->player->packet("0b"));
 		$this->trigger("onMove", $this->player);
 		$this->trigger("onEntityMove", $this->player);
 		$this->trigger("onEntityMove_".$this->player->getEID(), $this->player);
@@ -346,6 +354,10 @@ class MinecraftClient{
 				$this->trigger("onMove", $this->player);
 				$this->trigger("onEntityMove", $this->player);
 				$this->trigger("onEntityMove_".$this->player->getEID(), $this->player);				
+				break;
+			case "13":
+				console("[DEBUG] Entity ".$data[0]." did action ".$data[1], true, true, 2);
+				$this->trigger("onEntityAction_".$data[1], $this->entities[$data[0]]);
 				break;
 			case "14":
 				$this->entities[$data[0]] = new Entity($data[0], 0);
@@ -500,6 +512,7 @@ class MinecraftClient{
 		$this->event("recieved_06", "handler", true);
 		$this->event("recieved_08", "handler", true);
 		$this->event("recieved_0d", "handler", true);
+		$this->event("recieved_13", "handler", true);
 		$this->event("recieved_14", "handler", true);
 		$this->event("recieved_15", "handler", true);
 		$this->event("recieved_17", "handler", true);
@@ -782,6 +795,9 @@ class MinecraftClient{
 					$offset += $len * 2;
 					$plugins[$p] = $v;
 					console("[DEBUG] [Spout] ".$p." => ".$v, true, true, 2);
+					if($p === "Spout"){
+						console("[INFO] [Spout] Server authenticated as a v".SPOUT_VERSION." Spout");
+					}
 				}				
 				$this->trigger("onSpoutPlugins", $plugins);
 				break;
@@ -845,7 +861,7 @@ class MinecraftClient{
 					0 => -42,
 					1 => 1,				
 				));
-				console("[DEBUG] [Spout] Send Spout verification packet");
+				console("[DEBUG] [Spout] Sent Spout verification packet", true, true, 2);
 				$this->event("recieved_12", 'spoutHandler', true);			
 				break;		
 		}
