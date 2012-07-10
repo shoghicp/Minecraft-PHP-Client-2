@@ -100,7 +100,7 @@ class Anvil{
 		$X = floor($X / 16) * 16;
 		$Z = floor($Z / 16) * 16;
 		
-		if(!isset($this->block[$X][$Z]) and isset($this->raw[$X][$Z])){
+		if(isset($this->raw[$X][$Z])){
 			foreach($this->raw[$X][$Z] as $d){
 				$this->splitColumns($d[0], $d[1], $d[2], $d[3]);
 			}
@@ -127,6 +127,7 @@ class Anvil{
 	}
 	
 	public function changeBlock($x, $y, $z, $block, $metadata = 0){
+		console("[INTERNAL] [Anvil] Changed block X ".$x." Y ".$y." Z ".$z, true, true, 3);
 		$this->checkChunk($x, $z);
 		if(!isset($this->block[$x])){
 			$this->block[$x] = array();

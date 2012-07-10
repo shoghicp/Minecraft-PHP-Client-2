@@ -264,7 +264,7 @@ class MinecraftClient{
 	public function tickerFunction(){
 		//actions that repeat every x time will go here
 		$time = Utils::microtime();
-		$this->trigger("onTick", $time);
+		//$this->trigger("onTick", $time); //lag!!!
 		foreach($this->actions as $id => $action){
 			if($action[1] <= ($time - ($action[0] / 1000000))){
 				$this->actions[$id][1] = $time;
@@ -305,8 +305,44 @@ class MinecraftClient{
 				}
 				$this->map = new MapInterface($this->mapParser);
 				break;
+			case "recieved_38":
+			
+				break;
+				/*
+					This part is not finished. It seems that data is shorter than expected
+				*/
+				$offset = 0;
+				$data[2] = gzinflate(substr($data[2],2));
+				$offsetData = 0;
+				for($i = 0; $i < $data[0]; ++$i){
+					$X = Utils::readInt(substr($data[3],$offset,4));
+					$offset += 4;
+					$Z = Utils::readInt(substr($data[3],$offset,4));
+					$offset += 4;
+					$bitmask = Utils::readShort(substr($data[3],$offset,2));
+					$offset += 2;
+					$add_bitmask = Utils::readShort(substr($data[3],$offset,2));
+					$offset += 2;
+					$d = "";
+					for($i = 0; $i < 16; ++$i){
+						if($bitmask & 1 << $i){
+							$d .= substr($data[2],$offsetData,10240);
+							$offsetData += 10240;
+						}
+					}
+					$this->mapParser->addChunk($X, $Y, $d, $bitmask, false);
+				}
+				break;
+			case "recieved_35":
+				$this->map->changeBlock($data[0], $data[1], $data[2], $data[3], $data[4]);
+				break;
+			case "recieved_34":
+				
+				break;
 			case "recieved_33":
-				if($this->protocol >= 28){
+				if($this->protocol > 29){
+					$this->mapParser->addChunk($data[0], $data[1], $data[6], $data[3]);				
+				}elseif($this->protocol >= 28){
 					$this->mapParser->addChunk($data[0], $data[1], $data[7], $data[3]);
 				}else{
 					if($data[4] >= 127){
@@ -552,6 +588,9 @@ class MinecraftClient{
 		$this->event("recieved_21", "handler", true);
 		$this->event("recieved_22", "handler", true);
 		$this->event("recieved_33", "mapHandler", true);
+		$this->event("recieved_34", "mapHandler", true);
+		$this->event("recieved_35", "mapHandler", true);
+		$this->event("recieved_38", "mapHandler", true);
 		$this->event("recieved_46", "handler", true);
 		$this->event("recieved_47", "handler", true);
 		$this->event("recieved_67", "handler", true);

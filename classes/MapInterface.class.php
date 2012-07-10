@@ -7,6 +7,13 @@ class MapInterface{
 		$this->map = $map;
 	}
 	
+	public function changeBlock($x, $y, $z, $block, $metadata){
+		$x = round($x);
+		$y = round($y);
+		$z = round($z);
+		return $this->map->changeBlock($x, $y, $z, $block, $metadata);
+	}	
+	
 	public function getBlock($x, $y, $z){
 		$x = round($x);
 		$y = round($y);
