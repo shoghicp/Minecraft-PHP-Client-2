@@ -145,6 +145,7 @@ class MinecraftClient{
 
 	public function action($microseconds, $code){
 		$this->actions[] = array($microseconds, 0, $code);
+		console("[INTERNAL] Attached to action ".$event, true, true, 3);
 	}
 	
 	public function event($event, $func, $in = false){
@@ -153,6 +154,7 @@ class MinecraftClient{
 			$this->events[$event] = array();
 		}
 		$this->events[$event][$this->cnt] = array($func, $in);
+		console("[INTERNAL] Attached to event ".$event, true, true, 3);
 		return $this->cnt;
 	}
 	
@@ -234,10 +236,7 @@ class MinecraftClient{
 	}
 
 	public function swingArm(){
-		$this->send("12", array(
-			0 => $this->player->getEID(),
-			1 => 1,
-		));		
+		$this->animation(1);		
 	}
 	
 	public function eatSlot(){
@@ -276,7 +275,7 @@ class MinecraftClient{
 				$this->trigger("onPluginChannelUnregister", $data);
 				$this->trigger("onPluginChannelUnegister_".$data);
 				break;
-		}	
+		}
 	}
 	
 	private function handler($data, $event){
@@ -343,7 +342,7 @@ class MinecraftClient{
 				}				
 				$this->player->setPosition($data[0], $data[2], $data[3], $data[1], $data[4], $data[5], $data[6]);
 				$this->send("0d",$this->player->packet("0d"));
-				console("[INFO] Got position: (".$data[0].",".$data[2].",".$data[3].")");
+				console("[DEBUG] Got position: (".$data[0].",".$data[2].",".$data[3].")", true, true, 2);
 				$this->trigger("onMove", $this->player);
 				$this->trigger("onEntityMove", $this->player);
 				$this->trigger("onEntityMove_".$this->player->getEID(), $this->player);				
@@ -414,7 +413,7 @@ class MinecraftClient{
 				console("[INFO] Changed game state: ".$m);
 				break;
 			case "47":
-				console("[INFO] Thunderbolt at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
+				console("[DEBUG] Thunderbolt at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
 				$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] / 32, "y" => $data[3] / 32, "z" => $data[4] / 32)));				
 				break;
 			case "67":
@@ -553,7 +552,7 @@ class MinecraftClient{
 				$this->players[$this->player->getName()] =& $this->player;		
 				$this->player->setName($this->auth["user"]);
 				console("[INFO] Logged in as ".$this->auth["user"]);
-				console("[INFO] Player EID: ".$this->player->getEID());
+				console("[DEBUG] Player EID: ".$this->player->getEID(), true, true, 2);
 				$this->startHandlers();
 				$this->trigger("onConnect");
 				$this->process();
@@ -631,7 +630,7 @@ class MinecraftClient{
 			}
 			
 		}
-		console("[DEBUG] 128-bit Simmetric Key generated: 0x".strtoupper(Utils::strToHex($value)), true, true, 2);
+		console("[INTERNAL] 128-bit Simmetric Key generated: 0x".strtoupper(Utils::strToHex($value)), true, true, 3);
 		$this->key = $value;
 	}
 	
@@ -640,9 +639,9 @@ class MinecraftClient{
 		switch($pid){
 			case "fd":
 				$publicKey = "-----BEGIN PUBLIC KEY-----".PHP_EOL.implode(PHP_EOL,str_split(base64_encode($data[2]),64)).PHP_EOL."-----END PUBLIC KEY-----";
-				console("[DEBUG] [RSA-1024] Server Public key:", true, true, 2);
+				console("[INTERNAL] [RSA-1024] Server Public key:", true, true, 3);
 				foreach(explode(PHP_EOL,$publicKey) as $line){
-					console("[DEBUG] ".$line, true, true, 2);
+					console("[INTERNAL] ".$line, true, true, 3);
 				}
 				$rsa = new Crypt_RSA();
 				$rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
@@ -825,7 +824,7 @@ class MinecraftClient{
 				$packetId = $data[0];
 				$version = $data[1];
 				$packet = $data[3];
-				console("[DEBUG] [Spout] Recieved packet ".$packetId, true, true, 2);
+				console("[INTERNAL] [Spout] Recieved packet ".$packetId, true, true, 3);
 				$this->trigger("onRecievedSpoutPacket_".$packetId, array("version" => $version, "data" => $packet));
 				$this->trigger("onRecievedSpoutPacket", array("id" => $packetId, "version" => $version, "data" => $packet));
 				break;
@@ -833,7 +832,7 @@ class MinecraftClient{
 				if($data[0] == -42){
 					$this->spout = true;
 					$this->sendSpoutMessage(33,0,array(0 => SPOUT_VERSION));
-					console("[INFO] [Spout] Authenticated as a ".SPOUT_VERSION." Spout client");
+					console("[INFO] [Spout] Authenticated as a v".SPOUT_VERSION." Spout client");
 					$this->event("onRecievedSpoutPacket_13", "spoutHandler", true);
 					$this->event("onRecievedSpoutPacket_30", "spoutHandler", true);
 					$this->event("onRecievedSpoutPacket_44", "spoutHandler", true);
@@ -846,6 +845,7 @@ class MinecraftClient{
 					0 => -42,
 					1 => 1,				
 				));
+				console("[DEBUG] [Spout] Send Spout verification packet");
 				$this->event("recieved_12", 'spoutHandler', true);			
 				break;		
 		}
@@ -872,7 +872,7 @@ class MinecraftInterface{
 	}
 	
 	protected function getPID($chr){
-		return Utils::strToHex($chr{0});
+		return Utils::padHex(dechex(ord($chr{0})));
 	}
 	
 	protected function getStruct($pid){
