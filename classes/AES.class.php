@@ -28,7 +28,7 @@ class AES{
 		$this->encIV = $this->decIV = str_pad($IV, $this->IVLenght, "\x00", STR_PAD_RIGHT);
 	}
 	
-	protected function _shiftIV($IV, $str){
+	protected function _shiftIV($IV, $str){ //Only for CFB
 		if(!isset($str{$this->IVLenght})){
 			$len = min($this->IVLenght, strlen($str));
 			return substr($IV, $len).substr($str, -$len);

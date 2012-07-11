@@ -12,6 +12,7 @@ class Anvil{
 		$offset = 0;
 		for ($i=0;$i<16;++$i) {
 			if ($bitmask & 1 << $i){
+				//Block IDs
 				$cubic_chunk_data = substr($data,$offset,4096);
 				$offset += 4096;
 				for($j=0; $j<4096; ++$j){
@@ -31,10 +32,8 @@ class Anvil{
 						$this->block[$x][$z][$y][0] = $block;
 					}
 				}
-			}
-		}
-		for ($i=0;$i<16;++$i) {
-			if ($bitmask & 1 << $i){
+				
+				//Metadata
 				$cubic_chunk_data = substr($data,$offset,2048);
 				$offset += 2048;
 				for($j=0; $j<2048; ++$j){
