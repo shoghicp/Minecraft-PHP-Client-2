@@ -306,15 +306,10 @@ class MinecraftClient{
 				$this->map = new MapInterface($this->mapParser);
 				break;
 			case "recieved_38":
-			
-				break;
-				/*
-					This part is not finished. It seems that data is shorter than expected
-				*/
 				$offset = 0;
 				$data[2] = gzinflate(substr($data[2],2));
 				$offsetData = 0;
-				for($i = 0; $i < $data[0]; ++$i){
+				for($x = 0; $x < $data[0]; ++$x){
 					$X = Utils::readInt(substr($data[3],$offset,4));
 					$offset += 4;
 					$Z = Utils::readInt(substr($data[3],$offset,4));
@@ -330,7 +325,7 @@ class MinecraftClient{
 							$offsetData += 10240;
 						}
 					}
-					$this->mapParser->addChunk($X, $Y, $d, $bitmask, false);
+					$this->mapParser->addChunk($X, $Z, $d, $bitmask, false);
 				}
 				break;
 			case "recieved_35":

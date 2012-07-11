@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 set_time_limit(0);
 error_reporting(E_ALL ^ E_NOTICE);
@@ -108,7 +108,7 @@ $debug_level = array(
 	"debug" => 2,
 	"all" => 3,
 );
-
+file_put_contents(FILE_PATH."packets.log", "");
 define("DEBUG", $debug_level[$debug]);
 
 if($version !== false){
