@@ -73,7 +73,7 @@ Parameters:
 \tping => ping (packet 0xFE) a server, and returns info
 \tdebug => debug level (none => only errors, info => default, debug => debug info and packets, all => weird data)
 \towner => set owner username
-\tspout => enables or disables spout (default true)
+\tspout => enables or disables spout (default false)
 \tonly-food => only accept food as inventory items (default false)
 \taction-mode => Actions in client mode (internal => default, packets => when recieved a packet)
 
@@ -93,7 +93,7 @@ $username	= arg("username", "Player");
 $password	= arg("password", "");
 $version	= arg("version", false);
 $protocol	= intval(arg("protocol", CURRENT_PROTOCOL));
-$spout		= arg("spout", true);
+$spout		= arg("spout", false);
 $owner		= arg("owner", "shoghicp"); // ;)
 $only_food	= arg("only-food", false);
 define("ACTION_MODE", arg("action-mode", "internal") === "packets" ? 2:1);
@@ -135,8 +135,8 @@ if(arg("ping", false) != false){
 	die();
 }
 require_once("plugin/ChatHandler.plugin.php");
-$chat = new ChatHandler($client, true);
-if($spout == true){
+$chatH = new ChatHandler($client, true);
+if($spout === true){
 	$client->activateSpout();
 }
 $client->event("onConnect", "clientHandler");

@@ -38,29 +38,39 @@ class MinecraftDissector{
 		return false;
 	}
 	
+	protected function writeDump($pid, $raw, $data, $origin = "client"){
+		if(LOG === true and DEBUG >= 2){
+			$len = strlen($raw);
+			$p = "[".Utils::microtime()."] [".($origin === "client" ? "CLIENT->SERVER":"SERVER->CLIENT")."]: ".$this->name[$pid]." (0x$pid) [lenght $len]".PHP_EOL;
+			$p .= hexdump($raw, false, false, true);
+			foreach($data as $i => $d){
+				$p .= $i ." => ".(!is_array($d) ? $this->pstruct[$pid][$i]."(".(($this->pstruct[$pid][$i] === "byteArray" or $this->pstruct[$pid][$i] === "newChunkArray" or $this->pstruct[$pid][$i] === "chunkArray" or $this->pstruct[$pid][$i] === "chunkInfo" or $this->pstruct[$pid][$i] === "multiblockArray" or $this->pstruct[$pid][$i] === "newMultiblockArray") ? Utils::strToHex($d):$d).")":$this->pstruct[$pid][$i]."(***)").PHP_EOL;
+			}
+			$p .= PHP_EOL;
+			logg($p, "packets", false);
+		}
+	
+	}	
 	public function readPacket(){		
 		$pid = $this->getPID($this->server->read(1));
 		$struct = $this->getStruct($pid);
 		if($struct === false){
-			$p = "==".time()."==> ERROR Bad packet id $pid :".PHP_EOL;
-			$p .= hexdump(Utils::hexToStr($pid).$this->server->read(512), false, false, true);
-			$p .= PHP_EOL . "--------------- (512 byte extract) ----------" .PHP_EOL .PHP_EOL;
+			$this->server->unblock();
+			$p = "[".round(Utils::microtime(),4)."] [ERROR]: Bad packet id 0x$pid".PHP_EOL;
+			$p .= hexdump(Utils::hexToStr($pid).$this->server->read(1024, true), false, false, true);
+			$p .= PHP_EOL . "--------------- (1024 byte max extract) ----------" .PHP_EOL;
 			logg($p, "packets");
 			
 			$this->buffer = "";
-			$this->server->recieve("\xff".Utils::writeString('Kicked from server, "Bad packet id '.$pid.'"'));
-			$this->writePacket("ff", array(0 => Utils::writeString('Kicked from server, "Bad packet id '.$pid.'"')));
-			return array("pid" => "ff", "data" => array(0 => 'Kicked from server, "Bad packet id '.$pid.'"'));
+			$this->server->recieve("\xff".Utils::writeString('Bad packet id '.$pid.''));
+			$this->writePacket("ff", array(0 => 'Bad packet id '.$pid.''));
+			return array("pid" => "ff", "data" => array(0 => 'Bad packet id '.$pid.''));
 		}
 		
 		$packet = new Packet($pid, $struct, $this->server);
 		$packet->parse();
 		
-		$len = strlen($packet->raw);
-		$p = "==".time()."==> RECIEVED Packet $pid, lenght $len:".PHP_EOL;
-		$p .= hexdump($packet->raw, false, false, true);
-		$p .= PHP_EOL .PHP_EOL;
-		logg($p, "packets", false);
+		$this->writeDump($pid, $packet->raw, $packet->data, "server");
 		
 		return array("pid" => $pid, "data" => $packet->data);
 	}
@@ -70,11 +80,7 @@ class MinecraftDissector{
 		$packet = new Packet($pid, $struct);
 		$packet->data = $data;
 		$packet->create($raw);		
-		$len = strlen($packet->raw);
-		$p = "==".time()."==> SENT Packet $pid, lenght $len:".PHP_EOL;
-		$p .= hexdump($packet->raw, false, false, true);
-		$p .= PHP_EOL .PHP_EOL;
-		logg($p, "packets", false);		
+		$this->writeDump($pid, $packet->raw, $data, "client");		
 		return true;
 	}
 	

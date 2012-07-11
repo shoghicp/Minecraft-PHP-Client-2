@@ -13,9 +13,9 @@ require_once("misc/functions.php");
 
 
 class MinecraftClient{
-	private $server, $port, $protocol, $auth, $player, $entities, $players, $key;
+	private $server, $port, $auth, $player, $entities, $players, $key;
 	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions, $map, $mapParser;
-	var $time;
+	var $time, $protocol;
 	
 	
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
@@ -101,7 +101,7 @@ class MinecraftClient{
 		$this->send("12", array(0 => $this->player->getEID(), 1 => $id));
 	}
 	
-	protected function send($pid, $data = array(), $raw = false){
+	public function send($pid, $data = array(), $raw = false){
 		if($this->connected === true){
 			$this->trigger("sent_".$pid, $data);
 			$this->trigger("onSentPacket", $data);
@@ -367,6 +367,7 @@ class MinecraftClient{
 				break;
 			case "03":
 				console("[DEBUG] Chat: ".$data[0], true, true, 2);
+				$this->trigger("onChat", $data[0]);
 				break;
 			case "04":
 				$this->time = $data[0] % 24000;
@@ -420,9 +421,6 @@ class MinecraftClient{
 				}
 				break;
 			case "0d":
-				if(count($this->player->getPosition()) == 0){
-					$this->action(50000, '$this->player->setGround(true); $this->send("0d",$this->player->packet("0d"));');
-				}
 				$this->player->setPosition($data[0], $data[2], $data[3], $data[1], $data[4], $data[5], $data[6]);
 				$this->send("0d",$this->player->packet("0d"));
 				console("[DEBUG] Got position: (".$data[0].",".$data[2].",".$data[3].")", true, true, 2);
@@ -609,6 +607,7 @@ class MinecraftClient{
 		$this->event("recieved_c9", "handler", true);
 		$this->event("onPluginMessage_REGISTER", "backgroundHandler", true);
 		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
+		$this->action(50000, '$this->send("0d",$this->player->packet("0d"));');
 		if(isset($this->auth["session_id"])){
 			$this->action(300000000, 'Utils::curl_get("https://login.minecraft.net/session?name=".$this->auth["user"]."&session=".$this->auth["session_id"]);');
 		}
