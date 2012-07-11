@@ -64,8 +64,8 @@ class Entity{
 		$this->position["stance"] = $this->position["y"] + 1.3;
 	}
 	
-	public function getPosition(){
-		return $this->position;
+	public function getPosition($round = false){
+		return $round === true ? array_map("round", $this->position):$this->position;
 	}
 	
 	public function setGround($ground){

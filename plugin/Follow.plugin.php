@@ -8,7 +8,7 @@ class FollowPath{
 		$this->client = $client;
 		$this->start = Utils::microtime();
 		$this->event = $this->client->event("onEntityMove_".$EID, "onMove", $this);
-		$this->event2 = $this->client->event("onRecievedPacket", "followPath", $this);
+		$this->event2 = $this->client->event("onTick", "followPath", $this);
 		$this->path = array();
 	}	
 	public function onMove($entity){
@@ -30,6 +30,6 @@ class FollowPath{
 	}
 	public function stop(){
 		$this->client->deleteEvent("onEntityMove_".$this->eid, $this->event);
-		$this->client->deleteEvent("onRecievedPacket", $this->event2);
+		$this->client->deleteEvent("onTick", $this->event2);
 	}
 }

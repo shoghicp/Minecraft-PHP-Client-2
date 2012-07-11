@@ -1,7 +1,7 @@
 <?php
 
 class LagOMeter{
-	protected $client, $last, $lag, $start, $ev1, $ev2, $ev3, $minTime;
+	protected $client, $last, $lag, $start, $ev1, $ev2, $minTime;
 	
 	function __construct($client, $minTime = 4){
 		$this->client = $client;
@@ -10,8 +10,7 @@ class LagOMeter{
 		$this->minTime = $minTime;
 		console("[INFO] [LagOMeter] Loaded");
 		$this->ev1 = $this->client->event("onRecievedPacket", "handler", $this);
-		$this->ev2 = $this->client->event("onSentPacket", "meter", $this);
-		$this->ev3 = $this->client->event("onRecievedPacket", "meter", $this);
+		$this->ev2 = $this->client->event("onTick", "meter", $this);
 	}
 	
 	public function handler($data){
@@ -35,8 +34,7 @@ class LagOMeter{
 	
 	public function stop(){
 		$this->client->deleteEvent("onPacketRecieved", $this->ev1);
-		$this->client->deleteEvent("onSentPacket", $this->ev2);
-		$this->client->deleteEvent("onPacketRecieved", $this->ev3);
+		$this->client->deleteEvent("onTick", $this->ev2);
 	}
 
 

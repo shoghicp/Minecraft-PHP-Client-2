@@ -13,64 +13,66 @@ class Anvil{
 		for ($i=0;$i<16;++$i) {
 			if ($bitmask & 1 << $i){
 				//Block IDs
-				$cubic_chunk_data = substr($data,$offset,4096);
+				$cubic_chunk_block = substr($data,$offset,4096);
 				$offset += 4096;
 				for($j=0; $j<4096; ++$j){
 					$x = $X + ($j & 0x0F);
 					$y = $i*16 + ($j >> 8);
 					$z = $Z + (($j & 0xF0) >> 4);
-					$block = ord($cubic_chunk_data{$j});
+					$block = ord($cubic_chunk_block{$j});
 					if(!isset($this->block[$x])){
 						$this->block[$x] = array();
 					}
 					if(!isset($this->block[$x][$z])){
 						$this->block[$x][$z] = array();
 					}
-					if(!isset($this->block[$x1][$z1][$y1])){
+					if(!isset($this->block[$x][$z][$y])){
 						$this->block[$x][$z][$y] = array($block, 0);
 					}else{
 						$this->block[$x][$z][$y][0] = $block;
 					}
 				}
-				
-				//Metadata
-				$cubic_chunk_data = substr($data,$offset,2048);
+			}
+		}
+		for ($i=0;$i<16;++$i){
+			if ($bitmask & 1 << $i){
+				$cubic_chunk_meta = substr($data,$offset,2048);
 				$offset += 2048;
 				for($j=0; $j<2048; ++$j){
-					$block1 = ord($cubic_chunk_data{$j}) & 0x0F;
-					$block2 = ord($cubic_chunk_data{$j}) >> 4;
-					$k = 2*$j;
-					$x1 = $X + ($k & 0x0F);
-					$y1 = $i*16 + ($k >> 8);
-					$z1 = $Z + (($k & 0xF0) >> 4);
-					if(!isset($this->block[$x1])){
-						$this->block[$x1] = array();
-					}
-					if(!isset($this->block[$x1][$z1])){
-						$this->block[$x1][$z1] = array();
-					}
-					if(!isset($this->block[$x1][$z1][$y1])){
-						$this->block[$x1][$z1][$y1] = array(0, $block1);
-					}else{
-						$this->block[$x1][$z1][$y1][1] = $block1;
-					}
-					
-					
-					++$k;
-					$x2 = $X + ($k & 0x0F);
-					$y2 = $i*16 + ($k >> 8);
-					$z2 = $Z + (($k & 0xF0) >> 4);
-					if(!isset($this->block[$x2])){
-						$this->block[$x2] = array();
-					}
-					if(!isset($this->block[$x2][$z2])){
-						$this->block[$x2][$z2] = array();
-					}
-					if(!isset($this->block[$x2][$z2][$y2])){
-						$this->block[$x2][$z2][$y2] = array(0, $block2);
-					}else{
-						$this->block[$x2][$z2][$y2][1] = $block2;
-					}
+						$block1 = ord($cubic_chunk_meta{$j}) & 0x0F;
+						$block2 = ord($cubic_chunk_meta{$j}) >> 4;
+						$k = 2*$j;
+						$x1 = $X + ($k & 0x0F);
+						$y1 = $i*16 + ($k >> 8);
+						$z1 = $Z + (($k & 0xF0) >> 4);
+						if(!isset($this->block[$x1])){
+							$this->block[$x1] = array();
+						}
+						if(!isset($this->block[$x1][$z1])){
+							$this->block[$x1][$z1] = array();
+						}
+						if(!isset($this->block[$x1][$z1][$y1])){
+							$this->block[$x1][$z1][$y1] = array(0, $block1);
+						}else{
+							$this->block[$x1][$z1][$y1][1] = $block1;
+						}
+						
+						
+						++$k;
+						$x2 = $X + ($k & 0x0F);
+						$y2 = $i*16 + ($k >> 8);
+						$z2 = $Z + (($k & 0xF0) >> 4);
+						if(!isset($this->block[$x2])){
+							$this->block[$x2] = array();
+						}
+						if(!isset($this->block[$x2][$z2])){
+							$this->block[$x2][$z2] = array();
+						}
+						if(!isset($this->block[$x2][$z2][$y2])){
+							$this->block[$x2][$z2][$y2] = array(0, $block2);
+						}else{
+							$this->block[$x2][$z2][$y2][1] = $block2;
+						}
 				}
 			}
 		}

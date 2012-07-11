@@ -8,7 +8,7 @@ class AdvertManager{
 		$this->client = $client;
 		$this->timeLapse = $timeLapse;
 		$this->timeLast = Utils::microtime();
-		$this->event = $this->client->event("onRecievedPacket", "handler", $this);
+		$this->event = $this->client->event("onTick", "handler", $this);
 		console("[INFO] [AdvertManager] Loaded");
 	}
 	
@@ -39,7 +39,7 @@ class AdvertManager{
 	}
 	
 	public function stop(){
-		$this->deleteEvent("onPacketRecieved", "handler");
+		$this->deleteEvent("onTick", $this->event);
 	}
 
 }

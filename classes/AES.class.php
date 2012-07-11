@@ -6,9 +6,6 @@ Incomplete AES class with buffering
 
 */
 
-if(version_compare("5.3.3", PHP_VERSION) > 0){
-	die("[ERROR] Use PHP >= 5.3.3");
-}
 
 class AES{
 	private $key, $encIV, $decIV, $IVLenght, $bytes;

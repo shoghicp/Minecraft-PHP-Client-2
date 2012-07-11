@@ -56,7 +56,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 INFO;
-
+require("misc/dependencies.php");
 
 if(arg("help", false) !== false){
 echo <<<USAGE
@@ -144,7 +144,7 @@ $client->connect($username, $password);
 
 
 function clientHandler($message, $event, $ob){
-	global $food, $only_food, $chat, $lag, $owner;
+	global $food, $only_food, $chat, $lag, $owner, $nav;
 	switch($event){
 		case "onChatHandler":
 			console("[INFO] [Chat] ".ChatHandler::format($message));
@@ -160,6 +160,8 @@ function clientHandler($message, $event, $ob){
 			$food = new NoHunger($ob, $only_food);
 			require_once("plugin/ChatCommand.plugin.php");
 			$chat = new ChatCommand($ob);
+			require_once("plugin/Navigation.plugin.php");
+			$nav = new Navigation($ob);
 			$ob->event("onChatHandler", "clientHandler");
 			$chat->addOwner($owner);
 			$chat->addCommand("die", "clientHandler", true, true);
