@@ -336,13 +336,22 @@ class MinecraftClient{
 				break;
 			case "recieved_33":
 				if($this->protocol > 29){
-					$this->mapParser->addChunk($data[0], $data[1], $data[6], $data[3]);				
+					if($data[2] == true and $data[3] == 0){
+						$this->mapParser->unloadChunk($data[0], $data[1]);
+					}else{
+						$this->mapParser->addChunk($data[0], $data[1], $data[6], $data[3]);
+					}
 				}elseif($this->protocol >= 28){
 					$this->mapParser->addChunk($data[0], $data[1], $data[7], $data[3]);
 				}else{
 					if($data[4] >= 127){
 						$this->mapParser->addChunk($data[0], $data[2], $data[7]);
 					}
+				}
+				break;
+			case "recieved_32":
+				if($data[2] == 0){
+					$this->mapParser->unloadChunk($data[0], $data[1]);
 				}
 				break;
 		}
@@ -390,7 +399,7 @@ class MinecraftClient{
 				$this->trigger("onHealthChange", array("health" => $this->player->getHealth(), "food" => $this->player->getFood()));
 				if($data[0] <= 0){ //Respawn
 					$this->trigger("onDeath");
-					$d = array(					
+					$d = array(
 						0 => $this->info["dimension"],
 						1 => 1,
 						2 => $this->info["mode"],
@@ -399,8 +408,13 @@ class MinecraftClient{
 					);
 					if($this->protocol >= 23){
 						$d[5] = $this->info["level_type"];
-					}					
-					$this->send("09", $d);
+					}
+					
+					if($this->protocol >= 36){
+						$this->send("cd", array(2));
+					}else{
+						$this->send("09", $d);
+					}
 					$this->trigger("onRespawn", $d);
 					console("[INFO] Death and respawn");
 				}
@@ -1009,6 +1023,8 @@ class MinecraftInterface{
 		$struct = $this->getStruct($pid);
 		if($this->protocol >= 32){
 			if($pid == "01"){
+				$struct = array();
+			}elseif($pid == "09"){
 				$struct = array();
 			}
 		}

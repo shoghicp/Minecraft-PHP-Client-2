@@ -103,9 +103,15 @@ class McRegion{
 	}
 	
 	public function unloadChunk($X, $Z){
-		if(isset($this->block[$X])){
-			unset($this->block[$X][$Z]);
+		$X = floor($X / 16) * 16;
+		$Z = floor($Z / 16) * 16;
+		for($x = $X; $x < ($X + 16); ++$x){
+			for($z = $Z; $z < ($Z + 16); ++$z){
+				unset($this->block[$x][$z]);
+				unset($this->raw[$x][$z]);
+			}
 		}
+		console("[DEBUG] [McRegion] Unloaded X ".$X." Z ".$Z, true, true, 2);
 	}
 	
 	public function getBlock($x, $y, $z){
@@ -118,7 +124,6 @@ class McRegion{
 	
 	public function changeBlock($x, $y, $z, $block, $metadata = 0){
 		console("[INTERNAL] [McRegion] Changed block X ".$x." Y ".$y." Z ".$z, true, true, 3);
-		$this->checkChunk($x, $z);
 		if(!isset($this->block[$x])){
 			$this->block[$x] = array();
 		}
