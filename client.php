@@ -166,9 +166,9 @@ function clientHandler($message, $event, $ob){
 			$chat->addOwner($owner);
 			$chat->addCommand("die", "clientHandler", true, true);
 			$chat->addCommand("say", "clientHandler", true, true);
+			$chat->addCommand("follow", "clientHandler", true, true);
 			$chat->addCommand("coord", "clientHandler");
 			$chat->addCommand("dice", "clientHandler");
-			$chat->addCommand("follow", "clientHandler");
 			break;
 		case "onChatCommand_follow":
 			require_once("plugin/Follow.plugin.php");
