@@ -12,6 +12,8 @@ class Navigation{
 		$this->client->event("onSpoutBlock", "spoutBlock", $this);
 		$this->last = Utils::microtime();
 		$this->maxBlocksPerTick = 0.1; //speed
+		$this->fly = false;
+		$this->speedY = 0;
 		$this->event = $this->client->event("onTick", "walker", $this);
 		console("[INFO] [Navigation] Loaded");
 	}
@@ -26,16 +28,19 @@ class Navigation{
 	
 	public function walker($time){
 		$pos = $this->player->getPosition();
-		$zone = $this->getZone(1,true);
-		if($zone[0][0][-1][0] === 0){ //Air
-			$pos["y"] -= 1;
-			$pos["stance"] -= 1;
+		$feet = $this->getZone(1,true);
+		if(isset($this->material["nosolid"][$zone[0][0][-1][0]]) and $this->fly === false){ //Air
+			$this->speedY += 0.9;
+			$pos["y"] -= $this->speedY;
 			$pos["ground"] = false;
-		}else{
+		}elseif($this->fly === false){
+			$pos["y"] = floor($pos["y"]);
+			$this->speedY = 0;
 			$pos["ground"] = true;
 		}
+		
 		$this->player->setPosition($pos["x"],$pos["y"],$pos["z"],$pos["stance"],$pos["yaw"],$pos["pitch"],$pos["ground"]);
-	}	
+	}
 	
 	public function spoutBlock($data){
 		$this->material[$data["id"]] = $data["info"];

@@ -57,6 +57,7 @@ class Entity{
 			"pitch" => $pitch,
 			"ground" => $ground,
 		);
+		$this->updateStance();
 		return true;
 	}
 	

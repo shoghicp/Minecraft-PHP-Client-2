@@ -1,6 +1,26 @@
 <?php
 
 	$material = array(
+		"nosolid" => array(
+			0 => true,
+			6 => true,
+			8 => true,
+			9 => true,
+			10 => true,
+			11 => true,
+			27 => true,
+			28 => true,
+			29 => true,
+			31 => true,
+			32 => true,
+			37 => true,
+			38 => true,
+			39 => true,
+			40 => true,
+			50 => true,
+			63 => true,
+			66 => true,
+		),
 		0 => "Air",
 		1 => "Stone",
 		2 => "Grass",

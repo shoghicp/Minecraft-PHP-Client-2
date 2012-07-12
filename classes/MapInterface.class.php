@@ -38,12 +38,12 @@ class MapInterface{
 	}
 	
 	public function getZone($x1, $y1, $z1, $x2, $y2, $z2){
-		$x1 = round($x1);
-		$y1 = round($y1);
-		$z1 = round($z1);
-		$x2 = round($x2);
-		$y2 = round($y2);
-		$z2 = round($z2);
+		$x1 = intval($x1);
+		$y1 = intval($y1);
+		$z1 = intval($z1);
+		$x2 = intval($x2);
+		$y2 = intval($y2);
+		$z2 = intval($z2);
 		if($x1>$x2 or $y1>$y2 or $z1>$z2){
 			return array();
 		}
