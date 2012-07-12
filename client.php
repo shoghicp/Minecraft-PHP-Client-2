@@ -144,7 +144,7 @@ $client->connect($username, $password);
 
 
 function clientHandler($message, $event, $ob){
-	global $food, $only_food, $chat, $lag, $owner, $nav;
+	global $food, $only_food, $chat, $lag, $owner, $nav, $follow;
 	switch($event){
 		case "onChatHandler":
 			console("[INFO] [Chat] ".ChatHandler::format($message));
@@ -168,6 +168,20 @@ function clientHandler($message, $event, $ob){
 			$chat->addCommand("say", "clientHandler", true, true);
 			$chat->addCommand("coord", "clientHandler");
 			$chat->addCommand("dice", "clientHandler");
+			$chat->addCommand("follow", "clientHandler");
+			break;
+		case "onChatCommand_follow":
+			require_once("plugin/Follow.plugin.php");
+			if(is_object($follow)){
+				$follow->stop();
+			}
+			if($message["text"] != "stop"){
+				$entity = $ob->getPlayer($message["text"]);
+				if(is_object($entity)){
+					$follow = new FollowPath($ob, $entity->getEID());
+					$ob->say("Started following ".$message["text"], $message["owner"]);
+				}
+			}
 			break;
 		case "onChatCommand_dice":
 			$ob->say("Dice roll: ".mt_rand(1,((intval($message["text"])>0) ? intval($message["text"]):6))."!");

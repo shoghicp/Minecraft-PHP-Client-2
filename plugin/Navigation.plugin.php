@@ -28,7 +28,7 @@ class Navigation{
 	
 	public function walker($time){
 		$pos = $this->player->getPosition();
-		$feet = $this->getZone(1,true);
+		$zone = $this->getZone(1,true);
 		if(isset($this->material["nosolid"][$zone[0][0][-1][0]]) and $this->fly === false){ //Air
 			$this->speedY += 0.9;
 			$pos["y"] -= $this->speedY;
