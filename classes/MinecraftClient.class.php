@@ -412,9 +412,8 @@ class MinecraftClient{
 					if($this->protocol >= 23){
 						$d[5] = $this->info["level_type"];
 					}
-					
 					if($this->protocol >= 36){						
-						$this->send("cd", array(2));
+						$this->send("cd", array(1));
 					}else{
 						$this->send("09", $d);
 					}
