@@ -1,34 +1,34 @@
 <?php
 
-
 /*
-		for($i=36;$i<=44;++$i){
-			$slot = $ginfo["inventory"][$i];
-			if(isset($food[$slot[0]]) == true and ($ginfo["food"] + $food[$slot[0]]) <= 20){
-				write_packet("10",array("slot" => $i-36));
-				write_packet("0f", array("x" => -1, "y" => -1, "z" => -1, "direction" => -1, "slot" => array(-1)));
-				$ginfo["food"] = 20;
-				$eat = true;
-				break;
-			}elseif(!isset($food[$slot[0]]) and arg("only-food", false) == true){
-				for($a=0;$a<min(3,$slot[1]);++$a){
-					write_packet("10",array("slot" => $i-36));				
-					write_packet("0e", array("status" => 4, "x" => 0, "y" => 0, "z" => 0, "face" => 0));
-				}
-			}
-		}
-		if($ginfo["timer"]["sayfood"]<=$time and $eat == false and $ginfo["food"] <= 12){
-			$ginfo["timer"]["sayfood"] = $time+60;
-			$messages = array(
-				"Necesito comida!",
-				"Comida!!!",
-				"Me muero de hambre!",
-				"No tengo comida!",			
-			);
-			Message($messages[count($messages)-1]);
-		}
+
+
+           -
+         /   \
+      /         \
+   /   MINECRAFT   \
+/         PHP         \
+|\       CLIENT      /|
+|.   \     2     /   .|
+| ..     \   /     .. |
+|    ..    |    ..    |
+|       .. | ..       |
+\          |          /
+   \       |       /
+      \    |    /
+         \ | /
+         
+         
+	by @shoghicp
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
 
 */
+
 
 class NoHunger{
 	protected $client, $player, $only_food;

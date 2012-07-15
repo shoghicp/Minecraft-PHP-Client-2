@@ -1,15 +1,31 @@
 <?php
 
 /*
-00000001 0x01
-00000010 0x02
-00000100 0x04
-00001000 0x08
-00010000 0x10
-00100000 0x20
-01000000 0x40
-10000000 0x80
-01111111 0x7f
+
+
+           -
+         /   \
+      /         \
+   /   MINECRAFT   \
+/         PHP         \
+|\       CLIENT      /|
+|.   \     2     /   .|
+| ..     \   /     .. |
+|    ..    |    ..    |
+|       .. | ..       |
+\          |          /
+   \       |       /
+      \    |    /
+         \ | /
+         
+         
+	by @shoghicp
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
 
 */
 
