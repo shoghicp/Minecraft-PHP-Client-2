@@ -77,6 +77,7 @@ Parameters:
 \tspout => enables or disables spout (default false)
 \tonly-food => only accept food as inventory items (default false)
 \taction-mode => Actions in client mode (internal => default, packets => when recieved a packet)
+\toptimize => Disables resource-intensive things (default false)
 
 Example:
 php {$argv[0]} --server=127.0.0.1 --username=Player --version=1.2.5 --debug=1
@@ -97,11 +98,13 @@ $protocol	= intval(arg("protocol", CURRENT_PROTOCOL));
 $spout		= arg("spout", false);
 $owner		= arg("owner", "shoghicp"); // ;)
 $only_food	= arg("only-food", false);
+define("OPTIMIZE", arg("optimize", false));
 define("ACTION_MODE", arg("action-mode", "internal") === "packets" ? 2:1);
 define("LOG", arg("log", true) === true ? true:false);
 $debug = trim(strtolower(arg("debug", "info")));
+
 if(strlen(str_replace(array("info", "all", "debug","none"), "", $debug)) != 0){
-$debug = "info";
+	$debug = "info";
 }
 $debug_level = array(
 	"none" => 0,
@@ -127,6 +130,9 @@ if(!file_exists("pstruct/".$protocol.".php")){
 }
 
 $client = new MinecraftClient($server, $protocol, $port);
+if(OPTIMIZE === true){
+	$client->disableMap();
+}
 if(arg("ping", false) != false){
 	console("[INFO] Pinging ".$server.":".$port."...");
 	$info = $client->ping();
@@ -154,15 +160,17 @@ function clientHandler($message, $event, $ob){
 			console("[INFO] [LagOMeter] Lag of ".round($message,2)." seconds ended");
 			break;
 		case "onConnect":
-			require_once("plugin/LagOMeter.plugin.php");
-			$lag = new LagOMeter($ob, 4);
-			$ob->event("onLagEnd", "clientHandler");
+			if(OPTIMIZE === false){
+				require_once("plugin/LagOMeter.plugin.php");
+				$lag = new LagOMeter($ob, 4);
+				$ob->event("onLagEnd", "clientHandler");
+				require_once("plugin/Navigation.plugin.php");
+				$nav = new Navigation($ob);
+			}
 			require_once("plugin/NoHunger.plugin.php");
 			$food = new NoHunger($ob, $only_food);
 			require_once("plugin/ChatCommand.plugin.php");
 			$chat = new ChatCommand($ob);
-			require_once("plugin/Navigation.plugin.php");
-			$nav = new Navigation($ob);
 			$ob->event("onChatHandler", "clientHandler");
 			$chat->addOwner($owner);
 			$chat->addCommand("die", "clientHandler", true, true);

@@ -26,7 +26,7 @@ class AES{
 	}
 	
 	protected function _shiftIV($IV, $str){ //Only for CFB
-		if(!isset($str{$this->IVLenght})){
+		if(!isset($str{$this->IVLenght - 1})){
 			$len = min($this->IVLenght, strlen($str));
 			return substr($IV, $len).substr($str, -$len);
 		}
