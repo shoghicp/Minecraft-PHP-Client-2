@@ -12,7 +12,7 @@ class Packet{
 		$this->raw = "";
 		$this->data = array();
 		if($pid !== false){
-			$this->addRaw(Utils::hexToStr($pid));
+			$this->addRaw(chr(hexdec($pid)));
 		}
 		$this->struct = $struct;
 		$this->sock = $sock;
