@@ -7,6 +7,11 @@ if(version_compare("5.3.3", PHP_VERSION) > 0){
 	++$errors;
 }
 
+if(!extension_loaded("gmp")){
+	console("[WARNING] Enable GMP to increase performance", true, true, 0);
+	++$errors;
+}
+
 if(!function_exists("openssl_encrypt")){
 	console("[ERROR] Unable to find OpenSSL functions", true, true, 0);
 	++$errors;

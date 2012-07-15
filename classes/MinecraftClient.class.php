@@ -148,7 +148,7 @@ class MinecraftClient{
 
 	public function action($microseconds, $code){
 		$this->actions[] = array($microseconds, Utils::microtime(), $code);
-		console("[INTERNAL] Attached to action ".$event, true, true, 3);
+		console("[INTERNAL] Attached to action ".$microseconds, true, true, 3);
 	}
 	
 	public function event($event, $func, $in = false){

@@ -63,32 +63,34 @@ class Utils{
 	}
 	
 	public static function microtime(){
-		$time = explode(" ",microtime());
+		//Since PHP >= 5.3.3 is needed to run the client, we don't need anymore this function
+		/*$time = explode(" ",microtime());
 		$time = $time[1] + floatval($time[0]);
-		return $time;
+		return $time;*/
+		return microtime(true);
 	}
 	
 	public static function curl_get($page){
-		$ch = curl_init ($page);
-		curl_setopt ($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client 2'));
-		curl_setopt ($ch, CURLOPT_AUTOREFERER, true);
-		curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, true);
-		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 10);
-		return curl_exec ($ch);
+		$ch = curl_init($page);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client 2'));
+		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+		return curl_exec($ch);
 	}
 	
 	public static function curl_post($page, $args){
 		$ch = curl_init($page);
-		curl_setopt ($ch, CURLOPT_POST, 1);
-		curl_setopt ($ch, CURLOPT_POSTFIELDS, $args);
-		curl_setopt ($ch, CURLOPT_AUTOREFERER, true);
-		curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, true);
-		curl_setopt ($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client 2'));
-		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
+		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client 2'));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
 		return curl_exec($ch);
 	}
 
@@ -160,7 +162,7 @@ class Utils{
 	
 	public static function readByte($c, $signed = true){
 		$b = ord($c{0});
-		if($signed == true and ($b & 0x80) == 0x80){ //calculate Two's complement
+		if($signed === true and ($b & 0x80) == 0x80){ //calculate Two's complement
 			$b = -0x80 + ($b & 0x7f);
 		}
 		return $b;
@@ -177,7 +179,7 @@ class Utils{
 	}
 
 	public static function readShort($str){
-		list(,$unpacked) = unpack("n", substr($str, 0, 2));
+		list(,$unpacked) = unpack("n", $str);
 		if($unpacked >= pow(2, 15)) $unpacked -= pow(2, 16); // Convert unsigned short to signed short.
 		return $unpacked;
 	}
@@ -190,7 +192,7 @@ class Utils{
 	}
 
 	public static function readInt($str){
-		list(,$unpacked) = unpack("N", substr($str, 0, 4));
+		list(,$unpacked) = unpack("N", $str);
 		if($unpacked >= pow(2, 31)) $unpacked -= pow(2, 32); // Convert unsigned int to signed int
 		return $unpacked;
 	}
@@ -203,7 +205,7 @@ class Utils{
 	}
 	
 	public static function readFloat($str){
-		list(,$value) = ENDIANNESS === BIG_ENDIAN?unpack('f', substr($str,0, 4)):unpack('f', strrev(substr($str,0, 4)));
+		list(,$value) = ENDIANNESS === BIG_ENDIAN?unpack('f', $str):unpack('f', strrev($str));
 		return $value;
 	}
 	
@@ -212,7 +214,7 @@ class Utils{
 	}
 
 	public static function readDouble($str, $signed = true){
-		list(,$value) = ENDIANNESS === BIG_ENDIAN?unpack('d', substr($str,0, 8)):unpack('d', strrev(substr($str,0, 8)));
+		list(,$value) = ENDIANNESS === BIG_ENDIAN?unpack('d', $str):unpack('d', strrev($str));
 		return $value;
 	}
 	
@@ -221,6 +223,13 @@ class Utils{
 	}
 
 	public static function readLong($str, $signed = true){
+		if(extension_loaded("gmp")){
+			list(,$firstHalf) = unpack("N", substr($str, 0, 4));
+			list(,$secondHalf) = unpack("N", substr($str, 4, 4));
+			$value = gmp_add($secondHalf, gmp_mul($firstHalf, "4294967296"));
+			if(gmp_cmp($value, gmp_pow(2, 63)) >= 0) $value = gmp_sub($value, gmp_pow(2, 64));
+			return gmp_strval($value);
+		}
 		$n = "";
 		for($i=0;$i<8;++$i){
 			$n .= bin2hex($str{$i});

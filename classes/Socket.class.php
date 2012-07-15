@@ -19,7 +19,7 @@ class Socket{
 				$this->unblock();
 				$this->encryption = false;
 				socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);
-				socket_set_option($this->sock, SOL_TCP, TCP_NODELAY, 1);
+				//socket_set_option($this->sock, SOL_TCP, TCP_NODELAY, 1);
 				//socket_set_option($this->sock, SOL_TCP, SO_SNDBUF, 1);
 			}
 		}else{
@@ -35,7 +35,7 @@ class Socket{
 				$this->unblock();
 				$this->encryption = false;
 				socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);
-				socket_set_option($this->sock, SOL_TCP, TCP_NODELAY, 1);
+				//socket_set_option($this->sock, SOL_TCP, TCP_NODELAY, 1);
 				//socket_set_option($this->sock, SOL_TCP, SO_SNDBUF, 1);		
 		}
 	}
@@ -88,14 +88,19 @@ class Socket{
 				break;
 			}
 		}
-		$ret = substr($this->buffer, 0, $len);
+		if($len === 1){
+			$ret = $this->buffer{0};
+		}else{		
+			$ret = substr($this->buffer, 0, $len);
+		}
+		
 		$this->buffer = substr($this->buffer, $len);
 		return $ret;
 		
 	}
 	
 	public function recieve($str){ //Auto write a packet
-		if($str != ""){
+		if($str !== ""){
 			$str = $this->encryption === true ? $this->decrypt->decrypt($str):$str;
 			$this->buffer .= $str;
 			return true;
@@ -110,7 +115,7 @@ class Socket{
 	}
 	
 	function get(){
-		$errors = range(88,125);
+		$errors = array_fill(88,125 - 88, true);
 		if(!isset($this->buffer{HALF_BUFFER_BYTES}) and $this->connected === true){
 			/*if(!isset($this->buffer{MIN_BUFFER_BYTES})){
 				$this->block();
@@ -122,7 +127,7 @@ class Socket{
 			$read = @socket_read($this->sock,HALF_BUFFER_BYTES, PHP_BINARY_READ);
 			if($read !== false and $read !== ""){
 				$this->recieve($read);
-			}elseif($read === false and in_array(socket_last_error($this->sock), $errors)){
+			}elseif($read === false and isset($errors[socket_last_error($this->sock)])){
 				$this->close(socket_last_error($this->sock));
 			}		
 		}

@@ -18,8 +18,8 @@ class QuestionFAQ{
 		$this->question[] = strtolower($txt);
 	}
 	
-	public function addResponse($fixedWords, $optionalWords, $noWords, $question = true, $response){
-		$this->response[] = array(explode(",",strtolower($fixedWords)), explode(",",strtolower($optionalWords)), explode(",",strtolower($noWords)), $question, $response);
+	public function addResponse($fixedWords, $optionalWords, $noWords, $question, $response, $call = false){
+		$this->response[] = array(explode(",",strtolower($fixedWords)), explode(",",strtolower($optionalWords)), explode(",",strtolower($noWords)), $question, $response, $call);
 	}
 	
 	public function toggleState($user){
@@ -96,7 +96,11 @@ class QuestionFAQ{
 				$p = reset($best);
 				$best = key($best);
 				console("[DEBUG] [QuestionFAQ] Chosen response with punctuation ".$p." over ".count($best)." responses", true, true, 2);
-				$this->client->say($this->response[$best][4], $owner);
+				if($this->response[$best][5] !== false){
+					call_user_func($this->response[$best][4], $owner, $this->response[$best][5], $this->client);
+				}else{
+					$this->client->say($this->response[$best][4], $owner);
+				}
 			}
 		}	
 	}

@@ -3,6 +3,7 @@
 set_time_limit(0);
 error_reporting(E_ALL ^ E_NOTICE);
 ini_set("display_errors", 1);
+ini_set('default_charset', 'utf-8');
 define("FILE_PATH", dirname(__FILE__)."/");
 set_include_path(get_include_path() . PATH_SEPARATOR . FILE_PATH);
 define("MAX_BUFFER_BYTES", 1024 * 1024 * 4); //4MB max of buffer
@@ -167,8 +168,16 @@ function clientHandler($message, $event, $ob){
 			$chat->addCommand("die", "clientHandler", true, true);
 			$chat->addCommand("say", "clientHandler", true, true);
 			$chat->addCommand("follow", "clientHandler", true, true);
+			$chat->addCommand("goto", "clientHandler", true, true);
 			$chat->addCommand("coord", "clientHandler");
 			$chat->addCommand("dice", "clientHandler");
+			break;
+		case "onChatCommand_goto":
+			$data = explode(" ",$message["text"]);
+			$x = array_shift($data);
+			$y = array_shift($data);
+			$z = array_shift($data);
+			$nav->go($x, $y, $z);
 			break;
 		case "onChatCommand_follow":
 			require_once("plugin/Follow.plugin.php");
