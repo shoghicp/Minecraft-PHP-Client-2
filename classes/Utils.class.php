@@ -99,7 +99,7 @@ class Utils{
 	}
 	
 	public static function strToHex($str){
-		return implode(array_map("Utils::padHex",array_map("dechex",array_map("ord",str_split($str,1)))));
+		return bin2hex($str);
 	}
 	
 	public static function hexToStr($hex){

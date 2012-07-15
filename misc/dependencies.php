@@ -8,8 +8,7 @@ if(version_compare("5.3.3", PHP_VERSION) > 0){
 }
 
 if(!extension_loaded("gmp")){
-	console("[WARNING] Enable GMP to increase performance", true, true, 0);
-	++$errors;
+	console("[WARNING] Enable GMP extension to increase performance", true, true, 0);
 }
 
 if(!function_exists("openssl_encrypt")){
@@ -23,7 +22,7 @@ if(!function_exists("curl_init")){
 }
 
 if(!function_exists("gzinflate")){
-	console("[ERROR] Unable to find Zlib", true, true, 0);
+	console("[ERROR] Unable to find Zlib extension", true, true, 0);
 	++$errors;
 }
 

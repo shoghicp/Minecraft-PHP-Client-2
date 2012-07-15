@@ -43,6 +43,7 @@ class MinecraftClient{
 	public function disableMap(){
 		$this->useMap = false;
 		unset($this->mapParser, $this->map);
+		console("[DEBUG] Map disabled", true, true, 2);
 	}
 	
 	public function activateSpout(){

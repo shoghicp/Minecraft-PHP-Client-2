@@ -16,7 +16,8 @@ class Socket{
 			}else{
 				$this->connected = true;
 				$this->buffer = "";
-				$this->unblock();
+				//$this->unblock();
+				$this->block();
 				$this->encryption = false;
 				socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);
 				//socket_set_option($this->sock, SOL_TCP, TCP_NODELAY, 1);
@@ -83,7 +84,7 @@ class Socket{
 			return "";
 		}
 		while(!isset($this->buffer{$len-1}) and $this->connected === true){
-			$this->get();
+			$this->get($len);
 			if($unblock === true){
 				break;
 			}
@@ -114,9 +115,9 @@ class Socket{
 		}
 	}
 	
-	function get(){
+	function get($len){
 		$errors = array_fill(88,125 - 88, true);
-		if(!isset($this->buffer{HALF_BUFFER_BYTES}) and $this->connected === true){
+		if(!isset($this->buffer{$len}) and $this->connected === true){
 			/*if(!isset($this->buffer{MIN_BUFFER_BYTES})){
 				$this->block();
 				$read = MIN_BUFFER_BYTES;
@@ -124,12 +125,14 @@ class Socket{
 				$this->unblock();
 				$read = HALF_BUFFER_BYTES;
 			}*/
-			$read = @socket_read($this->sock,HALF_BUFFER_BYTES, PHP_BINARY_READ);
+			$read = @socket_read($this->sock,$len, PHP_BINARY_READ);
 			if($read !== false and $read !== ""){
 				$this->recieve($read);
 			}elseif($read === false and isset($errors[socket_last_error($this->sock)])){
 				$this->close(socket_last_error($this->sock));
-			}		
+			}else{
+				usleep(10000);
+			}
 		}
 	}
 }
