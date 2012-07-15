@@ -77,10 +77,6 @@ class MinecraftClient{
 	}
 	
 	public function activateSpout(){
-		/*$this->registerPluginChannel("AutoProto:HShake");
-		$this->registerPluginChannel("ChkCache:setHash");
-		$this->sendPluginMessage("AutoProto:HShake", "VanillaProtocol");
-		$this->event("onPluginChannelRegister_WECUI", "spoutHandler", true);*/
 		$this->event("onConnect", "spoutHandler", true);
 		$this->event("recieved_c3", "spoutHandler", true);
 		$this->interface->name["c3"] = "Spout Message";
@@ -625,6 +621,7 @@ class MinecraftClient{
 			register_tick_function(array($this, "tickerFunction"));
 		}else{
 			$this->event("onRecievedPacket", "backgroundHandler", true);
+			$this->event("onSentPacket", "backgroundHandler", true);
 		}
 		
 		$this->event("recieved_00", "handler", true);
@@ -656,6 +653,7 @@ class MinecraftClient{
 		$this->event("onPluginMessage_REGISTER", "backgroundHandler", true);
 		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
 		$this->action(50000, '$this->trigger("onTick", $time);');
+		$this->action(10000000, 'console("[DEBUG] Memory Usage: ".round((memory_get_usage(true) / 1024) / 1024, 2)." MB", true, true, 2);');
 		$this->event("onTick", "handler", true);
 		if(isset($this->auth["session_id"])){
 			$this->action(300000000, 'Utils::curl_get("https://login.minecraft.net/session?name=".$this->auth["user"]."&session=".$this->auth["session_id"]);');
