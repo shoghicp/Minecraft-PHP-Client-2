@@ -86,8 +86,7 @@ class Packet{
 					$this->addRaw($this->data[$field]);
 					break;
 				case "string":
-					$len = strlen($this->data[$field]);
-					$this->addRaw(Utils::writeShort($len));
+					$this->addRaw(Utils::writeShort(strlen($this->data[$field])));
 					$this->addRaw(Utils::writeString($this->data[$field]));
 					break;
 				case "slotData":
@@ -153,8 +152,7 @@ class Packet{
 					}
 					break;
 				case "string":
-					$len = Utils::readShort($this->get(2));
-					$this->data[] = Utils::readString($this->get($len * 2));
+					$this->data[] = Utils::readString($this->get(Utils::readShort($this->get(2)) * 2));
 					break;
 				case "long":
 					$this->data[] = Utils::readLong($this->get(8));
@@ -197,7 +195,7 @@ class Packet{
 				case "intArray":
 					$len = $this->data[$field - 1];
 					if($len <= 0){
-						$this->data[] = "";
+						$this->data[] = array();
 						break;
 					}
 					$this->data[] = array_map("Utils::readInt",str_split($this->get($len * 4),4));
@@ -207,12 +205,10 @@ class Packet{
 					$this->data[] = $this->get($n*12);
 					break;
 				case "chunkArray":
-					$len = max(0,$this->data[6]);
-					$this->data[] = $this->get($len);
+					$this->data[] = $this->get(max(0,$this->data[6]));
 					break;
 				case "newChunkArray":
-					$len = max(0,$this->data[5]);
-					$this->data[] = $this->get($len);
+					$this->data[] = $this->get(max(0,$this->data[5]));
 					break;
 				case "multiblockArray":
 					$count = $this->data[$field - 1];
@@ -295,8 +291,7 @@ class Packet{
 								$r = Utils::readFloat($this->get(4));
 								break;
 							case 4:
-								$len = Utils::readShort($this->get(2));
-								$r = Utils::readString($this->get($len * 2));
+								$r = Utils::readString($this->get(Utils::readShort($this->get(2)) * 2));
 								break;
 							case 5:
 								$r = array("id" => Utils::readShort($this->get(2)), "count" => Utils::readByte($this->get(1)), "damage" => Utils::readShort($this->get(2)));

@@ -36,8 +36,18 @@ if(version_compare("5.3.3", PHP_VERSION) > 0){
 	++$errors;
 }
 
+if(version_compare("5.4.0", PHP_VERSION) > 0){
+	console("[NOTICE] Use PHP >= 5.4.0 to increase performance", true, true, 0);
+	define("HEX2BIN", true);
+}else{
+	define("HEX2BIN", false);
+}
+
 if(!extension_loaded("gmp")){
-	console("[WARNING] Enable GMP extension to increase performance", true, true, 0);
+	console("[NOTICE] Enable GMP extension to increase performance", true, true, 0);
+	define("GMPEXT", true);
+}else{
+	define("GMPEXT", false);
 }
 
 if(!function_exists("openssl_encrypt")){

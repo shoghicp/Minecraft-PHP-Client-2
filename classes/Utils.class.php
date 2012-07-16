@@ -118,8 +118,15 @@ class Utils{
 		return bin2hex($str);
 	}
 	
+	public static function hexToChr($hex){
+		return chr(hexdec($hex));
+	}
+	
 	public static function hexToStr($hex){
-		return implode(array_map("chr",array_map("hexdec",str_split($hex,2))));
+		if(HEX2BIN === true){
+			return hex2bin($hex);
+		}
+		return implode(array_map("Utils::hexToChr",str_split($hex,2)));
 	}
 
 	public static function utf16_to_utf8($str) {
@@ -229,7 +236,7 @@ class Utils{
 		return ENDIANNESS === BIG_ENDIAN?pack('f', $value):strrev(pack('f', $value));
 	}
 
-	public static function readDouble($str, $signed = true){
+	public static function readDouble($str){
 		list(,$value) = ENDIANNESS === BIG_ENDIAN?unpack('d', $str):unpack('d', strrev($str));
 		return $value;
 	}
@@ -238,23 +245,22 @@ class Utils{
 		return ENDIANNESS === BIG_ENDIAN?pack('d', $value):strrev(pack('d', $value));
 	}
 
-	public static function readLong($str, $signed = true){
-		if(extension_loaded("gmp")){
-			list(,$firstHalf) = unpack("N", substr($str, 0, 4));
-			list(,$secondHalf) = unpack("N", substr($str, 4, 4));
+	public static function readLong($str){		
+		list(,$firstHalf) = unpack("N", substr($str, 0, 4));
+		list(,$secondHalf) = unpack("N", substr($str, 4, 4));
+		if(GMPEXT === true){
 			$value = gmp_add($secondHalf, gmp_mul($firstHalf, "4294967296"));
-			if(gmp_cmp($value, gmp_pow(2, 63)) >= 0) $value = gmp_sub($value, gmp_pow(2, 64));
+			if(gmp_cmp($value, gmp_pow(2, 63)) >= 0){
+				$value = gmp_sub($value, gmp_pow(2, 64));
+			}
 			return gmp_strval($value);
+		}else{
+			$value = bcadd($secondHalf, bcmul($firstHalf, "4294967296"));
+			if(bccomp($value, bcpow(2, 63)) >= 0){
+				$value = bcsub($value, bcpow(2, 64));
+			}
+			return $value;
 		}
-		$n = "";
-		for($i=0;$i<8;++$i){
-			$n .= bin2hex($str{$i});
-		}
-		$n = hexdec($n);
-		if($signed == true){
-			$n = $n>9223372036854775807 ? -(18446744073709551614-$n+1):$n;
-		}
-		return sprintf("%.0F", $n);
 	}
 	
 	public static function writeLong($value){
