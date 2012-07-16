@@ -66,7 +66,6 @@ class MinecraftClient{
 		$this->spout = false;
 		$this->players = array();
 		$this->useMap = true;
-		$this->mapHandler("","start");
 		
 	}
 	
@@ -623,7 +622,7 @@ class MinecraftClient{
 			$this->event("onRecievedPacket", "backgroundHandler", true);
 			$this->event("onSentPacket", "backgroundHandler", true);
 		}
-		
+		$this->mapHandler("","start");
 		$this->event("recieved_00", "handler", true);
 		$this->event("recieved_03", "handler", true);
 		$this->event("recieved_04", "handler", true);
