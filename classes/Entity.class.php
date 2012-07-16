@@ -39,7 +39,6 @@ class Entity{
 		$this->type = intval($type);
 		$this->health = 20;
 		$this->food = 20;
-		$this->position = array();
 	}
 	
 	public function getEID(){
@@ -117,6 +116,9 @@ class Entity{
 	}
 	
 	public function packet($pid){
+		if(!isset($this->position)){
+			return array();
+		}
 		switch($pid){
 			case "0a":
 				return array(
