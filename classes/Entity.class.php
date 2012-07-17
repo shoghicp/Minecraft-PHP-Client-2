@@ -92,7 +92,7 @@ class Entity{
 	}
 	
 	public function getPosition($round = false){
-		return $round === true ? array_map("round", $this->position):$this->position;
+		return !isset($this->position) ? array():($round === true ? array_map("round", $this->position):$this->position);
 	}
 	
 	public function setGround($ground){
