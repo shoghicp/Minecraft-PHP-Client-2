@@ -38,22 +38,31 @@ if(version_compare("5.3.3", PHP_VERSION) > 0){
 
 if(version_compare("5.4.0", PHP_VERSION) > 0){
 	console("[NOTICE] Use PHP >= 5.4.0 to increase performance", true, true, 0);
-	define("HEX2BIN", true);
-}else{
 	define("HEX2BIN", false);
+}else{
+	define("HEX2BIN", true);
 }
 
 if(!extension_loaded("gmp")){
 	console("[NOTICE] Enable GMP extension to increase performance", true, true, 0);
-	define("GMPEXT", true);
-}else{
 	define("GMPEXT", false);
+}else{
+	define("GMPEXT", true);
 }
 
-if(!function_exists("openssl_encrypt")){
-	console("[ERROR] Unable to find OpenSSL functions", true, true, 0);
+
+if(extension_loaded("mcrypt")){
+	define("CRYPTO_LIB", "mcrypt");	
+}elseif(!extension_loaded("openssl")){
+	console("[NOTICE] Unable to find Mcrypt extension", true, true, 0);
+	console("[ERROR] Unable to find OpenSSL extension (fallback)", true, true, 0);
 	++$errors;
+}else{
+	console("[NOTICE] Unable to find Mcrypt extension", true, true, 0);
+	define("CRYPTO_LIB", "openssl");
 }
+
+
 
 if(!function_exists("curl_init")){
 	console("[ERROR] Unable to find cURL functions", true, true, 0);
