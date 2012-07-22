@@ -29,10 +29,12 @@ the Free Software Foundation, either version 3 of the License, or
 
 */
 
-include("config.php");
+
 define("ACTION_MODE", 1);
 define("DEBUG", 1);
 define("LOG", false);
+include("config.php");
+require("misc/dependencies.php");
 
 require_once("classes/MinecraftClient.class.php");
 $client = new MinecraftClient("127.0.0.1");
@@ -42,4 +44,4 @@ console("[INFO] Online players: ".$info[1]);
 console("[INFO] Max players: ".$info[2]);
 echo PHP_EOL;
 $client = new MinecraftClient("127.0.0.1");
-$client->connect("Player", "password");
+$client->connect("Player", "password"); //NO CODE IS EXECUTED AFTER THIS LINE. BE SURE TO CREATE EVENTS BEFORE THIS LINE

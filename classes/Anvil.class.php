@@ -39,72 +39,33 @@ class Anvil{
 	
 	protected function splitColumns($data, $bitmask, $X, $Z){
 		$offset = 0;
-		for ($i=0;$i<16;++$i) {
+		$blockData = "";
+		$metaData = "";
+		$len = HEIGHT_LIMIT / 16;
+		for($i=0; $i < $len; ++$i){
 			if ($bitmask & 1 << $i){
-				//Block IDs
-				$cubic_chunk_block = substr($data,$offset,4096);
+				$blockData .= substr($data, $offset, 4096);
 				$offset += 4096;
-				for($j=0; $j<4096; ++$j){
-					$x = $X + ($j & 0x0F);
-					$y = $i*16 + ($j >> 8);
-					$z = $Z + (($j & 0xF0) >> 4);
-					$block = ord($cubic_chunk_block{$j});
-					if(!isset($this->block[$x])){
-						$this->block[$x] = array();
-					}
-					if(!isset($this->block[$x][$z])){
-						$this->block[$x][$z] = array();
-					}
-					if(!isset($this->block[$x][$z][$y])){
-						$this->block[$x][$z][$y] = array($block, 0);
-					}else{
-						$this->block[$x][$z][$y][0] = $block;
-					}
-				}
+			}elseif(isset($this->block[$X][$Z][0]{$i*4096})){
+				$blockData .= substr($this->block[$X][$Z][0], $i*4096, 4096);
+			}else{
+				$blockData .= str_repeat("\x00", 4096);
 			}
 		}
-		for ($i=0;$i<16;++$i){
+		for($i=0; $i < $len; ++$i){
 			if ($bitmask & 1 << $i){
-				$cubic_chunk_meta = substr($data,$offset,2048);
+				$metaData .= substr($data, $offset, 2048);
 				$offset += 2048;
-				for($j=0; $j<2048; ++$j){
-						$block1 = ord($cubic_chunk_meta{$j}) & 0x0F;
-						$block2 = ord($cubic_chunk_meta{$j}) >> 4;
-						$k = 2*$j;
-						$x1 = $X + ($k & 0x0F);
-						$y1 = $i*16 + ($k >> 8);
-						$z1 = $Z + (($k & 0xF0) >> 4);
-						if(!isset($this->block[$x1])){
-							$this->block[$x1] = array();
-						}
-						if(!isset($this->block[$x1][$z1])){
-							$this->block[$x1][$z1] = array();
-						}
-						if(!isset($this->block[$x1][$z1][$y1])){
-							$this->block[$x1][$z1][$y1] = array(0, $block1);
-						}else{
-							$this->block[$x1][$z1][$y1][1] = $block1;
-						}
-						
-						
-						++$k;
-						$x2 = $X + ($k & 0x0F);
-						$y2 = $i*16 + ($k >> 8);
-						$z2 = $Z + (($k & 0xF0) >> 4);
-						if(!isset($this->block[$x2])){
-							$this->block[$x2] = array();
-						}
-						if(!isset($this->block[$x2][$z2])){
-							$this->block[$x2][$z2] = array();
-						}
-						if(!isset($this->block[$x2][$z2][$y2])){
-							$this->block[$x2][$z2][$y2] = array(0, $block2);
-						}else{
-							$this->block[$x2][$z2][$y2][1] = $block2;
-						}
-				}
+			}elseif(isset($this->block[$X][$Z][1]{$i*2048})){
+				$metaData .= substr($this->block[$X][$Z][1], $i*2048, 2048);
+			}else{
+				$metaData .= str_repeat("\x00", 2048);
 			}
 		}
+		if(!isset($this->block[$X])){
+			$this->block[$X] = array();
+		}
+		$this->block[$X][$Z] = array(0 => $blockData, 1 => $metaData);
 		console("[DEBUG] [Anvil] Parsed X ".$X.", Z ".$Z, true, true, 2);
 	}
 	
@@ -154,22 +115,41 @@ class Anvil{
 		console("[DEBUG] [Anvil] Unloaded X ".$X." Z ".$Z, true, true, 2);
 	}
 	
+	public function getIndex($x, $y, $z){
+		$X = floor($x / 16) * 16;
+		$Z = floor($z / 16) * 16;
+		$aX = $x - $X;
+		$aZ = $z - $Z;
+		$index = $y * HEIGHT_LIMIT + $aZ * 16 + $aX;
+		return array($X, $Z, $index);
+	}
+	
 	public function getBlock($x, $y, $z){
 		$this->checkChunk($x, $z);
-		if(!isset($this->block[$x][$z][$y])){
+		$index = $this->getIndex($x, $y, $z);
+		if(!isset($this->block[$index[0]][$index[1]])){
 			return array(0, 0);
 		}
-		return $this->block[$x][$z][$y];
+		$block = $this->block[$index[0]][$index[1]][0][$index[2]];
+		$meta = $this->block[$index[0]][$index[1]][1][floor($index[2] / 2)];
+		if($index[2] % 2 === 0){
+			$meta = $meta & 0x0F;
+		}else{
+			$meta = $meta >> 4;
+		}
+		return array($block, $meta);
 	}
 	
 	public function changeBlock($x, $y, $z, $block, $metadata = 0){
 		console("[INTERNAL] [Anvil] Changed block X ".$x." Y ".$y." Z ".$z, true, true, 3);
-		if(!isset($this->block[$x])){
-			$this->block[$x] = array();
+		$index = $this->getIndex($x, $y, $z);
+		if(isset($this->block[$index[0]][$index[1]])){
+			$this->block[$index[0]][$index[1]][0][$index[2]] = $block;
+			if($index[2] % 2 === 0){
+				$this->block[$index[0]][$index[1]][1][floor($index[2] / 2)] = ($this->block[$index[0]][$index[1]][1][floor($index[2] / 2)] & 0xF0) | ($meta & 0x0F);
+			}else{
+				$this->block[$index[0]][$index[1]][1][floor($index[2] / 2)] = ($this->block[$index[0]][$index[1]][1][floor($index[2] / 2)] & 0x0F) | ($meta >> 4);
+			}
 		}
-		if(!isset($this->block[$x][$z])){
-			$this->block[$x][$z] = array();
-		}
-		$this->block[$x][$z][$y] = array($block, $metadata);
 	}
 }

@@ -77,7 +77,6 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 INFO;
-require("misc/dependencies.php");
 
 if(arg("help", false) !== false){
 echo <<<USAGE
@@ -131,6 +130,7 @@ $debug_level = array(
 );
 file_put_contents(FILE_PATH."packets.log", "");
 define("DEBUG", $debug_level[$debug]);
+require("misc/dependencies.php");
 
 if($version !== false){
 	if(isset($versions[$version])){
@@ -164,7 +164,7 @@ if($spout === true){
 	$client->activateSpout();
 }
 $client->event("onConnect", "clientHandler");
-$client->connect($username, $password);
+$client->connect($username, $password); //NO CODE IS EXECUTED AFTER THIS LINE. BE SURE TO CREATE EVENTS BEFORE THIS LINE
 
 
 function clientHandler($message, $event, $ob){

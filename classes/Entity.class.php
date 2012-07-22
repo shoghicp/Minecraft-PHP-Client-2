@@ -30,7 +30,7 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 class Entity{
-	var $eid, $type, $name, $object, $position;
+	var $eid, $type, $name, $object, $position, $dead;
 	protected $health, $food;
 	
 	function __construct($eid, $type, $object = false){ //$type = 0 ---> player
@@ -39,6 +39,7 @@ class Entity{
 		$this->type = intval($type);
 		$this->health = 20;
 		$this->food = 20;
+		$this->dead = false;
 	}
 	
 	public function getEID(){

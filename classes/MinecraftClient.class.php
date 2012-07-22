@@ -236,7 +236,7 @@ class MinecraftClient{
 
 	public function jump(){
 		$this->player->move(0, 1, 0);
-		$this->send("0b",$this->player->packet("0b"));
+		//$this->send("0b",$this->player->packet("0b"));
 		$this->trigger("onMove", $this->player);
 		$this->trigger("onEntityMove", $this->player);
 		$this->trigger("onEntityMove_".$this->player->eid, $this->player);
@@ -244,7 +244,7 @@ class MinecraftClient{
 
 	public function moveFromHere($x, $y, $z, $yaw = 0, $pitch = 0){
 		$this->player->move($x, $y, $z, $yaw, $pitch);
-		$this->send("0d",$this->player->packet("0b"));
+		//$this->send("0d",$this->player->packet("0b"));
 		$this->trigger("onMove", $this->player);
 		$this->trigger("onEntityMove", $this->player);
 		$this->trigger("onEntityMove_".$this->player->eid, $this->player);
@@ -253,7 +253,7 @@ class MinecraftClient{
 	public function move($x, $y, $z, $ground = true){
 		$this->player->setCoords($x, $y, $z);
 		$this->player->setGround($ground);
-		$this->send("0b",$this->player->packet("0b"));
+		//$this->send("0b",$this->player->packet("0b"));
 		$this->trigger("onMove", $this->player);
 		$this->trigger("onEntityMove", $this->player);
 		$this->trigger("onEntityMove_".$this->player->eid, $this->player);
@@ -434,14 +434,8 @@ class MinecraftClient{
 				break;
 			case "recieved_08":
 				$this->player->setHealth($data[0]);
-				if(isset($data[1])){ //Food
-					$this->player->setFood($data[1]);
-					console("[INFO] Health: ".$data[0].", Food: ". $data[1]);
-				}else{
-					console("[INFO] Health: ".$data[0]);
-				}
-				$this->trigger("onHealthChange", array("health" => $this->player->getHealth(), "food" => $this->player->getFood()));
 				if($data[0] <= 0){ //Respawn
+					$this->player->dead = true;
 					$this->trigger("onDeath");
 					$d = array(
 						0 => $this->info["dimension"],
@@ -459,8 +453,19 @@ class MinecraftClient{
 						$this->send("09", $d);
 					}
 					$this->trigger("onRespawn", $d);
-					console("[INFO] Death and respawn");
+					console("[DEBUG] Death", true, true, 2);
 				}
+				if(isset($data[1])){ //Food
+					$this->player->setFood($data[1]);
+					console("[INFO] Health: ".$data[0].", Food: ". $data[1]);
+				}else{
+					console("[INFO] Health: ".$data[0]);
+				}
+				$this->trigger("onHealthChange", array("health" => $this->player->getHealth(), "food" => $this->player->getFood()));
+				break;
+			case "recieved_09":
+				$this->player->dead = false;
+				console("[INFO] Respawned");
 				break;
 			case "recieved_0d":
 				$this->player->setPosition($data[0], $data[2], $data[3], $data[1], $data[4], $data[5], $data[6]);
@@ -469,7 +474,9 @@ class MinecraftClient{
 				$this->trigger("onEntityMove", $this->player);
 				$this->trigger("onEntityMove_".$this->player->eid, $this->player);
 			case "onTick":
-				$this->send("0d",$this->player->packet("0d"));
+				if($this->player->dead === false){
+					$this->send("0d",$this->player->packet("0d"));
+				}
 				break;
 			case "recieved_13":
 				console("[DEBUG] Entity ".$data[0]." did action ".$data[1], true, true, 2);
@@ -628,6 +635,7 @@ class MinecraftClient{
 		$this->event("recieved_04", "handler", true);
 		$this->event("recieved_06", "handler", true);
 		$this->event("recieved_08", "handler", true);
+		$this->event("recieved_09", "handler", true);
 		$this->event("recieved_0d", "handler", true);
 		$this->event("recieved_13", "handler", true);
 		$this->event("recieved_14", "handler", true);
@@ -689,6 +697,7 @@ class MinecraftClient{
 				$this->player->setName($this->auth["user"]);
 				console("[INFO] Logged in as ".$this->auth["user"]);
 				console("[DEBUG] Player EID: ".$this->player->eid, true, true, 2);
+				$this->player->dead = true;
 				$this->startHandlers();
 				$this->trigger("onConnect");
 				$this->process();
@@ -752,15 +761,16 @@ class MinecraftClient{
 			php_uname(),
 			phpversion(),
 			zend_version(),
-			function_exists("openssl_random_pseudo_bytes") ? openssl_random_pseudo_bytes(1024):Utils::microtime(),
+			function_exists("openssl_random_pseudo_bytes") ? openssl_random_pseudo_bytes(16):Utils::microtime(),
+			function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16):Utils::microtime(),
 			uniqid(Utils::microtime(),true),
-			file_exists("/dev/random") ? fread(fopen("/dev/random", "r"),128):Utils::microtime(),
+			file_exists("/dev/random") ? fread(fopen("/dev/random", "r"),16):Utils::microtime(),
 		);
 		shuffle($entropy);
 		$value = Utils::hexToStr(md5((string) $startEntropy));
 		unset($startEntropy);
 		foreach($entropy as $c){
-			for($i = 0; $i < 1024; ++$i){
+			for($i = 0; $i < 64; ++$i){
 				$value ^= Utils::hexToStr(md5($c.lcg_value().$value.Utils::microtime().mt_rand(0,mt_getrandmax())));
 				$value ^= substr(Utils::hexToStr(sha1($c.lcg_value().$value.Utils::microtime().mt_rand(0,mt_getrandmax()))),0,16);
 			}
