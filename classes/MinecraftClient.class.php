@@ -66,6 +66,8 @@ class MinecraftClient{
 		$this->spout = false;
 		$this->players = array();
 		$this->useMap = true;
+		register_shutdown_function("logg", "", "console", false, 0, true);
+		register_shutdown_function("logg", "", "packets", false, 0, true);
 		
 	}
 	
@@ -236,7 +238,9 @@ class MinecraftClient{
 
 	public function jump(){
 		$this->player->move(0, 1, 0);
-		//$this->send("0b",$this->player->packet("0b"));
+		if($this->player->dead === false){
+			$this->send("0b",$this->player->packet("0b"));
+		}
 		$this->trigger("onMove", $this->player);
 		$this->trigger("onEntityMove", $this->player);
 		$this->trigger("onEntityMove_".$this->player->eid, $this->player);
@@ -244,7 +248,9 @@ class MinecraftClient{
 
 	public function moveFromHere($x, $y, $z, $yaw = 0, $pitch = 0){
 		$this->player->move($x, $y, $z, $yaw, $pitch);
-		//$this->send("0d",$this->player->packet("0b"));
+		if($this->player->dead === false){
+			$this->send("0d",$this->player->packet("0d"));
+		}
 		$this->trigger("onMove", $this->player);
 		$this->trigger("onEntityMove", $this->player);
 		$this->trigger("onEntityMove_".$this->player->eid, $this->player);
@@ -253,7 +259,9 @@ class MinecraftClient{
 	public function move($x, $y, $z, $ground = true){
 		$this->player->setCoords($x, $y, $z);
 		$this->player->setGround($ground);
-		//$this->send("0b",$this->player->packet("0b"));
+		if($this->player->dead === false){
+			$this->send("0b",$this->player->packet("0b"));
+		}
 		$this->trigger("onMove", $this->player);
 		$this->trigger("onEntityMove", $this->player);
 		$this->trigger("onEntityMove_".$this->player->eid, $this->player);
@@ -470,6 +478,7 @@ class MinecraftClient{
 			case "recieved_0d":
 				$this->player->setPosition($data[0], $data[2], $data[3], $data[1], $data[4], $data[5], $data[6]);
 				console("[DEBUG] Got position: (".$data[0].",".$data[2].",".$data[3].")", true, true, 2);
+				$this->send("0d",$this->player->packet("0d"));
 				$this->trigger("onMove", $this->player);
 				$this->trigger("onEntityMove", $this->player);
 				$this->trigger("onEntityMove_".$this->player->eid, $this->player);
@@ -659,6 +668,7 @@ class MinecraftClient{
 		$this->event("recieved_c9", "handler", true);
 		$this->event("onPluginMessage_REGISTER", "backgroundHandler", true);
 		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
+		register_shutdown_function(array($this, "logout"));
 		$this->action(50000, '$this->trigger("onTick", $time);');
 		$this->action(10000000, 'console("[DEBUG] Memory Usage: ".round((memory_get_usage(true) / 1024) / 1024, 2)." MB", true, true, 2);');
 		$this->event("onTick", "handler", true);
@@ -674,7 +684,7 @@ class MinecraftClient{
 				$hash = $data[0];
 				if($hash != "-" and $hash != "+"){
 					console("[INFO] Server is Premium (SID: ".$hash.")");
-					$this->loginMinecraft($hash);
+					$this->loginServer($hash);
 				}
 				$this->send("01", array(
 					0 => $this->protocol,
@@ -705,10 +715,7 @@ class MinecraftClient{
 		}
 	}
 	
-	public function loginMinecraft($hash){
-		if($hash == "" or strpos($hash, "&") !== false){
-			console("[WARNING] NAME SPOOF DETECTED", true, true, 0);
-		}
+	public function loginMinecraft($username, $password){
 		$secure = true;
 		if($secure !== false){
 			$proto = "https";
@@ -717,7 +724,7 @@ class MinecraftClient{
 			$proto = "http";
 		}
 			
-		$response = Utils::curl_get($proto."://login.minecraft.net/?user=".$this->auth["user"]."&password=".$this->auth["password"]."&version=".LAUNCHER_VERSION);
+		$response = Utils::curl_get($proto."://login.minecraft.net/?user=".$username."&password=".$password."&version=".LAUNCHER_VERSION);
 		switch($response){
 			case 'Bad login':
 			case 'Bad Login':
@@ -730,23 +737,33 @@ class MinecraftClient{
 				break;
 			default:
 				$content = explode(":",$response);
-				if(!is_array($content)){
+				if(!is_array($content) or count($content) == 1){
 					console("[ERROR] Unknown Login Error: \"".$response."\"", true, true, 0);
 					$this->close();
 					break;
 				}
 				$this->auth["user"] = $content[2];
+				$this->auth["password"] = $password;
 				$this->auth["session_id"] = $content[3];
 				console("[INFO] Logged into minecraft.net as ".$this->auth["user"]);
 				console("[DEBUG] minecraft.net Session ID: ".$this->auth["session_id"], true, true, 2);
-				$res = Utils::curl_get("http://session.minecraft.net/game/joinserver.jsp?user=".$this->auth["user"]."&sessionId=".$this->auth["session_id"]."&serverId=".$hash); //User check
-				if($res != "OK"){
-					console("[ERROR] Error in User Check: \"".$res."\"", true, true, 0);
-					$this->close();
-				}else{
-					console("[DEBUG] Sent join server request", true, true, 2);
-				}
 				break;
+		}
+	}
+	
+	public function loginServer($hash){
+		if($hash == "" or strpos($hash, "&") !== false){
+			console("[WARNING] NAME SPOOF DETECTED", true, true, 0);
+		}
+		if(!isset($this->auth["session_id"]) or $this->auth["session_id"] == ""){
+			$this->loginMinecraft($this->auth["user"], $this->auth["password"]);
+		}
+		$res = Utils::curl_get("http://session.minecraft.net/game/joinserver.jsp?user=".$this->auth["user"]."&sessionId=".$this->auth["session_id"]."&serverId=".$hash); //User check
+		if($res != "OK"){
+			console("[ERROR] Error in User Check: \"".$res."\"", true, true, 0);
+			$this->close();
+		}else{
+			console("[DEBUG] Sent join server request", true, true, 2);
 		}
 	}
 	
@@ -801,7 +818,7 @@ class MinecraftClient{
 					console("[INFO] Server is Premium (SID: ".$hash.")");
 					$hash = Utils::sha1($hash.$this->key.$data[2]);
 					console("[DEBUG] Authentication hash: ".$hash,true,true,2);
-					$this->loginMinecraft($hash);
+					$this->loginServer($hash);
 				}else{
 					console("[WARNING] Server is NOT Premium", true, true, 0);
 				}
@@ -859,8 +876,13 @@ class MinecraftClient{
 		$this->process("fd");
 	}
 	
-	public function connect($user, $password = ""){
-		$this->auth = array("user" => $user, "password" => $password);
+	public function connect($user = "", $password = ""){
+		if($user != ""){
+			$this->auth = array("user" => $user, "password" => $password);
+			if($password != ""){
+				$this->loginMinecraft($user, $password);
+			}
+		}
 		if($this->protocol >= 31){
 			$this->newConnect();
 			return;
