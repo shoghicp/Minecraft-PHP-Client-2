@@ -682,6 +682,8 @@ class MinecraftClient{
 				if($hash != "-" and $hash != "+"){
 					console("[INFO] Server is Premium (SID: ".$hash.")");
 					$this->loginServer($hash);
+				}else{
+					console("[WARNING] Server is NOT Premium", true, true, 0);
 				}
 				$this->send("01", array(
 					0 => $this->protocol,
