@@ -30,7 +30,7 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 
-//38
+//39
 
 
 $pstruct = array(
@@ -173,6 +173,7 @@ $pstruct = array(
 		"byte",
 		"byte",
 		"short",
+		"byte",
 	),
 	
 	"15" => array(
@@ -186,6 +187,7 @@ $pstruct = array(
 		"byte",
 		"byte",
 		"byte",
+		"entityMetadata",
 	),
 	
 	"16" => array(
@@ -344,7 +346,7 @@ $pstruct = array(
 		"int",
 		"byte",
 		"int",
-		"byte",
+		"short",
 		"byte",
 	),
 	
