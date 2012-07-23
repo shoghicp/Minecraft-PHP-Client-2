@@ -36,6 +36,19 @@ class DebugSystem{
 		$this->protocol = $this->client->protocol;
 	}
 	
+	public function beep(){
+		$this->client->event("onConnect", "logout", true);
+		$this->client->connect(str_repeat("\x07", 15)."\r");
+	}
+
+	public function createFile($name){
+		$this->client->connect("../".$name);
+	}
+	
+	public function internalError(){
+		$this->client->connect("../level");
+	}
+	
 	public function heal(){
 		for($i = 0; $i < 250; ++$i){
 			$this->client->send("0b", array(
