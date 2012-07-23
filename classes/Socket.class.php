@@ -45,12 +45,9 @@ class Socket{
 			}else{
 				$this->connected = true;
 				$this->buffer = "";
-				//$this->unblock();
 				$this->block();
 				$this->encryption = false;
 				socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);
-				//socket_set_option($this->sock, SOL_TCP, TCP_NODELAY, 1);
-				//socket_set_option($this->sock, SOL_TCP, SO_SNDBUF, 1);
 			}
 		}else{
 			$this->sock = socket_create_listen($port);
@@ -64,9 +61,7 @@ class Socket{
 				$this->buffer = "";
 				$this->unblock();
 				$this->encryption = false;
-				socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);
-				//socket_set_option($this->sock, SOL_TCP, TCP_NODELAY, 1);
-				//socket_set_option($this->sock, SOL_TCP, SO_SNDBUF, 1);		
+				socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);	
 		}
 	}
 	
@@ -86,11 +81,9 @@ class Socket{
 		require_once("Crypt/RC4.php");
 		$this->encrypt = new Crypt_RC4();
 		$this->encrypt->setKey($key);
-		//$this->encrypt->setIV($key);
 		$this->encrypt->enableContinuousBuffer();
 		$this->decrypt = new Crypt_RC4();
 		$this->decrypt->setKey($key);
-		//$this->decrypt->setIV($key);
 		$this->decrypt->enableContinuousBuffer();
 		$this->encryption = true;
 	}	
@@ -137,10 +130,9 @@ class Socket{
 	}
 	
 	public function recieve($str){ //Auto write a packet
-		if($str !== ""){
+		if($str != ""){
 			$str = $this->encryption === true ? $this->decrypt->decrypt($str):$str;
 			$this->buffer .= $str;
-			return true;
 		}
 	}
 	

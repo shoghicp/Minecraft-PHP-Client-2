@@ -65,7 +65,8 @@ class MinecraftClient{
 		$this->actions = array();
 		$this->spout = false;
 		$this->players = array();
-		$this->useMap = true;		
+		$this->useMap = true;	
+		$this->auth = array();
 	}
 	
 	public function disableMap(){
@@ -178,7 +179,7 @@ class MinecraftClient{
 	}
 
 	public function action($microseconds, $code){
-		$this->actions[] = array($microseconds, Utils::microtime(), $code);
+		$this->actions[] = array($microseconds, microtime(true), $code);
 		console("[INTERNAL] Attached to action ".$microseconds, true, true, 3);
 	}
 	
@@ -300,8 +301,7 @@ class MinecraftClient{
 	
 	public function tickerFunction(){
 		//actions that repeat every x time will go here
-		$time = Utils::microtime();
-		//$this->trigger("onTick", $time); //lag!!!
+		$time = microtime(true);
 		foreach($this->actions as $id => $action){
 			if($action[1] <= ($time - ($action[0] / 1000000))){
 				$this->actions[$id][1] = $time;
@@ -359,7 +359,7 @@ class MinecraftClient{
 						$add_bitmask = Utils::readShort(substr($data[3],$offset,2));
 						$offset += 2;
 						$d = "";
-						for($i = 0; $i < 16; ++$i){
+						for($i = 0; $i < (HEIGHT_LIMIT / 16); ++$i){
 							if($bitmask & 1 << $i){
 								$d .= substr($data[2],$offsetData,10240);
 								$offsetData += 10240;
@@ -775,18 +775,18 @@ class MinecraftClient{
 			php_uname(),
 			phpversion(),
 			zend_version(),
-			function_exists("openssl_random_pseudo_bytes") ? openssl_random_pseudo_bytes(16):Utils::microtime(),
-			function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16):Utils::microtime(),
-			uniqid(Utils::microtime(),true),
-			file_exists("/dev/random") ? fread(fopen("/dev/random", "r"),16):Utils::microtime(),
+			function_exists("openssl_random_pseudo_bytes") ? openssl_random_pseudo_bytes(16):microtime(true),
+			function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16):microtime(true),
+			uniqid(microtime(true),true),
+			file_exists("/dev/random") ? fread(fopen("/dev/random", "r"),16):microtime(true),
 		);
 		shuffle($entropy);
 		$value = Utils::hexToStr(md5((string) $startEntropy));
 		unset($startEntropy);
 		foreach($entropy as $c){
 			for($i = 0; $i < 64; ++$i){
-				$value ^= Utils::hexToStr(md5($c.lcg_value().$value.Utils::microtime().mt_rand(0,mt_getrandmax())));
-				$value ^= substr(Utils::hexToStr(sha1($c.lcg_value().$value.Utils::microtime().mt_rand(0,mt_getrandmax()))),0,16);
+				$value ^= Utils::hexToStr(md5($c.lcg_value().$value.microtime(true).mt_rand(0,mt_getrandmax())));
+				$value ^= substr(Utils::hexToStr(sha1($c.lcg_value().$value.microtime(true).mt_rand(0,mt_getrandmax()))),0,16);
 			}
 			
 		}
@@ -874,7 +874,7 @@ class MinecraftClient{
 	}
 	
 	public function connect($user = "", $password = ""){
-		if($user != ""){
+		if($user != "" and (!isset($this->auth["user"]) or $this->auth["user"] == "")){
 			$this->auth = array("user" => $user, "password" => $password);
 			if($password != ""){
 				$this->loginMinecraft($user, $password);
@@ -1039,7 +1039,7 @@ class MinecraftInterface{
 	}
 	
 	protected function getPID($chr){
-		return Utils::padHex(dechex(ord($chr{0})));
+		return Utils::strToHex($chr{0});
 	}
 	
 	protected function getStruct($pid){
@@ -1051,7 +1051,7 @@ class MinecraftInterface{
 	
 	protected function writeDump($pid, $raw, $data, $origin = "client"){
 		if(LOG === true and DEBUG >= 2){
-			$p = "[".Utils::microtime()."] [".($origin === "client" ? "CLIENT->SERVER":"SERVER->CLIENT")."]: ".$this->name[$pid]." (0x$pid) [lenght ".strlen($raw)."]".PHP_EOL;
+			$p = "[".microtime(true)."] [".($origin === "client" ? "CLIENT->SERVER":"SERVER->CLIENT")."]: ".$this->name[$pid]." (0x$pid) [lenght ".strlen($raw)."]".PHP_EOL;
 			$p .= hexdump($raw, false, false, true);
 			foreach($data as $i => $d){
 				$p .= $i ." => ".(!is_array($d) ? $this->pstruct[$pid][$i]."(".(($this->pstruct[$pid][$i] === "byteArray" or $this->pstruct[$pid][$i] === "newChunkArray" or $this->pstruct[$pid][$i] === "chunkArray" or $this->pstruct[$pid][$i] === "chunkInfo" or $this->pstruct[$pid][$i] === "multiblockArray" or $this->pstruct[$pid][$i] === "newMultiblockArray") ? Utils::strToHex($d):$d).")":$this->pstruct[$pid][$i]."(***)").PHP_EOL;
@@ -1070,7 +1070,7 @@ class MinecraftInterface{
 		$struct = $this->getStruct($pid);
 		if($struct === false){
 			$this->server->unblock();
-			$p = "[".round(Utils::microtime(),4)."] [ERROR]: Bad packet id 0x$pid".PHP_EOL;
+			$p = "[".microtime(true)."] [SERVER->CLIENT]: Error, bad packet id 0x$pid".PHP_EOL;
 			$p .= hexdump(Utils::hexToStr($pid).$this->server->read(1024, true), false, false, true);
 			$p .= PHP_EOL . "--------------- (1024 byte max extract) ----------" .PHP_EOL;
 			logg($p, "packets");

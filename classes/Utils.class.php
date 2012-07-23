@@ -82,10 +82,6 @@ class Utils{
 	}
 	
 	public static function microtime(){
-		//Since PHP >= 5.3.3 is needed to run the client, we don't need anymore this function
-		/*$time = explode(" ",microtime());
-		$time = $time[1] + floatval($time[0]);
-		return $time;*/
 		return microtime(true);
 	}
 	
@@ -121,36 +117,19 @@ class Utils{
 		return bin2hex($str);
 	}
 	
-	public static function hexToChr($hex){
-		return chr(hexdec($hex));
-	}
-	
 	public static function hexToStr($hex){
 		if(HEX2BIN === true){
 			return hex2bin($hex);
-		}
-		return implode(array_map("Utils::hexToChr",str_split($hex,2)));
+		}		
+		return pack("H*" , $hex);
 	}
 
 	public static function readString($str){
-		$len = strlen($str);		
-		if($len % 2 != 0){
-			return false;
-		}
-		$ret = "";
-		for($i = 0; $i < $len; $i += 2){
-			$ret .= $str{$i+1};
-		}
-		return $ret;
+		return preg_replace('/\x00(.)/s', '$1', $str);
 	}
 	
 	public static function writeString($str){
-		$len = strlen($str);
-		$ret = "";
-		for($i = 0; $i < $len; ++$i){
-			$ret .= "\x00".$str{$i};
-		}
-		return $ret;
+		return preg_replace('/(.)/s', "\x00$1", $str);
 	}
 	
 	public static function readByte($c, $signed = true){
@@ -173,7 +152,9 @@ class Utils{
 
 	public static function readShort($str){
 		list(,$unpacked) = unpack("n", $str);
-		if($unpacked >= pow(2, 15)) $unpacked -= pow(2, 16); // Convert unsigned short to signed short.
+		if($unpacked >= pow(2, 15)){
+			$unpacked -= pow(2, 16); // Convert unsigned short to signed short
+		}
 		return $unpacked;
 	}
 	
@@ -186,7 +167,9 @@ class Utils{
 
 	public static function readInt($str){
 		list(,$unpacked) = unpack("N", $str);
-		if($unpacked >= pow(2, 31)) $unpacked -= pow(2, 32); // Convert unsigned int to signed int
+		if($unpacked >= pow(2, 31)){
+			$unpacked -= pow(2, 32); // Convert unsigned int to signed int
+		}
 		return $unpacked;
 	}
 	

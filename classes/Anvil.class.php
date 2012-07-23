@@ -72,35 +72,8 @@ class Anvil{
 	public function addChunk($X, $Z, $data, $bitmask, $compressed = true){
 		$X *= 16;
 		$Z *= 16;
-
-		if(!isset($this->block[$X][$Z])){
-			if(!isset($this->raw[$X])){
-				$this->raw[$X] = array();
-			}
-			if(!isset($this->raw[$X][$Z])){
-				$this->raw[$X][$Z] = array();
-			}
-			$this->raw[$X][$Z][] = array(($compressed === true ? gzinflate(substr($data,2)):$data), $bitmask, $X, $Z);
-		}else{
-			$this->splitColumns(($compressed === true ? gzinflate(substr($data,2)):$data), $bitmask, $X, $Z);
-		}	
+		$this->splitColumns(($compressed === true ? gzinflate(substr($data,2)):$data), $bitmask, $X, $Z);
 		console("[INTERNAL] [Anvil] Loaded X ".$X.", Z ".$Z, true, true, 3);
-	}
-	
-	protected function checkChunk($X, $Z){		
-		$X = floor($X / 16) * 16;
-		$Z = floor($Z / 16) * 16;
-		
-		if(isset($this->raw[$X][$Z])){
-			foreach($this->raw[$X][$Z] as $d){
-				$this->splitColumns($d[0], $d[1], $d[2], $d[3]);
-			}
-			unset($this->raw[$X][$Z]);
-			return true;
-		}elseif(isset($this->block[$X][$Z])){
-			return true;
-		}
-		return false;
 	}
 	
 	public function unloadChunk($X, $Z){
@@ -121,7 +94,6 @@ class Anvil{
 	}
 	
 	public function getBlock($x, $y, $z){
-		$this->checkChunk($x, $z);
 		$index = $this->getIndex($x, $y, $z);
 		if(!isset($this->block[$index[0]][$index[1]])){
 			return array(0, 0);
