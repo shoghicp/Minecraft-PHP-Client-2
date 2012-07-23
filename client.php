@@ -89,6 +89,7 @@ Parameters:
 \tprotocol => Protocol version of minecraft, supersedes --version
 \tusername => username to use in server and minecraft.net if PREMIUM (default Player)
 \tpassword => password to use in minecraft.net, if PREMIUM
+\tlastlogin => gets username and password from Minecraft lastlogin (default false)
 \tlog => log the data from console and packets to file (default true)
 \tping => ping (packet 0xFE) a server, and returns info
 \tdebug => debug level (none => only errors, info => default, debug => debug info and packets, all => weird data)
@@ -128,6 +129,8 @@ $debug_level = array(
 	"debug" => 2,
 	"all" => 3,
 );
+
+
 file_put_contents(FILE_PATH."packets.log", "");
 define("DEBUG", $debug_level[$debug]);
 require("misc/dependencies.php");
@@ -164,6 +167,16 @@ if($spout === true){
 	$client->activateSpout();
 }
 $client->event("onConnect", "clientHandler");
+if(arg("lastlogin", false) == true){
+	require("plugin/LastLogin.plugin.php");
+	$cred = new LastLogin;
+	$cred = $cred->get();
+	if($cred["username"] != false){
+		console("[INFO] Got Credentials from Minecraft lastlogin");
+		$client->loginMinecraft($cred["username"], $cred["password"]);
+	}
+
+}
 $client->connect($username, $password); //NO CODE IS EXECUTED AFTER THIS LINE. BE SURE TO CREATE EVENTS BEFORE THIS LINE
 
 
@@ -179,7 +192,7 @@ function clientHandler($message, $event, $ob){
 		case "onConnect":
 			if(OPTIMIZE === false){
 				require_once("plugin/LagOMeter.plugin.php");
-				$lag = new LagOMeter($ob, 4);
+				$lag = new LagOMeter($ob, 10);
 				$ob->event("onLagEnd", "clientHandler");
 				require_once("plugin/Navigation.plugin.php");
 				$nav = new Navigation($ob);
