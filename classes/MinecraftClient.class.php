@@ -65,10 +65,7 @@ class MinecraftClient{
 		$this->actions = array();
 		$this->spout = false;
 		$this->players = array();
-		$this->useMap = true;
-		register_shutdown_function("logg", "", "console", false, 0, true);
-		register_shutdown_function("logg", "", "packets", false, 0, true);
-		
+		$this->useMap = true;		
 	}
 	
 	public function disableMap(){

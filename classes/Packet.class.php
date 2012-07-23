@@ -179,7 +179,7 @@ class Packet{
 					break;
 				case "explosionRecord":
 					$r = array();
-					for($i=$this->data[4]; $i>0; --$i){
+					for($i = 0; $i < $this->data[$field - 1]; ++$i){
 						$r[] = array(Utils::readByte($this->get(1)),Utils::readByte($this->get(1)),Utils::readByte($this->get(1)));
 					}
 					$this->data[] = $r;

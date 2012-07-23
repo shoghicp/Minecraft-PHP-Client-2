@@ -173,7 +173,7 @@ $pstruct = array(
 		"byte",
 		"byte",
 		"short",
-		"byte",
+		"entityMetadata",
 	),
 	
 	"15" => array(
@@ -184,6 +184,7 @@ $pstruct = array(
 		"int",
 		"int",
 		"int",
+		"byte",
 		"byte",
 		"byte",
 	),
@@ -344,7 +345,7 @@ $pstruct = array(
 		"int",
 		"byte",
 		"int",
-		"byte",
+		"short",
 		"byte",
 	),
 	
@@ -378,7 +379,10 @@ $pstruct = array(
 		"double",
 		"float",
 		"int",
-		"explosionRecord"
+		"explosionRecord",
+		"float",
+		"float",
+		"float",
 	),
 	
 	"3d" => array(
@@ -548,6 +552,7 @@ $pstruct = array(
 	"ff" => array(
 		"string",	
 	),
+	
 );
 
 
