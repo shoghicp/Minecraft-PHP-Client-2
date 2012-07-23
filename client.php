@@ -90,7 +90,7 @@ Parameters:
 \tusername => username to use in server and minecraft.net if PREMIUM (default Player)
 \tpassword => password to use in minecraft.net, if PREMIUM
 \tlastlogin => gets username and password from Minecraft lastlogin (default false)
-\tlog => log the data from console and packets to file (default true)
+\tlog => log the data from console and packets to file (default false)
 \tping => ping (packet 0xFE) a server, and returns info
 \tdebug => debug level (none => only errors, info => default, debug => debug info and packets, all => weird data)
 \towner => set owner username
@@ -117,7 +117,7 @@ $owner		= arg("owner", "shoghicp"); // ;)
 $only_food	= arg("only-food", false);
 define("OPTIMIZE", arg("optimize", false));
 define("ACTION_MODE", arg("action-mode", "internal") === "packets" ? 2:1);
-define("LOG", arg("log", true) === true ? true:false);
+define("LOG", arg("log", false) === true ? true:false);
 $debug = trim(strtolower(arg("debug", "info")));
 
 if(strlen(str_replace(array("info", "all", "debug","none"), "", $debug)) != 0){

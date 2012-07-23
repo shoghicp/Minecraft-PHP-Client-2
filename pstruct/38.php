@@ -173,6 +173,7 @@ $pstruct = array(
 		"byte",
 		"byte",
 		"short",
+		"byte",
 	),
 	
 	"15" => array(
@@ -183,7 +184,6 @@ $pstruct = array(
 		"int",
 		"int",
 		"int",
-		"byte",
 		"byte",
 		"byte",
 	),
