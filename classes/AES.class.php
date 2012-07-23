@@ -92,7 +92,7 @@ if(CRYPTO_LIB === "openssl"){
 		function __construct($bits, $mode, $blockSize){
 			console("[DEBUG] [AES] Using Mcrypt extension", true, true, 2);
 			$this->algorithm = "rijndael-".intval($bits);
-			$this->mode = /*intval($blockSize).*/strtolower($mode);
+			$this->mode = strtolower($mode);
 			$this->mcrypt = mcrypt_module_open($this->algorithm, "", $this->mode, "");
 			$this->bytes = mcrypt_enc_get_block_size($this->mcrypt);
 			$this->keyLenght = $bits / 8;

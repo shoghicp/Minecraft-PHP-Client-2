@@ -104,14 +104,10 @@ class Anvil{
 	}
 	
 	public function unloadChunk($X, $Z){
-		$X = floor($X / 16) * 16;
-		$Z = floor($Z / 16) * 16;
-		for($x = $X; $x < ($X + 16); ++$x){
-			for($z = $Z; $z < ($Z + 16); ++$z){
-				unset($this->block[$x][$z]);
-				unset($this->raw[$x][$z]);
-			}
-		}
+		$X *= 16;
+		$Z *= 16;
+		unset($this->block[$X][$Z]);
+		unset($this->raw[$X][$Z]);
 		console("[DEBUG] [Anvil] Unloaded X ".$X." Z ".$Z, true, true, 2);
 	}
 	

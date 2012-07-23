@@ -30,6 +30,9 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 
+@define("GMPEXT", false);
+@define("HEX2BIN", false);
+
 define("BIG_ENDIAN", 0x00);
 define("LITTLE_ENDIAN", 0x01);
 define("ENDIANNESS", (pack('d', 1) == "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN:LITTLE_ENDIAN));
@@ -129,45 +132,12 @@ class Utils{
 		return implode(array_map("Utils::hexToChr",str_split($hex,2)));
 	}
 
-	public static function utf16_to_utf8($str) {
-		$c0 = ord($str{0});
-		$c1 = ord($str{1});
-
-		if ($c0 == 0xfe && $c1 == 0xff) {
-			$be = true;
-		} else if ($c0 == 0xff && $c1 == 0xfe) {
-			$be = false;
-		} else {
-			return $str;
-		}
-		$len = strlen($str);
-		$dec = "";
-		for ($i = 0; $i < $len; $i += 2) {
-			$c = ($be) ? ord($str[$i]) << 8 | ord($str[$i + 1]) : 
-					ord($str[$i + 1]) << 8 | ord($str[$i]);
-			if ($c >= 0x0001 && $c <= 0x007f) {
-				$dec .= chr($c);
-			} else if ($c > 0x07ff) {
-				$dec .= chr(0xe0 | (($c >> 12) & 0x0f));
-				$dec .= chr(0x80 | (($c >>  6) & 0x3f));
-				$dec .= chr(0x80 | (($c >>  0) & 0x3f));
-			} else {
-				$dec .= chr(0xc0 | (($c >>  6) & 0x1f));
-				$dec .= chr(0x80 | (($c >>  0) & 0x3f));
-			}
-		}
-		return $dec;
-	}
-
 	public static function readString($str){
 		$len = strlen($str);		
 		if($len % 2 != 0){
 			return false;
 		}
 		$ret = "";
-		/*for($i = 0; $i < $len; $i += 2){
-			$ret .= Utils::utf16_to_utf8(substr($str,$i,2));
-		}*/
 		for($i = 0; $i < $len; $i += 2){
 			$ret .= $str{$i+1};
 		}

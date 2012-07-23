@@ -114,10 +114,21 @@ function console($message, $EOL = true, $log = true, $level = 1){
 	}
 }
 
-function logg($message, $name, $EOL = true, $level = 2){
+function logg($message, $name, $EOL = true, $level = 2, $force = false){
+	global $wbuff;
 	if(DEBUG >= $level and LOG == true){
 		$message .= $EOL == true ? PHP_EOL:"";
-		file_put_contents(FILE_PATH."/".$name.".log", $message, FILE_APPEND);
+		if(!isset($wbuff)){
+			$wbuff = array();
+		}
+		if(!isset($wbuff[$name])){
+			$wbuff[$name] = "";
+		}
+		$wbuff[$name] .= $message;
+		if(isset($wbuff[$name]{128}) or $force === true){
+			file_put_contents(FILE_PATH."/".$name.".log", $wbuff[$name], FILE_APPEND);
+			$wbuff[$name] = "";
+		}
 	}
 }
 
