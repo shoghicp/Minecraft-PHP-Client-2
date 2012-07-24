@@ -35,7 +35,7 @@ class LagOMeter{
 	function __construct($client, $minTime = 4){
 		$this->client = $client;
 		$this->lag = false;
-		$this->last = Utils::microtime();
+		$this->last = microtime(true);
 		$this->minTime = $minTime;
 		console("[INFO] [LagOMeter] Loaded");
 		$this->ev1 = $this->client->event("onRecievedPacket", "handler", $this);
@@ -43,17 +43,17 @@ class LagOMeter{
 	}
 	
 	public function handler($data){
-		$this->last = Utils::microtime();
+		$this->last = microtime(true);
 	}
 	
 	public function meter(){
 		if($this->lag === true){
 			if($this->last > $this->start){
 				$this->lag = false;
-				$this->client->trigger("onLagEnd", Utils::microtime() - $this->start);
-				console("[DEBUG] [LagOMeter] Lag ended (".(Utils::microtime() - $this->start)." sec)", true, true, 2);
+				$this->client->trigger("onLagEnd", microtime(true) - $this->start);
+				console("[DEBUG] [LagOMeter] Lag ended (".(microtime(true) - $this->start)." sec)", true, true, 2);
 			}
-		}elseif((Utils::microtime() - $this->last) >= $this->minTime){
+		}elseif((microtime(true) - $this->last) >= $this->minTime){
 			$this->lag = true;
 			$this->start = $this->last;
 			$this->client->trigger("onLagStart");

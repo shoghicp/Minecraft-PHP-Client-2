@@ -39,7 +39,7 @@ class Navigation{
 		include("misc/materials.php");
 		$this->material = $material;
 		$this->client->event("onSpoutBlock", "spoutBlock", $this);
-		$this->last = Utils::microtime();
+		$this->last = microtime(true);
 		$this->maxBlocksPerTick = 0.1; //speed
 		$this->fly = false;
 		$this->speedY = 0;

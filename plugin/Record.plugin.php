@@ -34,13 +34,13 @@ class RecordPath{
 	function __construct($client, $EID){
 		$this->eid = $EID;
 		$this->client = $client;
-		$this->start = Utils::microtime();
+		$this->start = microtime(true);
 		$this->event = $this->client->event("onEntityMove_".$EID, "onMove", $this);
 		$this->path = array();
 	}	
 	public function onMove($entity){
 		$coords = $entity->getPosition();
-		$this->path[] = array("time" => Utils::microtime() - $this->start, "coords" => array("x" => $coords["x"], "y" => $coords["y"], "z" => $coords["z"]));	
+		$this->path[] = array("time" => microtime(true) - $this->start, "coords" => array("x" => $coords["x"], "y" => $coords["y"], "z" => $coords["z"]));	
 	}
 	public function getPath(){
 		return $this->path;
@@ -55,13 +55,13 @@ class PlayPath{
 	protected $start, $path, $event, $client;
 	function __construct($client, $path){
 		$this->client = $client;
-		$this->start = Utils::microtime();
+		$this->start = microtime(true);
 		$this->event = $this->client->event("onTick", "followPath", $this);
 		$this->path = $path;
 	}	
 	public function followPath($time, $event, $ob){
 		foreach($this->path as $i => $data){
-			if($data["time"] <= Utils::microtime() - $this->start){
+			if($data["time"] <= microtime(true) - $this->start){
 				$ob->move($data["coords"]["x"], $data["coords"]["y"], $data["coords"]["z"]);
 				unset($this->path[$i]);
 			}

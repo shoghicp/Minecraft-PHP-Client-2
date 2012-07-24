@@ -137,7 +137,7 @@ function hexdump($data, $htmloutput = true, $uppercase = false, $return = false)
     for ($i = $j = 0; $i < $len; $i++)
     {
         // Convert to hexidecimal
-        $hexi .= sprintf("%02$x ", ord($data[$i]));
+        $hexi .= Utils::strToHex($data[$i]);
  
         // Replace non-viewable bytes with '.'
         if (ord($data[$i]) >= 32 and ord($data[$i]) < 0x80) {

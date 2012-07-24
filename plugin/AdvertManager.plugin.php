@@ -36,7 +36,7 @@ class AdvertManager{
 		$this->spaceAds = array();
 		$this->client = $client;
 		$this->timeLapse = $timeLapse;
-		$this->timeLast = Utils::microtime();
+		$this->timeLast = microtime(true);
 		$this->event = $this->client->event("onTick", "handler", $this);
 		console("[INFO] [AdvertManager] Loaded");
 	}
@@ -53,7 +53,7 @@ class AdvertManager{
 	}
 	
 	public function handler(){
-		$time = Utils::microtime();
+		$time = microtime(true);
 		if(($this->timeLast + ($this->timeLapse * 60)) <= $time){
 			$this->client->say($this->timeAds[count($this->timeAds)-1]);
 			$this->timeLast = $time;

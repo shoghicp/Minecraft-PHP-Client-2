@@ -212,9 +212,9 @@ function clientHandler($message, $event, $ob){
 			break;
 		case "onChatCommand_goto":
 			$data = explode(" ",$message["text"]);
-			$x = array_shift($data);
-			$y = array_shift($data);
-			$z = array_shift($data);
+			$x = (int) array_shift($data);
+			$y = (int) array_shift($data);
+			$z = (int) array_shift($data);
 			$nav->go($x, $y, $z);
 			break;
 		case "onChatCommand_follow":
