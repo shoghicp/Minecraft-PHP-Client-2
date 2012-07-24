@@ -30,9 +30,6 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 
-include("config.php");
-require_once("classes/MinecraftClient.class.php");
-
 $versions = array(
 	"1.3" => 38,
 	"1.2.5" => 29,
@@ -77,6 +74,10 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 INFO;
+include("config.php");
+require("misc/dependencies.php");
+require_once("classes/MinecraftClient.class.php");
+
 
 if(arg("help", false) !== false){
 echo <<<USAGE
@@ -133,7 +134,6 @@ $debug_level = array(
 
 file_put_contents(FILE_PATH."packets.log", "");
 define("DEBUG", $debug_level[$debug]);
-require("misc/dependencies.php");
 
 if($version !== false){
 	if(isset($versions[$version])){

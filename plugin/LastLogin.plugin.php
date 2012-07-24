@@ -1,15 +1,19 @@
 <?php
 
 
+require_once("Crypt/DES.php");
 define("PKCS_MD5", 1);
 define("PKCS_SHA1", 2);
 
 class PKCSKeyGenerator{
 
-	private $key, $IV, $iterations, $segments;
+	private $key, $IV, $iterations, $segments, $des;
 	
 	public function __construct($keystring, $salt = "\0\0\0\0\0\0\0\0", $iterations = 5, $segments = 1, $hash = PKCS_MD5){
 		$this->generate($keystring, $salt, (int) $iterations, (int) $segments, $hash);
+		$this->des = new Crypt_DES(CRYPT_DES_MODE_CBC);
+		$this->des->setKey($this->key);
+		$this->des->setIV($this->IV);
 	}
 	
 	private function generate($keystring, $salt, $iterations, $segments, $hash){
@@ -38,21 +42,11 @@ class PKCSKeyGenerator{
 	}
 	
 	public function encrypt($plaintext){
-		$des = mcrypt_module_open(MCRYPT_DES, "", MCRYPT_MODE_CBC, "");
-		mcrypt_generic_init($des, $this->key, $this->IV);
-		$ciphertext = mcrypt_generic($des, $plaintext);
-		mcrypt_generic_deinit($des);
-		mcrypt_module_close($des);
-		return $ciphertext;
+		return $this->des->encrypt($plaintext);
 	}
 
 	public function decrypt($ciphertext){
-		$des = mcrypt_module_open(MCRYPT_DES, "", MCRYPT_MODE_CBC, "");
-		mcrypt_generic_init($des, $this->key, $this->IV);
-		$plaintext = mdecrypt_generic($des, $ciphertext);
-		mcrypt_generic_deinit($des);
-		mcrypt_module_close($des);
-		return $plaintext;	
+		return $this->des->decrypt($ciphertext);
 	}
 }
 

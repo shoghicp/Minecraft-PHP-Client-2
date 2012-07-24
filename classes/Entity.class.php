@@ -55,6 +55,17 @@ class Entity{
 	}
 	
 	public function setCoords($x, $y, $z){
+		if(!isset($this->position)){
+			$this->position = array(
+				"x" => 0,
+				"y" => 0,
+				"z" => 0,
+				"stance" => 0,
+				"yaw" => 0,
+				"pitch" => 0,
+				"ground" => 0,
+			);		
+		}
 		$this->position["x"] = $x;
 		$this->position["y"] = $y;
 		$this->position["z"] = $z;
@@ -63,6 +74,17 @@ class Entity{
 	}
 	
 	public function move($x, $y, $z, $yaw = 0, $pitch = 0){
+		if(!isset($this->position)){
+			$this->position = array(
+				"x" => 0,
+				"y" => 0,
+				"z" => 0,
+				"stance" => 0,
+				"yaw" => 0,
+				"pitch" => 0,
+				"ground" => 0,
+			);		
+		}
 		$this->position["x"] += $x;
 		$this->position["y"] += $y;
 		$this->position["z"] += $z;
@@ -89,11 +111,12 @@ class Entity{
 	}
 	
 	protected function updateStance(){
+		$this->position["y"] = max(0, $this->position["y"]);
 		$this->position["stance"] = $this->position["y"] + 1.3;
 	}
 	
 	public function getPosition($round = false){
-		return !isset($this->position) ? array():($round === true ? array_map("round", $this->position):$this->position);
+		return !isset($this->position) ? false:($round === true ? array_map("round", $this->position):$this->position);
 	}
 	
 	public function setGround($ground){

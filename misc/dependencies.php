@@ -29,6 +29,8 @@ the Free Software Foundation, either version 3 of the License, or
 
 */
 
+require_once("misc/functions.php");
+
 $errors = 0;
 
 if(version_compare("5.3.3", PHP_VERSION) > 0){
@@ -82,6 +84,12 @@ if(!function_exists("socket_create")){
 if($errors > 0){
 	die();
 }
+
+require_once("classes/Utils.class.php");
+require_once("classes/Packet.class.php");
+require_once("classes/Socket.class.php");
+require_once("classes/Entity.class.php");
+require_once("classes/MapInterface.class.php");
 
 
 ?>

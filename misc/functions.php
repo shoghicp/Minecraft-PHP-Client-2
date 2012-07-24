@@ -103,10 +103,10 @@ function arguments ( $args ){
 
 function console($message, $EOL = true, $log = true, $level = 1){
 	//global $path;
-	if(DEBUG >= $level){
+	if(!defined("DEBUG") or DEBUG >= $level){
 		$message .= $EOL == true ? PHP_EOL:"";
 		$message = date("H:i:s"). " ". $message;
-		if($log and LOG == true){
+		if($log === true and (!defined("LOG") or LOG == true)){
 			logg($message, "console", false, $level);
 		}
 	
@@ -114,10 +114,21 @@ function console($message, $EOL = true, $log = true, $level = 1){
 	}
 }
 
-function logg($message, $name, $EOL = true, $level = 2){
-	if(DEBUG >= $level and LOG == true){
+function logg($message, $name, $EOL = true, $level = 2, $close = false){
+	global $fpointers;
+	if((!defined("DEBUG") or DEBUG >= $level) and (!defined("LOG") or LOG == true)){
 		$message .= $EOL == true ? PHP_EOL:"";
-		file_put_contents(FILE_PATH."/".$name.".log", $message, FILE_APPEND);
+		if(!isset($fpointers)){
+			$fpointers = array();
+		}
+		if(!isset($fpointers[$name])){
+			$fpointers[$name] = fopen(FILE_PATH."/".$name.".log", "ab");
+		}
+		fwrite($fpointers[$name], $message);
+		if($close === true){
+			fclose($fpointers[$name]);
+			unset($fpointers[$name]);
+		}
 	}
 }
 

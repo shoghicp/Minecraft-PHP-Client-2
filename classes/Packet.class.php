@@ -30,9 +30,6 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 
-require_once(dirname(__FILE__)."/Utils.class.php");
-
-
 class Packet{
 	private $struct, $sock;
 	protected $pid, $packet;

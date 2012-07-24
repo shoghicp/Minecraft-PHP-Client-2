@@ -30,8 +30,12 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 
-@define("GMPEXT", false);
-@define("HEX2BIN", false);
+if(!defined("GMPEXT")){
+	@define("GMPEXT", false);
+}
+if(!defined("HEX2BIN")){
+	@define("HEX2BIN", false);
+}
 
 define("BIG_ENDIAN", 0x00);
 define("LITTLE_ENDIAN", 0x01);

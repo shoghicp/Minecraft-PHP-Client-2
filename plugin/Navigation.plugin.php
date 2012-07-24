@@ -57,8 +57,11 @@ class Navigation{
 	
 	public function walker($time){
 		$pos = $this->player->getPosition();
+		if($pos === false){
+			return false;
+		}
 		$zone = $this->getZone(1,true);
-		if(isset($this->material["nosolid"][$zone[0][0][-1][0]]) and $this->fly === false){ //Air
+		if(isset($zone[0][0][-1][0]) and isset($this->material["nosolid"][$zone[0][0][-1][0]]) and $this->fly === false){ //Air
 			$this->speedY += 0.9;
 			$pos["y"] -= $this->speedY;
 			$pos["ground"] = false;
@@ -92,11 +95,17 @@ class Navigation{
 	
 	public function getRelativeBlock($x = 0, $y = 0, $z = 0){
 		$pos = $this->player->getPosition();
+		if($pos === false){
+			return false;
+		}
 		return $this->map->getBlock($pos["x"] + $x, $pos["y"] + $y, $pos["z"] + $z);
 	}
 	
 	public function getRelativeColumn($x, $z){
 		$pos = $this->player->getPosition();
+		if($pos === false){
+			return false;
+		}
 		$data = $this->map->getColumn($pos["x"], $pos["z"]);
 		if($relative === true){
 			$data2 = array();
@@ -116,6 +125,9 @@ class Navigation{
 	
 	public function getZone($radius = 16, $relative = false){
 		$pos = $this->player->getPosition(true);
+		if($pos === false){
+			return false;
+		}
 		$data = $this->map->getSphere($pos["x"], $pos["y"], $pos["z"], $radius);
 		if($relative === true){
 			$data2 = array();

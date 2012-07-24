@@ -30,18 +30,6 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 
-set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__)."/phpseclib/");
-require_once("Crypt/RSA.php");
-
-require_once("Utils.class.php");
-require_once("classes/Packet.class.php");
-require_once("classes/Socket.class.php");
-require_once("classes/Entity.class.php");
-require_once("classes/MapInterface.class.php");
-
-require_once("misc/functions.php");
-
-
 class MinecraftClient{
 	private $server, $port, $auth, $player, $entities, $players, $key;
 	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions, $mapParser, $useMap;
@@ -67,6 +55,8 @@ class MinecraftClient{
 		$this->players = array();
 		$this->useMap = true;	
 		$this->auth = array();
+		register_shutdown_function("logg", "", "console", false, 0, true);
+		register_shutdown_function("logg", "", "packets", false, 0, true);
 	}
 	
 	public function disableMap(){
@@ -799,6 +789,7 @@ class MinecraftClient{
 	protected function newAuthentication($data, $event){
 		switch($event){
 			case "recieved_fd":
+				require_once("Crypt/RSA.php");
 				$publicKey = "-----BEGIN PUBLIC KEY-----".PHP_EOL.implode(PHP_EOL,str_split(base64_encode($data[2]),64)).PHP_EOL."-----END PUBLIC KEY-----";
 				console("[INTERNAL] [RSA-1024] Server Public key:", true, true, 3);
 				foreach(explode(PHP_EOL,$publicKey) as $line){

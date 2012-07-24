@@ -34,8 +34,8 @@ define("ACTION_MODE", 1);
 define("DEBUG", 1);
 define("LOG", false);
 include("config.php");
-require_once("classes/MinecraftClient.class.php");
 require("misc/dependencies.php");
+require_once("classes/MinecraftClient.class.php");
 
 $client = new MinecraftClient("127.0.0.1");
 $info = $client->ping();

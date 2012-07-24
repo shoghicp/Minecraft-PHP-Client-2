@@ -63,6 +63,16 @@ function crypt_random($min = 0, $max = 0x7FFFFFFF)
         return $min;
     }
 
+    if (function_exists('openssl_random_pseudo_bytes')) {
+        // openssl_random_pseudo_bytes() is slow on windows per the following:
+        // http://stackoverflow.com/questions/1940168/openssl-random-pseudo-bytes-is-slow-php
+        if ((PHP_OS & "\xDF\xDF\xDF") !== 'WIN') { // PHP_OS & "\xDF\xDF\xDF" == strtoupper(substr(PHP_OS, 0, 3)), but a lot faster
+            extract(unpack('Nrandom', openssl_random_pseudo_bytes(4)));
+
+            return abs($random) % ($max - $min) + $min; 
+        }
+    }
+
     // see http://en.wikipedia.org/wiki//dev/random
     static $urandom = true;
     if ($urandom === true) {
@@ -85,7 +95,7 @@ function crypt_random($min = 0, $max = 0x7FFFFFFF)
 
        The seeding routine is pretty much ripped from PHP's own internal GENERATE_SEED() macro:
 
-       http://svn.php.net/viewvc/php/php-src/branches/PHP_5_3_2/ext/standard/php_rand.h?view=markup */
+       http://svn.php.net/viewvc/php/php-src/tags/php_5_3_2/ext/standard/php_rand.h?view=markup */
     if (version_compare(PHP_VERSION, '5.2.5', '<=')) { 
         static $seeded;
         if (!isset($seeded)) {
@@ -130,4 +140,3 @@ function crypt_random($min = 0, $max = 0x7FFFFFFF)
     extract(unpack('Nrandom', $crypto->encrypt("\0\0\0\0")));
     return abs($random) % ($max - $min) + $min;
 }
-?>

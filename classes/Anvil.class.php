@@ -95,11 +95,11 @@ class Anvil{
 	
 	public function getBlock($x, $y, $z){
 		$index = $this->getIndex($x, $y, $z);
-		if(!isset($this->block[$index[0]][$index[1]])){
+		if(!isset($this->block[$index[0]][$index[1]][0]{$index[2]})){
 			return array(0, 0);
 		}
-		$block = $this->block[$index[0]][$index[1]][0][$index[2]];
-		$meta = $this->block[$index[0]][$index[1]][1][floor($index[2] / 2)];
+		$block = ord($this->block[$index[0]][$index[1]][0]{$index[2]});
+		$meta = ord($this->block[$index[0]][$index[1]][1]{floor($index[2] / 2)});
 		if($index[2] % 2 === 0){
 			$meta = $meta & 0x0F;
 		}else{
@@ -111,12 +111,12 @@ class Anvil{
 	public function changeBlock($x, $y, $z, $block, $metadata = 0){
 		console("[INTERNAL] [Anvil] Changed block X ".$x." Y ".$y." Z ".$z, true, true, 3);
 		$index = $this->getIndex($x, $y, $z);
-		if(isset($this->block[$index[0]][$index[1]])){
-			$this->block[$index[0]][$index[1]][0][$index[2]] = $block;
+		if(isset($this->block[$index[0]][$index[1]][0]{$index[2]})){
+			$this->block[$index[0]][$index[1]][0]{$index[2]} = chr($block);
 			if($index[2] % 2 === 0){
-				$this->block[$index[0]][$index[1]][1][floor($index[2] / 2)] = ($this->block[$index[0]][$index[1]][1][floor($index[2] / 2)] & 0xF0) | ($meta & 0x0F);
+				$this->block[$index[0]][$index[1]][1]{floor($index[2] / 2)} = chr((ord($this->block[$index[0]][$index[1]][1]{floor($index[2] / 2)}) & 0xF0) | ($meta & 0x0F));
 			}else{
-				$this->block[$index[0]][$index[1]][1][floor($index[2] / 2)] = ($this->block[$index[0]][$index[1]][1][floor($index[2] / 2)] & 0x0F) | ($meta >> 4);
+				$this->block[$index[0]][$index[1]][1]{floor($index[2] / 2)} = chr((ord($this->block[$index[0]][$index[1]][1]{floor($index[2] / 2)}) & 0x0F) | ($meta >> 4));
 			}
 		}
 	}
