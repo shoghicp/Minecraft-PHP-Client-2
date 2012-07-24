@@ -51,7 +51,7 @@ if(!extension_loaded("gmp")){
 }
 
 
-if(extension_loaded("mcrypt")){
+if(extension_loaded("mcrypt") and mcrypt_module_self_test(MCRYPT_RIJNDAEL_128)){
 	define("CRYPTO_LIB", "mcrypt");	
 }elseif(!extension_loaded("openssl")){
 	console("[NOTICE] Unable to find Mcrypt extension", true, true, 0);

@@ -87,17 +87,17 @@ if(CRYPTO_LIB === "openssl"){
 
 
 	class AES{
-		private $key, $keyLenght, $IV, $IVLenght, $bytes, $mcrypt, $enc, $dec, $mode, $algorithm;
+		private $key, $keyLenght, $IV, $IVLenght, $enc, $dec, $mode, $algorithm;
 
 		function __construct($bits, $mode, $blockSize){
 			console("[DEBUG] [AES] Using Mcrypt extension", true, true, 2);
 			$this->algorithm = "rijndael-".intval($bits);
 			$this->mode = strtolower($mode);
-			$this->mcrypt = mcrypt_module_open($this->algorithm, "", $this->mode, "");
-			$this->bytes = mcrypt_enc_get_block_size($this->mcrypt);
+			$mcrypt = mcrypt_module_open($this->algorithm, "", $this->mode, "");
+			$this->IVLenght = mcrypt_enc_get_iv_size($mcrypt);
+			mcrypt_module_close($mcrypt);
 			$this->keyLenght = $bits / 8;
-			$this->setKey();
-			$this->IVLenght = mcrypt_enc_get_iv_size($this->mcrypt);
+			$this->setKey();			
 			$this->setIV();
 			$this->init();
 		}
