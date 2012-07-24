@@ -42,15 +42,27 @@ define("LITTLE_ENDIAN", 0x01);
 define("ENDIANNESS", (pack('d', 1) == "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN:LITTLE_ENDIAN));
 
 class Utils{
-
+	public static $hexToBin = array(
+		"0" => "0000",
+		"1" => "0001",
+		"2" => "0010",
+		"3" => "0011",
+		"4" => "0100",
+		"5" => "0101",
+		"6" => "0110",
+		"7" => "0111",
+		"8" => "1000",
+		"9" => "1001",
+		"a" => "1010",
+		"b" => "1011",
+		"c" => "1100",
+		"d" => "1101",
+		"e" => "1110",
+		"f" => "1111",		
+	);
 
 	public static function sha1($input){
-		$hash = Utils::hexToStr(sha1($input));
-		$binary = "";
-		$len = strlen($hash);
-		for($i = 0; $i < $len; ++$i){
-			$binary .= str_pad(decbin(ord($hash{$i})),8,"0",STR_PAD_LEFT);
-		}
+		$binary = Utils::hexToBin(sha1($input));
 		$negative = false;
 		$len = strlen($binary);
 		if($binary{0} == "1"){
@@ -68,11 +80,7 @@ class Utils{
 			}
 		}
 		
-		$hash = "";
-		for($i = 0; $i < $len; $i += 8){
-			$hash .= chr(bindec(substr($binary,$i,8)));
-		}
-		$hash = Utils::strToHex($hash);
+		$hash = Utils::binToHex($binary);
 		$len = strlen($hash);
 		for($i = 0; $i < $len; ++$i){
 			if($hash{$i} == "0"){
@@ -112,9 +120,41 @@ class Utils{
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
 		return curl_exec($ch);
 	}
-
-	public static function padHex($hex){
-		return str_pad($hex, 2, "0", STR_PAD_LEFT);
+	
+	public static function strToBin($str){
+		return Utils::hexToBin(Utils::strToHex($str));
+	}
+	
+	public static function hexToBin($hex){
+		$bin = "";
+		$len = strlen($hex);		
+		for($i = 0; $i < $len; ++$i){
+			$bin .= Utils::$hexToBin[$hex{$i}];
+		}
+		return $bin;
+	}
+	
+	public static function binToStr($bin){
+		$len = strlen($bin);
+		if(($len % 8) != 0){
+			$bin = substr($bin, 0, -($len % 8));
+		}
+		$str = "";
+		for($i = 0; $i < $len; $i += 8){
+			$str .= chr(bindec(substr($bin, $i, 8)));
+		}
+		return $str;
+	}
+	public static function binToHex($bin){
+		$len = strlen($bin);
+		if(($len % 8) != 0){
+			$bin = substr($bin, 0, -($len % 8));
+		}
+		$hex = "";
+		for($i = 0; $i < $len; $i += 4){
+			$hex .= dechex(bindec(substr($bin, $i, 4)));
+		}
+		return $hex;
 	}
 	
 	public static function strToHex($str){
@@ -203,8 +243,7 @@ class Utils{
 	}
 
 	public static function readLong($str){		
-		list(,$firstHalf) = unpack("N", substr($str, 0, 4));
-		list(,$secondHalf) = unpack("N", substr($str, 4, 4));
+		list(,$firstHalf,$secondHalf) = unpack("N*", $str);
 		if(GMPEXT === true){
 			$value = gmp_add($secondHalf, gmp_mul($firstHalf, "4294967296"));
 			if(gmp_cmp($value, gmp_pow(2, 63)) >= 0){
