@@ -38,7 +38,7 @@ class MapPainter{
 		$this->player = $client->getPlayer();
 	}
 	
-	public function getMap($radius = 16, $blockSize = 1){
+	public function getMap($floor = -1, $radius = 16, $blockSize = 1){
 		$map = array();
 		$pos = $this->player->getPosition(true);
 		$startX = $pos["x"] - $radius * $blockSize;
@@ -49,7 +49,12 @@ class MapPainter{
 			$map[$i] = array();
 			$j = 0;
 			for($z = $pos["z"] - $radius * $blockSize; $z < ($pos["z"] + $radius * $blockSize); $z += $blockSize){
-				$map[$i][$j] = $this->map->getFloor($x, $z);
+				if($floor === -1){
+					$map[$i][$j] = $this->map->getFloor($x, $z);
+				}else{
+					$b = $this->map->getBlock($x, $floor, $z);
+					$map[$i][$j] = array(0, $b[0], $b[1]);
+				}
 				++$j;
 			}
 			++$i;
@@ -57,15 +62,22 @@ class MapPainter{
 		return $map;
 	}
 	
-	public function drawMap($dest, $radius = 16, $width = 1, $blockSize = 1){
+	public function scan($dest, $radius = 16, $width = 8){
+		$dest = str_replace(".png", "", $dest);
+		for($y = 0; $y < HEIGHT_LIMIT; ++$y){
+			$this->drawMap($dest."_".$y.".png", $y, $radius, $width);
+		}
+	}
+	
+	public function drawMap($dest, $floor = -1, $radius = 16, $width = 1, $blockSize = 1){
 		$s = $radius * 2 * $width;
-		$map = $this->getMap($radius, $blockSize);
+		$map = $this->getMap($floor, $radius, $blockSize);
 		$img = imagecreatetruecolor($s, $s);
 		include("misc/materials.php");
 		foreach($map as $x => $d){
 			foreach($d as $z => $block){
 				$y = $block[0];
-				$color = isset($material["color"][$block[1]]) ? (is_array($material["color"][$block[1]][0]) ? imagecolorallocatealpha($img, max(0, $material["color"][$block[1]][$block[2]][0] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][$block[2]][1] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][$block[2]][2] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][$block[2]][3] - ($y % 2) * 13) ):imagecolorallocatealpha($img, max(0, $material["color"][$block[1]][0] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][1] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][2] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][3] - ($y % 2) * 13) )):imagecolorallocatealpha($img, 214, 127, 255, 0);
+				$color = isset($material["color"][$block[1]]) ? (is_array($material["color"][$block[1]][0]) ? imagecolorallocatealpha($img, max(0, $material["color"][$block[1]][$block[2]][0] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][$block[2]][1] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][$block[2]][2] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][$block[2]][3] + (($y % 2) * 13) - ((int) ($y / 8))) ):imagecolorallocatealpha($img, max(0, $material["color"][$block[1]][0] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][1] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][2] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][3] + (($y % 2) * 13) - ((int) ($y / 8))) )):imagecolorallocatealpha($img, 214, 127, 255, 0);
 				
 				for($i = 0; $i < $width; ++$i){
 					for($j = 0; $j < $width; ++$j){

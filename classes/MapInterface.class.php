@@ -56,16 +56,16 @@ class MapInterface{
 	}
 	
 	public function changeBlock($x, $y, $z, $block, $metadata){
-		$x = round($x);
-		$y = round($y);
-		$z = round($z);
+		$x = (int) $x;
+		$y = (int) $y;
+		$z = (int) $z;
 		return $this->map->changeBlock($x, $y, $z, $block, $metadata);
 	}	
 	
 	public function getBlock($x, $y, $z){
-		$x = round($x);
-		$y = round($y);
-		$z = round($z);
+		$x = (int) $x;
+		$y = (int) $y;
+		$z = (int) $z;
 		return $this->map->getBlock($x, $y, $z);
 	}
 
