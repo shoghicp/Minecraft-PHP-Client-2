@@ -101,21 +101,23 @@ class Anvil{
 		if(!isset($this->block[$index[0]][$index[1]])){
 			return array(0, 0, 0);
 		}
-		//$index[2] -= (HEIGHT_LIMIT - $this->block[$index[0]][$index[1]][2] + 1) * 16;
 		$index = $this->getIndex($x, $this->block[$index[0]][$index[1]][2] + 16, $z);
 		include("misc/materials.php");
+		$b =& $this->block[$index[0]][$index[1]][0];
 		for($y = $this->block[$index[0]][$index[1]][2] + 16; $y > 0; --$y){
-			if(!isset($material["nosolid"][ord($this->block[$index[0]][$index[1]][0]{$index[2]})])){
+			if(!isset($material["nosolid"][ord($b{$index[2]})])){
 				break;
 			}
 			$index[2] -= HEIGHT_LIMIT;
 		}
-		$block = $this->getBlock($x, $y, $z);
+		$block = $this->getBlock($x, $y, $z, $index);
 		return array($y, $block[0], $block[1]);
 	}
 	
-	public function getBlock($x, $y, $z){
-		$index = $this->getIndex($x, $y, $z);
+	public function getBlock($x, $y, $z, $index = false){
+		if($index === false){
+			$index = $this->getIndex($x, $y, $z);
+		}
 		if(!isset($this->block[$index[0]][$index[1]])){
 			return array(0, 0);
 		}

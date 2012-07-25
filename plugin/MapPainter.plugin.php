@@ -60,7 +60,7 @@ class MapPainter{
 		foreach($map as $x => $d){
 			foreach($d as $z => $block){
 				$y = $block[0];
-				$color = isset($material["color"][$block[1]]) ? (is_array($material["color"][$block[1]][0]) ? imagecolorallocatealpha($img, max(0, $material["color"][$block[1]][$block[2]][0] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][$block[2]][1] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][$block[2]][2] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][$block[2]][3] - ($y % 2) * 13) ):imagecolorallocatealpha($img, max(0, $material["color"][$block[1]][0] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][1] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][2] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][3] - ($y % 2) * 13) )):imagecolorallocatealpha($img, 245, 204, 45, 0);
+				$color = isset($material["color"][$block[1]]) ? (is_array($material["color"][$block[1]][0]) ? imagecolorallocatealpha($img, max(0, $material["color"][$block[1]][$block[2]][0] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][$block[2]][1] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][$block[2]][2] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][$block[2]][3] - ($y % 2) * 13) ):imagecolorallocatealpha($img, max(0, $material["color"][$block[1]][0] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][1] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][2] - ($y % 2) * 13) , max(0, $material["color"][$block[1]][3] - ($y % 2) * 13) )):imagecolorallocatealpha($img, 214, 127, 255, 0);
 				imagesetpixel($img, $x, $z, $color);
 			}
 		}

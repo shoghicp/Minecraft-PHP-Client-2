@@ -61,7 +61,7 @@ the Free Software Foundation, either version 3 of the License, or
 			2 => array(102, 166, 60, 0),
 			3 => array(150, 108, 74, 0),
 			4 => array(97, 97, 97, 0),
-			5 => array(159, 132, 77, 0),
+			5 => array(185, 149, 95, 0),
 			
 			7 => array(7, 7, 7, 0),
 			8 => array(38, 92, 255, 0),
@@ -74,6 +74,7 @@ the Free Software Foundation, either version 3 of the License, or
 			17 => array(108, 87, 54, 0),
 			18 => array(57, 61, 13, 0),
 			23 => array(132, 132, 132, 0),
+			24 => array(251, 244, 189, 0),
 			27 => array(245, 204, 45, 0),
 			28 => array(164, 164, 164, 0),
 			29 => array(132, 132, 132, 0),
@@ -101,7 +102,10 @@ the Free Software Foundation, either version 3 of the License, or
 			43 => array(168, 168, 168, 0),
 			44 => array(168, 168, 168, 0),
 			45 => array(151, 83, 61, 0),
+			46 => array(219, 68, 26, 0),
+			47 => array(185, 149, 95, 0),
 			48 => array(97, 97, 97, 0),
+			49 => array(19, 19, 28, 0),
 			53 => array(159, 132, 77, 0),
 			61 => array(132, 132, 132, 0),
 			62 => array(132, 132, 132, 0),
@@ -114,6 +118,10 @@ the Free Software Foundation, either version 3 of the License, or
 			89 => array(249, 212, 156, 0),
 			91 => array(227, 170, 0, 0),
 			98 => array(168, 168, 168, 0),
+			108 => array(151, 83, 61, 0),
+			109 => array(168, 168, 168, 0),
+			
+			112 => array(74, 42, 48, 0),
 		),
 		0 => "Air",
 		1 => "Stone",
@@ -223,6 +231,10 @@ the Free Software Foundation, either version 3 of the License, or
 		105 => "Melon Stem",
 		106 => "Vines",
 		107 => "Fence Gate",
+		108 => "Brick Stairs",
+		109 => "Stone Stairs",
+		
+		112 => "Nether Brick",
 		/*
 		Continue this
 		*/
