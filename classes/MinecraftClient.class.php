@@ -321,7 +321,7 @@ class MinecraftClient{
 			case "start":
 				if($this->protocol >= 28){
 					//Anvil format
-					define("HEIGHT_LIMIT", $this->info["height"]);
+					define("HEIGHT_LIMIT", ($this->info["height"] > 0 ? $this->info["height"]:256) );
 					require_once("classes/Anvil.class.php");
 					$this->mapParser = new Anvil;
 					console("[DEBUG] [Anvil] Map parser started", true, true, 2);

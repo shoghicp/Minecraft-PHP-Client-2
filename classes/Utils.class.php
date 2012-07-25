@@ -196,7 +196,7 @@ class Utils{
 
 	public static function readShort($str){
 		list(,$unpacked) = unpack("n", $str);
-		if($unpacked >= pow(2, 15)){
+		if($unpacked > 32767){
 			$unpacked -= pow(2, 16); // Convert unsigned short to signed short
 		}
 		return $unpacked;
@@ -211,10 +211,7 @@ class Utils{
 
 	public static function readInt($str){
 		list(,$unpacked) = unpack("N", $str);
-		if($unpacked >= pow(2, 31)){
-			$unpacked -= pow(2, 32); // Convert unsigned int to signed int
-		}
-		return $unpacked;
+		return (int) $unpacked;
 	}
 	
 	public static function writeInt($value){

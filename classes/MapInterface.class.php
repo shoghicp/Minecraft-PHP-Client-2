@@ -36,6 +36,25 @@ class MapInterface{
 		$this->map = $map;
 	}
 	
+	public function getFloor($x, $z){
+		include("misc/materials.php");
+		
+		$x = (int) $x;
+		$z = (int) $z;
+		
+		if(method_exists($this->map, "getFloor")){
+			return $this->map->getFloor($x, $z);
+		}else{
+			for($y = HEIGHT_LIMIT; $y > 0; --$y){
+				$block = $this->getBlock($x, $y, $z);
+				if(!isset($material["nosolid"][$block[0]])){
+					break;
+				}
+			}
+			return array($y, $block[0], $block[1]);
+		}
+	}
+	
 	public function changeBlock($x, $y, $z, $block, $metadata){
 		$x = round($x);
 		$y = round($y);
