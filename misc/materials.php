@@ -82,7 +82,7 @@ the Free Software Foundation, either version 3 of the License, or
 			29 => array(132, 132, 132, 0),
 			33 => array(132, 132, 132, 0),
 			35 => array(
-				0 => array(255, 255, 255, 0),
+				0 => array(221, 221, 221, 0),
 				1 => array(219, 125, 62, 0),
 				2 => array(179, 80, 188, 0),
 				3 => array(107, 138, 201, 0),

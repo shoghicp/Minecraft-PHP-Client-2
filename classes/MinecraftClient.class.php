@@ -138,7 +138,7 @@ class MinecraftClient{
 	public function process($stop = "ff"){
 		$pid = "";
 		$this->stop = false;
-		while($pid != $stop and $this->stop === false and $this->connected === true){
+		while($pid !== $stop and $this->stop === false and $this->connected === true){
 			$packet = $this->interface->readPacket();
 			$this->trigger("onRecievedPacket", $packet);
 			$pid = $packet["pid"];
@@ -349,7 +349,7 @@ class MinecraftClient{
 						$add_bitmask = Utils::readShort(substr($data[3],$offset,2));
 						$offset += 2;
 						$d = "";
-						for($i = 0; $i < (HEIGHT_LIMIT / 16); ++$i){
+						for($i = 0; $i < (HEIGHT_LIMIT >> 4); ++$i){
 							if($bitmask & 1 << $i){
 								$d .= substr($data[2],$offsetData,10240);
 								$offsetData += 10240;
@@ -482,22 +482,22 @@ class MinecraftClient{
 				$this->entities[$data[0]] = new Entity($data[0], 0);
 				$this->players[$data[1]] =& $this->entities[$data[0]];
 				$this->entities[$data[0]]->setName($data[1]);
-				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
-				console("[INFO] Player \"".$data[1]."\" (EID: ".$data[0].") spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")");
+				$this->entities[$data[0]]->setCoords($data[2] >> 5,$data[3] >> 5,$data[4] >> 5);
+				console("[INFO] Player \"".$data[1]."\" (EID: ".$data[0].") spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")");
 				$this->trigger("onPlayerSpawn", $this->entities[$data[0]]);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_15":
-				console("[DEBUG] Item (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[4] / 32).",".($data[5] / 32).",".($data[6] / 32).")", true, true, 2);
+				console("[DEBUG] Item (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[4] >> 5).",".($data[5] >> 5).",".($data[6] >> 5).")", true, true, 2);
 				$this->entities[$data[0]] = new Entity($data[0], $data[1], true);
-				$this->entities[$data[0]]->setCoords($data[4] / 32,$data[5] / 32,$data[6] / 32);
+				$this->entities[$data[0]]->setCoords($data[4] >> 5,$data[5] >> 5,$data[6] >> 5);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_17":
 			case "recieved_18":
-				console("[DEBUG] Entity (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
+				console("[DEBUG] Entity (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
 				$this->entities[$data[0]] = new Entity($data[0], $data[1], ($event === "recieved_17" ? true:false));
-				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
+				$this->entities[$data[0]]->setCoords($data[2] >> 5,$data[3] >> 5,$data[4] >> 5);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_1d":
@@ -508,14 +508,14 @@ class MinecraftClient{
 			case "recieved_1f":
 			case "recieved_21":
 				if(isset($this->entities[$data[0]])){
-					$this->entities[$data[0]]->move($data[1] / 32,$data[2] / 32,$data[3] / 32);
+					$this->entities[$data[0]]->move($data[1] >> 5,$data[2] >> 5,$data[3] >> 5);
 					$this->trigger("onEntityMove", $this->entities[$data[0]]);
 					$this->trigger("onEntityMove_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
 				}
 				break;
 			case "recieved_22":
 				if(isset($this->entities[$data[0]])){
-					$this->entities[$data[0]]->setCoords($data[1] / 32,$data[2] / 32,$data[3] / 32);
+					$this->entities[$data[0]]->setCoords($data[1] >> 5,$data[2] >> 5,$data[3] >> 5);
 					$this->trigger("onEntityMove", $this->entities[$data[0]]);
 					$this->trigger("onEntityMove_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
 				}
@@ -544,8 +544,8 @@ class MinecraftClient{
 				console("[INFO] Changed game state: ".$m);
 				break;
 			case "recieved_47":
-				console("[DEBUG] Thunderbolt at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
-				$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] / 32, "y" => $data[3] / 32, "z" => $data[4] / 32)));
+				console("[DEBUG] Thunderbolt at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
+				$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] >> 5, "y" => $data[3] >> 5, "z" => $data[4] >> 5)));
 				break;
 			case "recieved_67":
 				if($data[0] == 0){
@@ -910,10 +910,10 @@ class MinecraftClient{
 				$offset += 4;
 				$info = Utils::readShort(substr($data["data"], $offset,2));
 				$offset += 2;
-				$len = Utils::readShort(substr($data["data"], $offset,2));
+				$len = Utils::readShort(substr($data["data"], $offset,2)) << 1;
 				$offset += 2;
-				$name = Utils::readString(substr($data["data"], $offset,$len * 2));
-				$offset += $len * 2;
+				$name = Utils::readString(substr($data["data"], $offset,$len));
+				$offset += $len;
 				console("[INTERNAL] [Spout] Got block ".$name." (ID ".$BID." DATA ".$info.")", true, true, 3);
 				$this->trigger("onSpoutBlock", array("id" => $BID, "data" => $info, "name" => $name));
 				$this->trigger("onSpoutBlock_".$BID, array("data" => $info, "name" => $name));
@@ -929,14 +929,14 @@ class MinecraftClient{
 				$plugins = array();
 				console("[DEBUG] [Spout] Recieved server plugins", true, true, 2);
 				for($i = 0; $i < $cnt; ++$i){
-					$len = Utils::readShort(substr($data["data"], $offset,2));
+					$len = Utils::readShort(substr($data["data"], $offset,2)) << 1;
 					$offset += 2;
-					$p = Utils::readString(substr($data["data"], $offset,$len * 2));
-					$offset += $len * 2;
-					$len = Utils::readShort(substr($data["data"], $offset,2));
+					$p = Utils::readString(substr($data["data"], $offset,$len));
+					$offset += $len;
+					$len = Utils::readShort(substr($data["data"], $offset,2)) << 1;
 					$offset += 2;
-					$v = Utils::readString(substr($data["data"], $offset,$len * 2));
-					$offset += $len * 2;
+					$v = Utils::readString(substr($data["data"], $offset,$len));
+					$offset += $len;
 					$plugins[$p] = $v;
 					console("[DEBUG] [Spout] ".$p." => ".$v, true, true, 2);
 					if($p === "Spout"){
@@ -952,10 +952,10 @@ class MinecraftClient{
 				$permissions = array();
 				console("[DEBUG] [Spout] Updated Permissions", true, true, 2);
 				for($i = 0; $i < $cnt; ++$i){
-					$len = Utils::readShort(substr($data["data"], $offset,2));
+					$len = Utils::readShort(substr($data["data"], $offset,2)) << 1;
 					$offset += 2;
-					$key = Utils::readString(substr($data["data"], $offset, $len * 2));
-					$offset += $len * 2;
+					$key = Utils::readString(substr($data["data"], $offset, $len));
+					$offset += $len;
 					$value = Utils::readByte(substr($data["data"], $offset,1)) == 1 ? true:false;
 					$offset += 1;
 					$permissions[$key] = $value;
@@ -971,10 +971,10 @@ class MinecraftClient{
 				$offset += 8;
 				$z = Utils::readDouble(substr($data["data"], $offset,8));
 				$offset += 8;
-				$len = Utils::readShort(substr($data["data"], $offset,2));
+				$len = Utils::readShort(substr($data["data"], $offset,2)) << 1;
 				$offset += 2;
-				$name = Utils::readString(substr($data["data"], $offset,$len * 2));
-				$offset += $len * 2;
+				$name = Utils::readString(substr($data["data"], $offset,$len));
+				$offset += $len;
 				$death = Utils::readByte(substr($data["data"], $offset,1)) == 1 ? true:false;
 				$offset += 1;
 				console("[DEBUG] [Spout] Got waypoint ".$name." (".$x.",".$y.",".$z.")".($death === true ? " DEATH":""), true, true, 2);

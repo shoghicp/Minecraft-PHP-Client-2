@@ -31,7 +31,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 $versions = array(
-	"1.3" => 38,
+	"1.3" => 39,
 	"1.2.5" => 29,
 	"1.2.4" => 29,
 	"1.2.3" => 28,

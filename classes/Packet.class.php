@@ -149,7 +149,7 @@ class Packet{
 					}
 					break;
 				case "string":
-					$this->data[] = Utils::readString($this->get(Utils::readShort($this->get(2)) * 2));
+					$this->data[] = Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
 					break;
 				case "long":
 					$this->data[] = Utils::readLong($this->get(8));
@@ -175,8 +175,9 @@ class Packet{
 					$this->data[] = Utils::readByte($this->get(1), false) === 0 ? false:true;
 					break;
 				case "explosionRecord":
+					$count = $this->data[$field - 1];
 					$r = array();
-					for($i = 0; $i < $this->data[$field - 1]; ++$i){
+					for($i = 0; $i < $count; ++$i){
 						$r[] = array(Utils::readByte($this->get(1)),Utils::readByte($this->get(1)),Utils::readByte($this->get(1)));
 					}
 					$this->data[] = $r;
@@ -195,11 +196,11 @@ class Packet{
 						$this->data[] = array();
 						break;
 					}
-					$this->data[] = array_map("Utils::readInt",str_split($this->get($len * 4),4));
+					$this->data[] = array_map("Utils::readInt",str_split($this->get($len << 2),4));
 					break;
 				case "chunkInfo":
 					$n = $this->data[0];
-					$this->data[] = $this->get($n*12);
+					$this->data[] = $this->get($n * 12);
 					break;
 				case "chunkArray":
 					$this->data[] = $this->get(max(0,$this->data[6]));
@@ -288,7 +289,7 @@ class Packet{
 								$r = Utils::readFloat($this->get(4));
 								break;
 							case 4:
-								$r = Utils::readString($this->get(Utils::readShort($this->get(2)) * 2));
+								$r = Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
 								break;
 							case 5:
 								$r = array("id" => Utils::readShort($this->get(2)), "count" => Utils::readByte($this->get(1)), "damage" => Utils::readShort($this->get(2)));

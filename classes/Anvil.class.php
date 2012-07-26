@@ -41,16 +41,16 @@ class Anvil{
 		$offset = 0;
 		$blockData = "";
 		$metaData = "";
-		$len = HEIGHT_LIMIT / 16;
+		$len = HEIGHT_LIMIT >> 4;
 		$lastBlock = HEIGHT_LIMIT;
-		for($i=0; $i < $len; ++$i){
+		for($i = 0; $i < $len; ++$i){
 			if ($bitmask & (1 << $i)){
 				$blockData .= substr($data, $offset, 4096);
 				$offset += 4096;
-				$lastBlock = $i * 16;
+				$lastBlock = $i << 4;
 			}elseif(isset($this->block[$X][$Z])){
-				$blockData .= substr($this->block[$X][$Z][0], $i*4096, 4096);
-				$lastBlock = $i * 16;
+				$blockData .= substr($this->block[$X][$Z][0], $i * 4096, 4096);
+				$lastBlock = $i << 4;
 			}else{
 				$blockData .= str_repeat("\x00", 4096);
 			}
@@ -60,7 +60,7 @@ class Anvil{
 				$metaData .= substr($data, $offset, 2048);
 				$offset += 2048;
 			}elseif(isset($this->block[$X][$Z])){
-				$metaData .= substr($this->block[$X][$Z][1], $i*2048, 2048);
+				$metaData .= substr($this->block[$X][$Z][1], $i * 2048, 2048);
 			}else{
 				$metaData .= str_repeat("\x00", 2048);
 			}

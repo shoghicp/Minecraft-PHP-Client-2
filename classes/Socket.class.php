@@ -66,7 +66,7 @@ class Socket{
 	}
 	
 	function startAES($key){
-		console("[DEBUG] [Socket] Secure channel with AES-".(strlen($key)*8)."-CFB8 encryption established", true, true, 2);
+		console("[DEBUG] [Socket] Secure channel with AES-".(strlen($key) >> 3)."-CFB8 encryption established", true, true, 2);
 		require_once(dirname(__FILE__)."/AES.class.php");
 		$this->encrypt = new AES(128, "CFB", 8);
 		$this->encrypt->setKey($key);
@@ -77,7 +77,7 @@ class Socket{
 	}
 
 	function startRC4($key){
-		console("[DEBUG] [Socket] Activating RC4-".(strlen($key)*8)." encryption", true, true, 2);
+		console("[DEBUG] [Socket] Activating RC4-".(strlen($key) >> 3)." encryption", true, true, 2);
 		require_once("Crypt/RC4.php");
 		$this->encrypt = new Crypt_RC4();
 		$this->encrypt->setKey($key);
@@ -120,7 +120,7 @@ class Socket{
 		}
 		if($len === 1){
 			$ret = $this->buffer{0};
-		}else{		
+		}else{
 			$ret = substr($this->buffer, 0, $len);
 		}
 		

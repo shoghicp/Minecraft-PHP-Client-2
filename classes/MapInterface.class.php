@@ -45,7 +45,7 @@ class MapInterface{
 		if(method_exists($this->map, "getFloor")){
 			return $this->map->getFloor($x, $z);
 		}else{
-			for($y = HEIGHT_LIMIT; $y > 0; --$y){
+			for($y = HEIGHT_LIMIT - 1; $y > 0; --$y){
 				$block = $this->getBlock($x, $y, $z);
 				if(!isset($material["nosolid"][$block[0]])){
 					break;
@@ -73,7 +73,7 @@ class MapInterface{
 		return $this->getZone($x,0,$z,$x,HEIGHT_LIMIT,$z);
 	}
 
-	public function getEllipse($x, $y, $z, $rX=4, $rZ = 4, $rY = 4){
+	public function getEllipse($x, $y, $z, $rX = 4, $rZ = 4, $rY = 4){
 		$rY = abs($rX);
 		$rY = abs($rZ);
 		$rY = abs($rY);

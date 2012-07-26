@@ -46,7 +46,7 @@ if(CRYPTO_LIB === "openssl"){
 		function __construct($bits, $mode, $blockSize){
 			console("[DEBUG] [AES] Using OpenSSL extension", true, true, 2);
 			$this->mode = "AES-".$bits."-".strtoupper($mode).$blockSize;
-			$this->bytes = $blockSize / 8;
+			$this->bytes = $blockSize >> 3;
 			$this->key = $this->encIV = $this->decIV = str_repeat("\x00", openssl_cipher_iv_length($this->mode));
 			$this->IVLenght = openssl_cipher_iv_length($this->mode);
 		}
@@ -96,7 +96,7 @@ if(CRYPTO_LIB === "openssl"){
 			$mcrypt = mcrypt_module_open($this->algorithm, "", $this->mode, "");
 			$this->IVLenght = mcrypt_enc_get_iv_size($mcrypt);
 			mcrypt_module_close($mcrypt);
-			$this->keyLenght = $bits / 8;
+			$this->keyLenght = $bits >> 3;
 			$this->setKey();			
 			$this->setIV();
 			$this->init();

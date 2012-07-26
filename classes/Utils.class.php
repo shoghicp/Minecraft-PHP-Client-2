@@ -68,7 +68,7 @@ class Utils{
 		if($binary{0} == "1"){
 			$negative = true;
 			for($i = 0; $i < $len; ++$i){
-				$binary{$i} = $binary{$i} == "1" ? "0":"1";
+				$binary{$i} = $binary{$i} === "1" ? "0":"1";
 			}
 			for($i = strlen($binary) - 1; $i >= 0; --$i){
 				if($binary{$i} == "1"){
@@ -178,8 +178,8 @@ class Utils{
 	
 	public static function readByte($c, $signed = true){
 		$b = ord($c{0});
-		if($signed === true and ($b & 0x80) == 0x80){ //calculate Two's complement
-			$b = -0x80 + ($b & 0x7f);
+		if($signed === true and ($b & 128) == 128){ //calculate Two's complement
+			$b = -128 + ($b & 127);
 		}
 		return $b;
 	}
@@ -188,7 +188,7 @@ class Utils{
 		if($c > 255){
 			return false;
 		}
-		if($c < 0 and $c >= -0x80){
+		if($c < 0 and $c >= -128){
 			$c = 0xff + $c + 1;
 		}
 		return chr($c);
