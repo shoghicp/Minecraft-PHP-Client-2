@@ -31,6 +31,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 //39
+// 1.3
 
 
 $pstruct = array(
