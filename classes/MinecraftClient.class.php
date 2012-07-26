@@ -501,9 +501,17 @@ class MinecraftClient{
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_1d":
-				console("[DEBUG] EID ".$data[0]." despawned", true, true, 2);
-				$this->trigger("onEntityDespawn", $data[0]);
-				unset($this->entities[$data[0]]);
+				if($this->protocol <= 29){
+					console("[DEBUG] EID ".$data[0]." despawned", true, true, 2);
+					$this->trigger("onEntityDespawn", $data[0]);
+					unset($this->entities[$data[0]]);
+				}else{
+					foreach($data[1] as $eid){
+						console("[DEBUG] EID ".$eid." despawned", true, true, 2);
+						$this->trigger("onEntityDespawn", $eid);					
+					}
+				}
+				
 				break;
 			case "recieved_1f":
 			case "recieved_21":
