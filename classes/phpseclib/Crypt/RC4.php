@@ -19,7 +19,7 @@
  * Here's a short example of how to use this library:
  * <code>
  * <?php
- *    include('Crypt/RC4.php');
+ *    include('phpseclib/Crypt/RC4.php');
  *
  *    $rc4 = new Crypt_RC4();
  *
@@ -264,7 +264,7 @@ class Crypt_RC4 {
                 }
 
                 if (!class_exists('Crypt_Hash')) {
-                    require_once('Crypt/Hash.php');
+                    require_once('phpseclib/Crypt/Hash.php');
                 }
 
                 $i = 1;

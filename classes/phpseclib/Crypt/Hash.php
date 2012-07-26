@@ -19,7 +19,7 @@
  * Here's a short example of how to use this library:
  * <code>
  * <?php
- *    include('Crypt/Hash.php');
+ *    include('phpseclib/Crypt/Hash.php');
  *
  *    $hash = new Crypt_Hash('sha1');
  *

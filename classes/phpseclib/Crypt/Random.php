@@ -9,7 +9,7 @@
  * Here's a short example of how to use this library:
  * <code>
  * <?php
- *    include('Crypt/Random.php');
+ *    include('phpseclib/Crypt/Random.php');
  *
  *    echo crypt_random();
  * ?>

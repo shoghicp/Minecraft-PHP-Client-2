@@ -34,7 +34,7 @@ error_reporting(E_ALL ^ E_NOTICE);
 ini_set("display_errors", 1);
 ini_set('default_charset', 'utf-8');
 define("FILE_PATH", dirname(__FILE__)."/");
-set_include_path(get_include_path() . PATH_SEPARATOR . FILE_PATH . PATH_SEPARATOR . FILE_PATH . "/classes/phpseclib/");
+set_include_path(get_include_path() . PATH_SEPARATOR . FILE_PATH . PATH_SEPARATOR . FILE_PATH . "/classes/");
 ini_set("memory_limit", "1024M");
 define("CURRENT_PROTOCOL", 29);
 define("LAUNCHER_VERSION", 13);

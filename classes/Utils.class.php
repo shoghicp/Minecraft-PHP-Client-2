@@ -106,7 +106,9 @@ class Utils{
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-		return curl_exec($ch);
+		$ret = curl_exec($ch);
+		curl_close($ch);
+		return $ret;
 	}
 	
 	public static function curl_post($page, $args){
@@ -118,7 +120,9 @@ class Utils{
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client 2'));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-		return curl_exec($ch);
+		$ret = curl_exec($ch);
+		curl_close($ch);
+		return $ret;
 	}
 	
 	public static function strToBin($str){
@@ -243,14 +247,14 @@ class Utils{
 		list(,$firstHalf,$secondHalf) = unpack("N*", $str);
 		if(GMPEXT === true){
 			$value = gmp_add($secondHalf, gmp_mul($firstHalf, "4294967296"));
-			if(gmp_cmp($value, gmp_pow(2, 63)) >= 0){
-				$value = gmp_sub($value, gmp_pow(2, 64));
+			if(gmp_cmp($value, "9223372036854775808") >= 0){
+				$value = gmp_sub($value, "18446744073709551616");
 			}
 			return gmp_strval($value);
 		}else{
 			$value = bcadd($secondHalf, bcmul($firstHalf, "4294967296"));
-			if(bccomp($value, bcpow(2, 63)) >= 0){
-				$value = bcsub($value, bcpow(2, 64));
+			if(bccomp($value, "9223372036854775808") >= 0){
+				$value = bcsub($value, "18446744073709551616");
 			}
 			return $value;
 		}

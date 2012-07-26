@@ -78,7 +78,7 @@ class Socket{
 
 	function startRC4($key){
 		console("[DEBUG] [Socket] Activating RC4-".(strlen($key) >> 3)." encryption", true, true, 2);
-		require_once("Crypt/RC4.php");
+		require_once("phpseclib/Crypt/RC4.php");
 		$this->encrypt = new Crypt_RC4();
 		$this->encrypt->setKey($key);
 		$this->encrypt->enableContinuousBuffer();

@@ -32,7 +32,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 require_once(dirname(__FILE__)."/Utils.class.php");
 set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__)."/phpseclib/");
-require_once("Crypt/RSA.php");
+require_once("phpseclib/Crypt/RSA.php");
 
 require_once(dirname(__FILE__)."/Packet.class.php");
 require_once(dirname(__FILE__)."/ASNValue.class.php");

@@ -45,6 +45,11 @@ if(version_compare("5.4.0", PHP_VERSION) > 0){
 	define("HEX2BIN", true);
 }
 
+if(php_sapi_name()!=="cli"){
+	console("[ERROR] Use PHP-CLI to execute the client or create your own", true, true, 0);
+	++$errors;
+}
+
 if(!extension_loaded("gmp")){
 	console("[NOTICE] Enable GMP extension to increase performance", true, true, 0);
 	define("GMPEXT", false);

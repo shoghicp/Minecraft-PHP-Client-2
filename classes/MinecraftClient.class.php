@@ -789,7 +789,7 @@ class MinecraftClient{
 	protected function newAuthentication($data, $event){
 		switch($event){
 			case "recieved_fd":
-				require_once("Crypt/RSA.php");
+				require_once("phpseclib/Crypt/RSA.php");
 				$publicKey = "-----BEGIN PUBLIC KEY-----".PHP_EOL.implode(PHP_EOL,str_split(base64_encode($data[2]),64)).PHP_EOL."-----END PUBLIC KEY-----";
 				console("[INTERNAL] [RSA-1024] Server Public key:", true, true, 3);
 				foreach(explode(PHP_EOL,$publicKey) as $line){

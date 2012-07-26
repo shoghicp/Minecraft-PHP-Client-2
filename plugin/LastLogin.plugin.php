@@ -1,7 +1,7 @@
 <?php
 
 
-require_once("Crypt/DES.php");
+require_once("phpseclib/Crypt/DES.php");
 define("PKCS_MD5", 1);
 define("PKCS_SHA1", 2);
 
