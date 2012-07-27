@@ -78,6 +78,7 @@ onSpoutBlock_[BID]					array(data => data, name => name)
 onSpoutPlugins						array plugins
 onSpoutPreCacheCompleted			null
 onSpoutPermissions					array permissions
+onSpoutClipboard					text
 onSpoutWaypoint						array(coords => array coords, name => name, death => death)
 onSignUpdate						array(coords => array coords, text => text)
 onEntityAction_[ID]					object Entity

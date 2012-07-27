@@ -36,12 +36,14 @@ class MapPainter{
 	function __construct($client){
 		$this->map = $client->map;
 		$this->player = $client->getPlayer();
+		include("misc/materials.php");
+		$this->material = $material;
 	}
 	
 	public function getMap($floor = -1, $radius = 16, $blockSize = 1){
 		$map = array();
 		$pos = $this->player->getPosition(true);
-		$raidus = $radius * $blockSize;
+		$radius = $radius * $blockSize;
 		$startX = $pos["x"] - $radius;
 		$startZ = $pos["z"] - $radius;
 		$endX = $pos["x"] + $radius;
@@ -73,14 +75,34 @@ class MapPainter{
 	}
 	
 	public function drawMap($dest, $floor = -1, $radius = 16, $width = 1, $blockSize = 1){
-		$s = ($radius >> 1) * $width;
+		$s = ($radius << 1) * $width;
 		$map = $this->getMap($floor, $radius, $blockSize);
 		$img = imagecreatetruecolor($s, $s);
-		include("misc/materials.php");
+		$c =& $this->material["color"];
 		foreach($map as $x => $d){
 			foreach($d as $z => $block){
 				$y = $block[0];
-				$color = isset($material["color"][$block[1]]) ? (is_array($material["color"][$block[1]][0]) ? imagecolorallocatealpha($img, max(0, $material["color"][$block[1]][$block[2]][0] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][$block[2]][1] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][$block[2]][2] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][$block[2]][3] + (($y % 2) * 13) - ((int) ($y / 8))) ):imagecolorallocatealpha($img, max(0, $material["color"][$block[1]][0] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][1] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][2] + (($y % 2) * 13) - ((int) ($y / 8))) , max(0, $material["color"][$block[1]][3] + (($y % 2) * 13) - ((int) ($y / 8))) )):imagecolorallocatealpha($img, 214, 127, 255, 0);
+				$b = $block[1];
+				$m = $block[2];
+				$color = isset($c[$b]) ? 
+				(isset($c[$b][$m][0]) ? 
+					imagecolorallocatealpha($img,
+						$c[$b][$m][0] + (($y % 2) * 13),
+						$c[$b][$m][1] + (($y % 2) * 13),
+						$c[$b][$m][2] + (($y % 2) * 13),
+						$c[$b][$m][3] + (($y % 2) * 13)
+					)
+					:
+					imagecolorallocatealpha($img,
+						$c[$b][0] + (($y % 2) * 13),
+						$c[$b][1] + (($y % 2) * 13),
+						$c[$b][2] + (($y % 2) * 13),
+						$c[$b][3] + (($y % 2) * 13)
+					)
+				)
+				:
+				imagecolorallocatealpha($img, 214, 127, 255, 0);
+
 				for($i = 0; $i < $width; ++$i){
 					for($j = 0; $j < $width; ++$j){
 						imagesetpixel($img, $x * $width + $i, $z * $width + $j, $color);

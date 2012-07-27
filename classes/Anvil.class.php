@@ -31,9 +31,11 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class Anvil{
-	protected $block, $raw;
+	protected $block, $material;
 	
 	function __construct(){
+		include("misc/materials.php");
+		$this->material = $material;
 		$this->block = array();
 	}
 	
@@ -42,25 +44,25 @@ class Anvil{
 		$blockData = "";
 		$metaData = "";
 		$len = HEIGHT_LIMIT >> 4;
-		$lastBlock = HEIGHT_LIMIT;
+		$lastBlock = 0;
 		for($i = 0; $i < $len; ++$i){
 			if ($bitmask & (1 << $i)){
 				$blockData .= substr($data, $offset, 4096);
 				$offset += 4096;
 				$lastBlock = $i << 4;
 			}elseif(isset($this->block[$X][$Z])){
-				$blockData .= substr($this->block[$X][$Z][0], $i * 4096, 4096);
+				$blockData .= substr($this->block[$X][$Z][0], $i << 12, 4096);
 				$lastBlock = $i << 4;
 			}else{
 				$blockData .= str_repeat("\x00", 4096);
 			}
 		}
 		for($i=0; $i < $len; ++$i){
-			if ($bitmask & 1 << $i){
+			if ($bitmask & (1 << $i)){
 				$metaData .= substr($data, $offset, 2048);
 				$offset += 2048;
 			}elseif(isset($this->block[$X][$Z])){
-				$metaData .= substr($this->block[$X][$Z][1], $i * 2048, 2048);
+				$metaData .= substr($this->block[$X][$Z][1], $i << 11, 2048);
 			}else{
 				$metaData .= str_repeat("\x00", 2048);
 			}
@@ -83,7 +85,6 @@ class Anvil{
 		$X *= 16;
 		$Z *= 16;
 		unset($this->block[$X][$Z]);
-		unset($this->raw[$X][$Z]);
 		console("[DEBUG] [Anvil] Unloaded X ".$X." Z ".$Z, true, true, 2);
 	}
 	
@@ -92,24 +93,48 @@ class Anvil{
 		$Z = ($z >> 4) << 4;
 		$aX = $x - $X;
 		$aZ = $z - $Z;
-		$index = $y * HEIGHT_LIMIT + $aZ * 16 + $aX;
+		$index = $y * HEIGHT_LIMIT + ($aZ << 4) + $aX;
 		return array($X, $Z, $index);
 	}
 	
-	public function getFloor($x, $z){
+	public function getColumn($x, $z){
+		$index = $this->getIndex($x, 0, $z);
+		if(!isset($this->block[$index[0]][$index[1]])){
+			var_dump($x, $z, $index);
+			return false;
+		}
+		$block = preg_replace("/(.).{".(HEIGHT_LIMIT - 1)."}/s", '$1', substr($this->block[$index[0]][$index[1]][0], $index[2], pow(HEIGHT_LIMIT, 2)));
+		$meta = preg_replace("/(.).{".(HEIGHT_LIMIT >> 1 - 1)."}/s", '$1', substr($this->block[$index[0]][$index[1]][0], $index[2], pow(HEIGHT_LIMIT, 2) >> 1));
+		$data = array();
+		for($i = 0; $i < HEIGHT_LIMIT; ++$i){
+			$b = ord($block{$i});
+			$m = ord($this->block[$index[0]][$index[1]][1]{$index[2] >> 1});
+			if($y % 2 === 0){
+				$m = $m & 0x0F;
+			}else{
+				$m = $m >> 4;
+			}
+			$data[$i] = array($b, $m);
+		}
+		return $data;
+	}
+	
+	public function getFloor($x, $z){ //Fast method
 		$index = $this->getIndex($x, HEIGHT_LIMIT, $z);
 		if(!isset($this->block[$index[0]][$index[1]])){
 			return array(0, 0, 0);
 		}
-		$index = $this->getIndex($x, $this->block[$index[0]][$index[1]][2] + 16, $z);
-		include("misc/materials.php");
+		$i = $this->block[$index[0]][$index[1]][2] + 16;
+		$index[2] -= (HEIGHT_LIMIT - $i) * HEIGHT_LIMIT;
 		$b =& $this->block[$index[0]][$index[1]][0];
-		for($y = $this->block[$index[0]][$index[1]][2] + 16; $y > 0; --$y){
-			if(!isset($material["nosolid"][ord($b{$index[2]})])){
+		
+		for($y = $i; $y > 0; --$y){
+			if(!isset($this->material["nosolid"][ord($b{$index[2]})])){
 				break;
 			}
 			$index[2] -= HEIGHT_LIMIT;
 		}
+		
 		$block = $this->getBlock($x, $y, $z, $index);
 		return array($y, $block[0], $block[1]);
 	}
@@ -118,17 +143,17 @@ class Anvil{
 		if($index === false){
 			$index = $this->getIndex($x, $y, $z);
 		}
-		if(!isset($this->block[$index[0]][$index[1]])){
-			return array(0, 0);
+		if(isset($this->block[$index[0]][$index[1]])){
+			$block = ord($this->block[$index[0]][$index[1]][0]{$index[2]});
+			$meta = ord($this->block[$index[0]][$index[1]][1]{$index[2] >> 1});
+			if($index[2] % 2 === 0){
+				$meta = $meta & 0x0F;
+			}else{
+				$meta = $meta >> 4;
+			}
+			return array($block, $meta);
 		}
-		$block = ord($this->block[$index[0]][$index[1]][0]{$index[2]});
-		$meta = ord($this->block[$index[0]][$index[1]][1]{$index[2] >> 1});
-		if($index[2] % 2 === 0){
-			$meta = $meta & 0x0F;
-		}else{
-			$meta = $meta >> 4;
-		}
-		return array($block, $meta);
+		return array(0, 0);
 	}
 	
 	public function changeBlock($x, $y, $z, $block, $metadata = 0){

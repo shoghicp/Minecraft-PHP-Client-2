@@ -180,6 +180,14 @@ class Utils{
 		return preg_replace('/(.)/s', "\x00$1", $str);
 	}
 	
+	public static function readBool($b){
+		return Utils::readByte($b, false) === 0 ? false:true;
+	}
+	
+	public static function writeBool($b){
+		return Utils::writeByte($b == true ? 1:0);
+	}
+	
 	public static function readByte($c, $signed = true){
 		$b = ord($c{0});
 		if($signed === true and ($b & 128) == 128){ //calculate Two's complement

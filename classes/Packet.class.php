@@ -70,7 +70,7 @@ class Packet{
 					break;
 				case "bool":
 				case "boolean":
-					$this->addRaw(Utils::writeByte($this->data[$field] == true ? 1:0));
+					$this->addRaw(Utils::writeBool($this->data[$field]));
 					break;
 				case "ubyte":
 				case "byte":
@@ -172,7 +172,7 @@ class Packet{
 					break;
 				case "bool":
 				case "boolean":
-					$this->data[] = Utils::readByte($this->get(1), false) === 0 ? false:true;
+					$this->data[] = Utils::readBool($this->get(1));
 					break;
 				case "explosionRecord":
 					$count = $this->data[$field - 1];

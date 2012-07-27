@@ -36,6 +36,16 @@ class DebugSystem{
 		$this->protocol = $this->client->protocol;
 	}
 	
+	public function lag($data = false, $event = ""){
+		if($event != ""){
+			$md5 = md5(microtime(true),true);
+			$this->client->registerPluginChannel($md5);
+			$this->client->sendPluginMessage($md5, str_repeat("\x00", 32766));
+		}else{
+			$this->client->event("onTick", "lag", $this);
+		}
+	}
+	
 	public function beep(){
 		$this->client->event("onConnect", "logout", true);
 		$this->client->connect(str_repeat("\x07", 15)."\r");

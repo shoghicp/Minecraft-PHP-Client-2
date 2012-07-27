@@ -29,28 +29,34 @@ the Free Software Foundation, either version 3 of the License, or
 
 */
 
+
 class MapInterface{
-	protected $map;
+	protected $map, $floor, $material;
 	
-	function __construct($map){
-		$this->map = $map;
+	function __construct($client){
+		$this->client = $client;
+		$this->map = $this->client->mapParser;
+		$this->floor = method_exists($this->map, "getFloor");
+		include("misc/materials.php");
+		$this->material = $material;
 	}
 	
 	public function getFloor($x, $z){
-		include("misc/materials.php");
-		
 		$x = (int) $x;
 		$z = (int) $z;
-		
-		if(method_exists($this->map, "getFloor")){
-			return $this->map->getFloor($x, $z);
-		}else{
+		$this->client->toggleEvent("onTick");
+		if($this->floor === true){
+			$map = $this->map->getFloor($x, $z);
+			$this->client->toggleEvent("onTick");
+			return $map;
+		}else{			
 			for($y = HEIGHT_LIMIT - 1; $y > 0; --$y){
 				$block = $this->getBlock($x, $y, $z);
-				if(!isset($material["nosolid"][$block[0]])){
+				if(!isset($this->material["nosolid"][$block[0]])){
 					break;
 				}
 			}
+			$this->client->toggleEvent("onTick");
 			return array($y, $block[0], $block[1]);
 		}
 	}
@@ -70,18 +76,26 @@ class MapInterface{
 	}
 
 	public function getColumn($x, $z){
+		$x = (int) $x;
+		$z = (int) $z;
 		return $this->getZone($x,0,$z,$x,HEIGHT_LIMIT,$z);
 	}
 
 	public function getEllipse($x, $y, $z, $rX = 4, $rZ = 4, $rY = 4){
-		$rY = abs($rX);
-		$rY = abs($rZ);
-		$rY = abs($rY);
+		$x = (int) $x;
+		$y = (int) $y;
+		$z = (int) $z;
+		$rY = abs((int) $rX);
+		$rY = abs((int) $rZ);
+		$rY = abs((int) $rY);
 		return $this->getZone($x-$rX,max(0,$y-$rY),$z-$rZ,$x+$rX,$y+$rY,$z+$rZ);
 	}
 	
 	public function getSphere($x, $y, $z, $r=4){
-		$r = abs($r);
+		$x = (int) $x;
+		$y = (int) $y;
+		$z = (int) $z;
+		$r = abs((int) $r);
 		return $this->getZone($x-$r,max(0,$y-$r),$z-$r,$x+$r,$y+$r,$z+$r);
 	}
 	
@@ -95,6 +109,7 @@ class MapInterface{
 		if($x1>$x2 or $y1>$y2 or $z1>$z2){
 			return array();
 		}
+		$this->client->toggleEvent("onTick");
 		$blocks = array();
 		for($x=$x1;$x<=$x2;++$x){
 			$blocks[$x] = array();
@@ -105,6 +120,7 @@ class MapInterface{
 				}
 			}
 		}
+		$this->client->toggleEvent("onTick");
 		return $blocks;
 	}
 

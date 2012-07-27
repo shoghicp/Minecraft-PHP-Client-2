@@ -34,7 +34,7 @@ class PKCSKeyGenerator{
 		for($j = 0; $j < $segments; ++$j){
 			$result .= $data;
 			for($i = 0; $i < $iterations; ++$i){
-				$result = Utils::hexToStr($hashFunction($result));
+				$result = $hashFunction($result, true);
 			}		
 		}
 		$this->key = substr($result, 0, 8);

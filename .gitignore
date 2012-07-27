@@ -3,6 +3,7 @@ cmd.bat
 *.ini
 pstruct_modifier.php
 smallClient
+data/*
 
 #################
 ## Eclipse

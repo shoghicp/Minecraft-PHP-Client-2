@@ -31,9 +31,9 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class MinecraftClient{
-	private $server, $port, $auth, $player, $entities, $players, $key;
-	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions, $mapParser, $useMap;
-	var $time, $protocol, $map;
+	private $server, $port, $player, $entities, $players, $key;
+	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions, $useMap;
+	var $time, $protocol, $map, $auth, $mapParser;
 	
 	
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
@@ -44,7 +44,7 @@ class MinecraftClient{
 		console("[INFO] Connecting to Minecraft server protocol ".$this->protocol);
 		$this->interface = new MinecraftInterface($server, $protocol, $port);
 		$this->cnt = 1;
-		$this->events = array("recieved_ff" => array(0 => array('close', true)));
+		$this->events = array("recieved_ff" => array(0 => array('close', true)), "disabled" => array());
 		$this->responses = array();
 		$this->info = array();
 		$this->entities = array();
@@ -91,7 +91,7 @@ class MinecraftClient{
 		$this->close(array(0 => $message));
 	}
 	
-	protected function close($data = ""){
+	public function close($data = ""){
 		
 		if($data !== ""){
 			$this->trigger("onClose", $data[0]);
@@ -148,7 +148,7 @@ class MinecraftClient{
 	
 	public function trigger($event, $data = ""){
 		console("[INTERNAL] Event ". $event, true, true, 3);
-		if(isset($this->events[$event])){
+		if(isset($this->events[$event]) and !isset($this->events["disabled"][$event])){
 			foreach($this->events[$event] as $eid => $ev){
 				if(isset($ev[1]) and ($ev[1] === true or is_object($ev[1]))){
 					$this->responses[$eid] = call_user_func(array(($ev[1] === true ? $this:$ev[1]), $ev[0]), $data, $event, $this);
@@ -169,8 +169,19 @@ class MinecraftClient{
 	}
 
 	public function action($microseconds, $code){
-		$this->actions[] = array($microseconds, microtime(true), $code);
+		$this->actions[] = array($microseconds / 1000000, microtime(true), $code);
 		console("[INTERNAL] Attached to action ".$microseconds, true, true, 3);
+	}	
+	
+	public function toggleEvent($event){
+		if(!isset($this->events["disabled"][$event])){
+			$this->events["disabled"][$event] = false;
+			console("[INTERNAL] Disabled event ".$event, true, true, 3);
+		}else{
+			unset($this->events["disabled"][$event]);
+			console("[INTERNAL] Enabled event ".$event, true, true, 3);		
+		}
+	
 	}
 	
 	public function event($event, $func, $in = false){
@@ -293,7 +304,7 @@ class MinecraftClient{
 		//actions that repeat every x time will go here
 		$time = microtime(true);
 		foreach($this->actions as $id => $action){
-			if($action[1] <= ($time - ($action[0] / 1000000))){
+			if($action[1] <= ($time - $action[0])){
 				$this->actions[$id][1] = $time;
 				eval($action[2]);
 			}
@@ -332,7 +343,7 @@ class MinecraftClient{
 					$this->mapParser = new McRegion;
 					console("[DEBUG] [McRegion] Map parser started", true, true, 2);				
 				}
-				$this->map = new MapInterface($this->mapParser);
+				$this->map = new MapInterface($this);
 				break;
 			case "recieved_38":
 				if($this->useMap === true){
@@ -388,7 +399,7 @@ class MinecraftClient{
 				break;
 			case "recieved_32":
 				if($this->useMap === true){
-					if($data[2] == 0){
+					if($data[2] === false){
 						$this->mapParser->unloadChunk($data[0], $data[1]);
 					}
 				}
@@ -650,6 +661,7 @@ class MinecraftClient{
 		$this->event("recieved_1f", "handler", true);
 		$this->event("recieved_21", "handler", true);
 		$this->event("recieved_22", "handler", true);
+		$this->event("recieved_32", "mapHandler", true);
 		$this->event("recieved_33", "mapHandler", true);
 		$this->event("recieved_34", "mapHandler", true);
 		$this->event("recieved_35", "mapHandler", true);
@@ -785,8 +797,8 @@ class MinecraftClient{
 		unset($startEntropy);
 		foreach($entropy as $c){
 			for($i = 0; $i < 64; ++$i){
-				$value ^= Utils::hexToStr(md5($c.lcg_value().$value.microtime(true).mt_rand(0,mt_getrandmax())));
-				$value ^= substr(Utils::hexToStr(sha1($c.lcg_value().$value.microtime(true).mt_rand(0,mt_getrandmax()))),0,16);
+				$value ^= md5($c.lcg_value().$value.microtime(true).mt_rand(0,mt_getrandmax()), true);
+				$value ^= substr(sha1($c.lcg_value().$value.microtime(true).mt_rand(0,mt_getrandmax()), true),0,16);
 			}
 			
 		}
@@ -799,9 +811,9 @@ class MinecraftClient{
 			case "recieved_fd":
 				require_once("phpseclib/Crypt/RSA.php");
 				$publicKey = "-----BEGIN PUBLIC KEY-----".PHP_EOL.implode(PHP_EOL,str_split(base64_encode($data[2]),64)).PHP_EOL."-----END PUBLIC KEY-----";
-				console("[INTERNAL] [RSA-1024] Server Public key:", true, true, 3);
+				console("[DEBUG] [RSA-1024] Server Public key:", true, true, 2);
 				foreach(explode(PHP_EOL,$publicKey) as $line){
-					console("[INTERNAL] ".$line, true, true, 3);
+					console("[DEBUG] ".$line, true, true, 2);
 				}
 				$rsa = new Crypt_RSA();
 				$rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
@@ -912,6 +924,15 @@ class MinecraftClient{
 	
 	public function spoutHandler($data, $event){
 		switch($event){
+			case "onRecievedSpoutPacket_9":
+				$offset = 0;
+				$len = Utils::readShort(substr($data["data"], $offset,2)) << 1;
+				$offset += 2;
+				$text = Utils::readString(substr($data["data"], $offset,$len));
+				$offset += $len;
+				console("[DEBUG] [Spout] Clipboard: ".$text, true, true, 2);
+				$this->trigger("onSpoutClipboard", $text);
+				break;
 			case "onRecievedSpoutPacket_13":
 				$offset = 0;
 				$BID = Utils::readInt(substr($data["data"], $offset,4));
@@ -925,6 +946,26 @@ class MinecraftClient{
 				console("[INTERNAL] [Spout] Got block ".$name." (ID ".$BID." DATA ".$info.")", true, true, 3);
 				$this->trigger("onSpoutBlock", array("id" => $BID, "data" => $info, "name" => $name));
 				$this->trigger("onSpoutBlock_".$BID, array("data" => $info, "name" => $name));
+				break;
+			case "onRecievedSpoutPacket_27":
+				$offset = 0;
+				$cached = Utils::readBool($data["data"]{$offset});
+				$offset += 1;
+				$url = Utils::readBool($data["data"]{$offset});
+				$offset += 1;
+				$CRC = Utils::readLong(substr($data["data"], $offset, 8));
+				$offset += 8;
+				
+				$len = Utils::readShort(substr($data["data"], $offset,2)) << 1;
+				$offset += 2;
+				$file = Utils::readString(substr($data["data"], $offset,$len));
+				$offset += $len;
+				$len = Utils::readShort(substr($data["data"], $offset,2)) << 1;
+				$offset += 2;
+				$plugin = Utils::readString(substr($data["data"], $offset,$len));
+				$offset += $len;
+				console("[INTERNAL] [Spout] ".$plugin." Cache file: ".$file, true, true, 3);
+				$this->trigger("onSpoutCache", array("file" => $file, "plugin" => $plugin));
 				break;
 			case "onRecievedSpoutPacket_30":
 				console("[DEBUG] [Spout] Pre-cache Completed", true, true, 2);
@@ -1001,7 +1042,9 @@ class MinecraftClient{
 					$this->spout = true;
 					$this->sendSpoutMessage(33,0,array(0 => SPOUT_VERSION));
 					console("[INFO] [Spout] Authenticated as a v".SPOUT_VERSION." Spout client");
+					$this->event("onRecievedSpoutPacket_9", "spoutHandler", true);
 					$this->event("onRecievedSpoutPacket_13", "spoutHandler", true);
+					$this->event("onRecievedSpoutPacket_27", "spoutHandler", true);
 					$this->event("onRecievedSpoutPacket_30", "spoutHandler", true);
 					$this->event("onRecievedSpoutPacket_44", "spoutHandler", true);
 					$this->event("onRecievedSpoutPacket_57", "spoutHandler", true);
