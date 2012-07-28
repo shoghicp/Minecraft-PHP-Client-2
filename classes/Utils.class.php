@@ -39,7 +39,7 @@ if(!defined("HEX2BIN")){
 
 define("BIG_ENDIAN", 0x00);
 define("LITTLE_ENDIAN", 0x01);
-define("ENDIANNESS", (pack('d', 1) == "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN:LITTLE_ENDIAN));
+define("ENDIANNESS", (pack('d', 1) === "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN:LITTLE_ENDIAN));
 console("[DEBUG] Endianness: ".(ENDIANNESS === LITTLE_ENDIAN ? "Little Endian":"Big Endian"));
 
 class Utils{
@@ -66,13 +66,13 @@ class Utils{
 		$binary = Utils::hexToBin(sha1($input));
 		$negative = false;
 		$len = strlen($binary);
-		if($binary{0} == "1"){
+		if($binary{0} === "1"){
 			$negative = true;
 			for($i = 0; $i < $len; ++$i){
 				$binary{$i} = $binary{$i} === "1" ? "0":"1";
 			}
 			for($i = strlen($binary) - 1; $i >= 0; --$i){
-				if($binary{$i} == "1"){
+				if($binary{$i} === "1"){
 					$binary{$i} = "0";
 				}else{
 					$binary{$i} = "1";
@@ -84,14 +84,14 @@ class Utils{
 		$hash = Utils::binToHex($binary);
 		$len = strlen($hash);
 		for($i = 0; $i < $len; ++$i){
-			if($hash{$i} == "0"){
+			if($hash{$i} === "0"){
 				$hash{$i} = "x";
 			}else{
 				break;
 			}
 		}
 		
-		return ($negative == true ? "-":"").str_replace("x", "", $hash);
+		return ($negative === true ? "-":"").str_replace("x", "", $hash);
 	}
 	
 	public static function microtime(){
@@ -186,12 +186,12 @@ class Utils{
 	}
 	
 	public static function writeBool($b){
-		return Utils::writeByte($b == true ? 1:0);
+		return Utils::writeByte($b === true ? 1:0);
 	}
 	
 	public static function readByte($c, $signed = true){
 		$b = ord($c{0});
-		if($signed === true and ($b & 128) == 128){ //calculate Two's complement
+		if($signed === true and ($b & 128) === 128){ //calculate Two's complement
 			$b = -128 + ($b & 127);
 		}
 		return $b;

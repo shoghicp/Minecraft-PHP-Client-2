@@ -104,9 +104,9 @@ function arguments ( $args ){
 function console($message, $EOL = true, $log = true, $level = 1){
 	//global $path;
 	if(!defined("DEBUG") or DEBUG >= $level){
-		$message .= $EOL == true ? PHP_EOL:"";
+		$message .= $EOL === true ? PHP_EOL:"";
 		$message = date("H:i:s"). " ". $message;
-		if($log === true and (!defined("LOG") or LOG == true)){
+		if($log === true and (!defined("LOG") or LOG === true)){
 			logg($message, "console", false, $level);
 		}
 	
@@ -116,8 +116,8 @@ function console($message, $EOL = true, $log = true, $level = 1){
 
 function logg($message, $name, $EOL = true, $level = 2, $close = false){
 	global $fpointers;
-	if((!defined("DEBUG") or DEBUG >= $level) and (!defined("LOG") or LOG == true)){
-		$message .= $EOL == true ? PHP_EOL:"";
+	if((!defined("DEBUG") or DEBUG >= $level) and (!defined("LOG") or LOG === true)){
+		$message .= $EOL === true ? PHP_EOL:"";
 		if(!isset($fpointers)){
 			$fpointers = array();
 		}

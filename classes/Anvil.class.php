@@ -41,8 +41,8 @@ class Anvil{
 	
 	protected function splitColumns($data, $bitmask, $X, $Z){
 		$offset = 0;
-		$blockData = "";
-		$metaData = "";
+		$blockData = b"";
+		$metaData = b"";
 		$len = HEIGHT_LIMIT >> 4;
 		$lastBlock = 0;
 		for($i = 0; $i < $len; ++$i){

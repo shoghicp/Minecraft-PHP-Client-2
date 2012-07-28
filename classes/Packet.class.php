@@ -144,7 +144,7 @@ class Packet{
 			switch($type){
 				case "int":
 					$this->data[] = Utils::readInt($this->get(4));
-					if($field == 5 and $this->pid == "17" and $this->data[$field] == 0){
+					if($field === 5 and $this->pid === "17" and $this->data[$field] === 0){
 						$continue = false;
 					}
 					break;
@@ -229,7 +229,7 @@ class Packet{
 					break;
 				case "slotArray":
 				case "slotData":
-					$scount = $type == "slotData" ? 1:$this->data[$field-1];
+					$scount = $type === "slotData" ? 1:$this->data[$field-1];
 					$d = array();
 					for($i=0;$i<$scount;++$i){
 						$id = Utils::readShort($this->get(2));

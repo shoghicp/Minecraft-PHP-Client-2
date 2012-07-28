@@ -45,7 +45,7 @@ class FollowPath{
 		$this->path[] = array("time" => microtime(true) - $this->start, "coords" => array("x" => $coords["x"], "y" => $coords["y"], "z" => $coords["z"]));	
 	}
 	public function followPath($time, $event, $ob){
-		if(count($this->path) == 0){
+		if(count($this->path) === 0){
 			return;
 		}
 		foreach($this->path as $i => $data){

@@ -198,7 +198,7 @@ class MinecraftClient{
 			unset($this->events[$event]);
 		}else{
 			unset($this->events[$event][$id]);
-			if(isset($this->events[$event]) and count($this->events[$event]) == 0){
+			if(isset($this->events[$event]) and count($this->events[$event]) === 0){
 				unset($this->events[$event]);
 			}
 		}
@@ -386,7 +386,7 @@ class MinecraftClient{
 			case "recieved_33":
 				if($this->useMap === true){
 					if($this->protocol > 29){
-						if($data[2] == true and $data[3] == 0){
+						if($data[2] === true and $data[3] === 0){
 							$this->mapParser->unloadChunk($data[0], $data[1]);
 						}else{
 							$this->mapParser->addChunk($data[0], $data[1], $data[6], $data[3]);
@@ -429,7 +429,7 @@ class MinecraftClient{
 				if($this->timeState != $timeState){
 					$this->timeState = $timeState;
 					$this->trigger("onTimeStateChange", $this->timeState);
-					if($this->timeState == "day"){
+					if($this->timeState === "day"){
 						$this->trigger("onDay");
 					}else{
 						$this->trigger("onNight");
@@ -570,7 +570,7 @@ class MinecraftClient{
 				$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] >> 5, "y" => $data[3] >> 5, "z" => $data[4] >> 5)));
 				break;
 			case "recieved_67":
-				if($data[0] == 0){
+				if($data[0] === 0){
 					if(!isset($data[2][0])){
 						$this->inventory[$data[1]] = array(0,0,0);
 					}else{
@@ -582,7 +582,7 @@ class MinecraftClient{
 				}
 				break;
 			case "recieved_68":
-				if($data[0] == 0){
+				if($data[0] === 0){
 					foreach($data[2] as $i => $slot){
 						$this->inventory[$i] = $slot;
 						$this->trigger("onInventorySlotChanged", array("slot" => $i, "data" => $slot));
@@ -749,7 +749,7 @@ class MinecraftClient{
 				break;
 			default:
 				$content = explode(":",$response);
-				if(!is_array($content) or count($content) == 1){
+				if(!is_array($content) or count($content) === 1){
 					console("[ERROR] Unknown Login Error: \"".$response."\"", true, true, 0);
 					$this->close();
 					break;
@@ -908,7 +908,7 @@ class MinecraftClient{
 		$this->process("02");
 	}
 	public function sendSpoutMessage($pid, $version, $data){
-		if($this->spout == true){
+		if($this->spout === true){
 			require("pstruct/spout.php");
 			$p = new Packet(false, $pstruct_spout[$pid]);
 			$p->data = $data;
@@ -1008,7 +1008,7 @@ class MinecraftClient{
 					$offset += 2;
 					$key = Utils::readString(substr($data["data"], $offset, $len));
 					$offset += $len;
-					$value = Utils::readByte(substr($data["data"], $offset,1)) == 1 ? true:false;
+					$value = Utils::readBool($data["data"]{$offset});
 					$offset += 1;
 					$permissions[$key] = $value;
 					console("[DEBUG] [Spout] ".$key." => ".$value, true, true, 2);
@@ -1027,7 +1027,7 @@ class MinecraftClient{
 				$offset += 2;
 				$name = Utils::readString(substr($data["data"], $offset,$len));
 				$offset += $len;
-				$death = Utils::readByte(substr($data["data"], $offset,1)) == 1 ? true:false;
+				$death = Utils::readBool($data["data"]{$offset});
 				$offset += 1;
 				console("[DEBUG] [Spout] Got waypoint ".$name." (".$x.",".$y.",".$z.")".($death === true ? " DEATH":""), true, true, 2);
 				$this->trigger("onSpoutWaypoint", array("coords" => array("x" => $x, "y" => $y, "z" => $z), "name" => $name, "death" => $death));
@@ -1041,7 +1041,7 @@ class MinecraftClient{
 				$this->trigger("onRecievedSpoutPacket", array("id" => $packetId, "version" => $version, "data" => $packet));
 				break;
 			case "recieved_12":
-				if($data[0] == -42){
+				if($data[0] === -42){
 					$this->spout = true;
 					$this->sendSpoutMessage(33,0,array(0 => SPOUT_VERSION));
 					console("[INFO] [Spout] Authenticated as a v".SPOUT_VERSION." Spout client");
@@ -1139,9 +1139,9 @@ class MinecraftInterface{
 	public function writePacket($pid, $data = array(), $raw = false){
 		$struct = $this->getStruct($pid);
 		if($this->protocol >= 32){
-			if($pid == "01"){
+			if($pid === "01"){
 				$struct = array();
-			}elseif($pid == "09"){
+			}elseif($pid === "09"){
 				$struct = array();
 			}
 		}
