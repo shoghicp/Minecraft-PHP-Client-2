@@ -208,8 +208,23 @@ function clientHandler($message, $event, $ob){
 			$chat->addCommand("say", "clientHandler", true, true);
 			$chat->addCommand("follow", "clientHandler", true, true);
 			$chat->addCommand("goto", "clientHandler", true, true);
+			$chat->addCommand("scan", "clientHandler", true, true);
+			$chat->addCommand("map", "clientHandler", true, true);
 			$chat->addCommand("coord", "clientHandler");
 			$chat->addCommand("dice", "clientHandler");
+			break;
+		case "onChatCommand_scan":
+			$s = min(160, (intval($message["text"]) > 0 ? intval($message["text"]):32));
+			$time = time();
+			@mkdir("data/map/".$time, 0777, true);
+			$ob->say("Starting layer scanning of ".$s."x".$s." blocks", $message["owner"]);
+			$map->scan("data/map/".$time."/layer", $s, 4);
+			break;
+		case "onChatCommand_map":
+			$s = min(160, intval($message["text"]) > 0 ? intval($message["text"]):32);
+			$ob->say("Starting map surface scanning of ".$s."x".$s." blocks", $message["owner"]);
+			@mkdir("data/map/", 0777, true);
+			$map->drawMap("data/map/".time().".png", -1, $s, 4);
 			break;
 		case "onChatCommand_goto":
 			$data = explode(" ",$message["text"]);
