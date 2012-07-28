@@ -182,7 +182,7 @@ $client->connect($username, $password); //NO CODE IS EXECUTED AFTER THIS LINE. B
 
 
 function clientHandler($message, $event, $ob){
-	global $food, $only_food, $chat, $lag, $owner, $nav, $follow;
+	global $food, $only_food, $chat, $lag, $owner, $nav, $follow, $map;
 	switch($event){
 		case "onChatHandler":
 			console("[INFO] [Chat] ".ChatHandler::format($message));
@@ -198,6 +198,8 @@ function clientHandler($message, $event, $ob){
 				require_once("plugin/Navigation.plugin.php");
 				$nav = new Navigation($ob);
 			}
+			require_once("plugin/MapPainter.plugin.php");
+			$map = new MapPainter($ob);
 			require_once("plugin/NoHunger.plugin.php");
 			$food = new NoHunger($ob, $only_food);
 			require_once("plugin/ChatCommand.plugin.php");

@@ -360,11 +360,15 @@ class MinecraftClient{
 						$offset += 2;
 						$d = "";
 						for($i = 0; $i < (HEIGHT_LIMIT >> 4); ++$i){
-							if($bitmask & 1 << $i){
+							if($bitmask & (1 << $i)){
 								$d .= substr($data[2],$offsetData,10240);
 								$offsetData += 10240;
 							}
+							if($add_bitmask & (1 << $i)){
+								$offsetData += 2048;
+							}							
 						}
+						$offsetData += 256;
 						$this->mapParser->addChunk($X, $Z, $d, $bitmask, false);
 					}
 				}

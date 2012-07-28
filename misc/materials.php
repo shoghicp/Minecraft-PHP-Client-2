@@ -80,6 +80,8 @@ the Free Software Foundation, either version 3 of the License, or
 			16 => array(63, 63, 63, 0),
 			17 => array(108, 87, 54, 0),
 			18 => array(57, 61, 13, 0),
+			21 => array(25, 70, 181),
+			22 => array(25, 70, 181), 
 			23 => array(132, 132, 132, 0),
 			24 => array(251, 244, 189, 0),
 			27 => array(245, 204, 45, 0),
