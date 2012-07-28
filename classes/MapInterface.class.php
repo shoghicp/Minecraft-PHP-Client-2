@@ -31,12 +31,13 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class MapInterface{
-	protected $map, $floor, $material;
+	protected $map, $floor, $column, $material;
 	
 	function __construct($client){
 		$this->client = $client;
 		$this->map = $this->client->mapParser;
 		$this->floor = method_exists($this->map, "getFloor");
+		$this->column = method_exists($this->map, "getColumn");
 		include("misc/materials.php");
 		$this->material = $material;
 	}
@@ -78,7 +79,12 @@ class MapInterface{
 	public function getColumn($x, $z){
 		$x = (int) $x;
 		$z = (int) $z;
-		return $this->getZone($x,0,$z,$x,HEIGHT_LIMIT,$z);
+		if($this->column === true){
+			$column = $this->map->getColumn($x, $z);
+			var_dump($column);
+		}else{
+			return $this->getZone($x,0,$z,$x,HEIGHT_LIMIT,$z);
+		}
 	}
 
 	public function getEllipse($x, $y, $z, $rX = 4, $rZ = 4, $rY = 4){

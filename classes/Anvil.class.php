@@ -97,22 +97,26 @@ class Anvil{
 		return array($X, $Z, $index);
 	}
 	
-	public function getColumn($x, $z){
+	public function getColumn($x, $z, $meta = true){
 		$index = $this->getIndex($x, 0, $z);
 		if(!isset($this->block[$index[0]][$index[1]])){
-			var_dump($x, $z, $index);
-			return false;
+			return array_fill(0, HEIGHT_LIMIT, array(0, 0));
 		}
 		$block = preg_replace("/(.).{".(HEIGHT_LIMIT - 1)."}/s", '$1', substr($this->block[$index[0]][$index[1]][0], $index[2], pow(HEIGHT_LIMIT, 2)));
-		$meta = preg_replace("/(.).{".(HEIGHT_LIMIT >> 1 - 1)."}/s", '$1', substr($this->block[$index[0]][$index[1]][0], $index[2], pow(HEIGHT_LIMIT, 2) >> 1));
+		if($meta === true){
+			$meta = preg_replace("/(.).{".(HEIGHT_LIMIT >> 1 - 1)."}/s", '$1', substr($this->block[$index[0]][$index[1]][0], $index[2], pow(HEIGHT_LIMIT, 2) >> 1));
+		}
 		$data = array();
+		$m = 0;
 		for($i = 0; $i < HEIGHT_LIMIT; ++$i){
 			$b = ord($block{$i});
-			$m = ord($this->block[$index[0]][$index[1]][1]{$index[2] >> 1});
-			if($y % 2 === 0){
-				$m = $m & 0x0F;
-			}else{
-				$m = $m >> 4;
+			if($meta === true){
+				$m = ord($this->block[$index[0]][$index[1]][1]{$index[2] >> 1});
+				if($y % 2 === 0){
+					$m = $m & 0x0F;
+				}else{
+					$m = $m >> 4;
+				}
 			}
 			$data[$i] = array($b, $m);
 		}

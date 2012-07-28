@@ -174,14 +174,13 @@ class MinecraftClient{
 	}	
 	
 	public function toggleEvent($event){
-		if(!isset($this->events["disabled"][$event])){
+		if(isset($this->events["disabled"][$event])){
+			unset($this->events["disabled"][$event]);
+			console("[INTERNAL] Enabled event ".$event, true, true, 3);
+		}else{
 			$this->events["disabled"][$event] = false;
 			console("[INTERNAL] Disabled event ".$event, true, true, 3);
-		}else{
-			unset($this->events["disabled"][$event]);
-			console("[INTERNAL] Enabled event ".$event, true, true, 3);		
-		}
-	
+		}	
 	}
 	
 	public function event($event, $func, $in = false){
