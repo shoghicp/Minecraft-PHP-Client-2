@@ -80,10 +80,18 @@ class MapInterface{
 		$x = (int) $x;
 		$z = (int) $z;
 		if($this->column === true){
-			$column = $this->map->getColumn($x, $z);
-			var_dump($column);
+			return $this->map->getColumn($x, $z);
 		}else{
-			return $this->getZone($x,0,$z,$x,HEIGHT_LIMIT,$z);
+			$zone = $this->getZone($x,0,$z,$x,HEIGHT_LIMIT,$z);
+			$data = array();
+			foreach($zone as $x => $a){
+				foreach($a as $y => $b){
+					foreach($b as $z => $block){
+						$data[$y] = $block;
+					}
+				}
+			}
+			return $data;
 		}
 	}
 
