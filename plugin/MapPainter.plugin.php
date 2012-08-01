@@ -38,6 +38,7 @@ class MapPainter{
 		$this->player = $client->getPlayer();
 		include("misc/materials.php");
 		$this->material = $material;
+		console("[INFO] [MapPainter] loaded");
 	}
 	
 	public function getMap($floor = -1, $radius = 16, $blockSize = 1){
@@ -112,5 +113,6 @@ class MapPainter{
 		}
 		imagepng($img, $dest, 9);
 		imagedestroy($img);
+		console("[DEBUG] [MapPainter] Drawed map radius ".$radius, true, true, 2);
 	}
 }

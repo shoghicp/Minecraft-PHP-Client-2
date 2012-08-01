@@ -37,6 +37,7 @@ class Anvil{
 		include("misc/materials.php");
 		$this->material = $material;
 		$this->block = array();
+		$this->height = (int) ((string) log(HEIGHT_LIMIT, 2));
 	}
 	
 	protected function splitColumns($data, $bitmask, $X, $Z){
@@ -93,7 +94,7 @@ class Anvil{
 		$Z = ($z >> 4) << 4;
 		$aX = $x - $X;
 		$aZ = $z - $Z;
-		$index = $y * HEIGHT_LIMIT + ($aZ << 4) + $aX;
+		$index = $y << $this->height + ($aZ << 4) + $aX;
 		return array($X, $Z, $index);
 	}
 	
@@ -102,9 +103,9 @@ class Anvil{
 		if(!isset($this->block[$index[0]][$index[1]])){
 			return array_fill(0, HEIGHT_LIMIT, array(0, 0));
 		}
-		$block = preg_replace("/(.).{".(HEIGHT_LIMIT - 1)."}/s", '$1', substr($this->block[$index[0]][$index[1]][0], $index[2], pow(HEIGHT_LIMIT, 2)));
+		$block = preg_replace("/(.).{".(HEIGHT_LIMIT - 1)."}/s", '$1', substr($this->block[$index[0]][$index[1]][0], $index[2], HEIGHT_LIMIT << $this->height));
 		if($meta === true){
-			$meta = preg_replace("/(.).{".(HEIGHT_LIMIT >> 1 - 1)."}/s", '$1', substr($this->block[$index[0]][$index[1]][0], $index[2], pow(HEIGHT_LIMIT, 2) >> 1));
+			$meta = preg_replace("/(.).{".(HEIGHT_LIMIT >> 1 - 1)."}/s", '$1', substr($this->block[$index[0]][$index[1]][0], $index[2], HEIGHT_LIMIT << ($this->height - 1)));
 		}
 		$data = array();
 		$m = 0;
@@ -129,7 +130,7 @@ class Anvil{
 			return array(0, 0, 0);
 		}
 		$i = $this->block[$index[0]][$index[1]][2] + 16;
-		$index[2] -= (HEIGHT_LIMIT - $i) * HEIGHT_LIMIT;
+		$index[2] -= (HEIGHT_LIMIT - $i) << $this->height;
 		$b =& $this->block[$index[0]][$index[1]][0];
 		
 		for($y = $i; $y > 0; --$y){

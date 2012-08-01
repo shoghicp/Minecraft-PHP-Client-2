@@ -62,7 +62,7 @@ class MapInterface{
 		}
 	}
 	
-	public function changeBlock($x, $y, $z, $block, $metadata){
+	public function changeBlock($x, $y, $z, $block, $metadata = 0){
 		$x = (int) $x;
 		$y = (int) $y;
 		$z = (int) $z;
