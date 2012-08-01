@@ -207,6 +207,7 @@ function clientHandler($message, $event, $ob){
 			$chat = new ChatCommand($ob);
 			$ob->event("onChatHandler", "clientHandler");
 			$chat->addOwner($owner);
+			$chat->addOwner("Console");
 			$chat->addCommand("die", "clientHandler", true, true);
 			$chat->addCommand("say", "clientHandler", true, true);
 			$chat->addCommand("follow", "clientHandler", true, true);

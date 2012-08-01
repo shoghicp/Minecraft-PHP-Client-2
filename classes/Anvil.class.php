@@ -94,7 +94,7 @@ class Anvil{
 		$Z = ($z >> 4) << 4;
 		$aX = $x - $X;
 		$aZ = $z - $Z;
-		$index = $y << $this->height + ($aZ << 4) + $aX;
+		$index = ($y << $this->height) + ($aZ << 4) + $aX;
 		return array($X, $Z, $index);
 	}
 	
