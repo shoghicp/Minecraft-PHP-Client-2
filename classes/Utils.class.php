@@ -40,7 +40,7 @@ if(!defined("HEX2BIN")){
 define("BIG_ENDIAN", 0x00);
 define("LITTLE_ENDIAN", 0x01);
 define("ENDIANNESS", (pack('d', 1) === "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN:LITTLE_ENDIAN));
-console("[DEBUG] Endianness: ".(ENDIANNESS === LITTLE_ENDIAN ? "Little Endian":"Big Endian"));
+console("[DEBUG] Endianness: ".(ENDIANNESS === LITTLE_ENDIAN ? "Little Endian":"Big Endian"), true, true, 2);
 
 class Utils{
 	public static $hexToBin = array(
@@ -71,7 +71,7 @@ class Utils{
 			for($i = 0; $i < $len; ++$i){
 				$binary{$i} = $binary{$i} === "1" ? "0":"1";
 			}
-			for($i = strlen($binary) - 1; $i >= 0; --$i){
+			for($i = $len - 1; $i >= 0; --$i){
 				if($binary{$i} === "1"){
 					$binary{$i} = "0";
 				}else{

@@ -422,7 +422,7 @@ class MinecraftClient{
 				$this->trigger("onChat", $data[0]);
 				break;
 			case "recieved_04":
-				$this->time = $data[0] % 24000;
+				$this->time = ($this->protocol > 39 ? $data[1]:$data[0]) % 24000;
 				console("[DEBUG] Time: ".((intval($this->time/1000+6) % 24)).':'.str_pad(intval(($this->time/1000-floor($this->time/1000))*60),2,"0",STR_PAD_LEFT).', '.(($this->time > 23100 or $this->time < 12900) ? "day":"night"), true, true, 2);
 				$this->trigger("onTimeChange", $this->time);
 				$timeState = (($this->time > 23100 or $this->time < 12900) ? "day":"night");
