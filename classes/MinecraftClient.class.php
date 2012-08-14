@@ -413,6 +413,12 @@ class MinecraftClient{
 	private function handler($data, $event){
 		switch($event){
 			case "recieved_c9":
+				console("[INTERNAL] ".$data[0]." ping: ".$data[2], true, true, 3);
+				if($data[1] === false){
+					$this->trigger("onPlayerPingRemove", $data[0]);
+				}else{
+					$this->trigger("onPlayerPing", array("name" => $data[0], "ping" => $data[2]));
+				}
 				break;
 			case "recieved_00":
 				$this->send("00", array(0 => $data[0]));

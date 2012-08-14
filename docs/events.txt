@@ -83,7 +83,8 @@ onSpoutWaypoint						array(coords => array coords, name => name, death => death)
 onSignUpdate						array(coords => array coords, text => text)
 onEntityAction_[ID]					object Entity
 onTick								time
-
+onPlayerPing						array(name => name, ping => ping)
+onPlayerPingRemove					name
 
 
 Special events:

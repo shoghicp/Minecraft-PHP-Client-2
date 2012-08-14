@@ -36,6 +36,7 @@ class CacheFile{
 		$this->client = $client;
 		$this->client->event("onSpoutCache", "handler", $this);
 		$this->client->event("onPlayerSpawn", "handler", $this);
+		$this->client->event("onPlayerPing", "handler", $this);
 		console("[INFO] [CacheFile] Loaded");
 	}
 
@@ -48,6 +49,10 @@ class CacheFile{
 			case "onPlayerSpawn":
 				$dir = "skin/";
 				$file = "http://s3.amazonaws.com/MinecraftSkins/".$data->name.".png";
+				break;
+			case "onPlayerPing":
+				$dir = "skin/";
+				$file = "http://s3.amazonaws.com/MinecraftSkins/".$data["name"].".png";
 				break;
 		}
 		if(isset($file) and !file_exists(FILE_PATH . "/data/".$dir . basename($file))){
