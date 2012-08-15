@@ -302,7 +302,7 @@ class Packet{
 								break;
 								
 						}
-						$m[] = $r;
+						$m[$bottom] = $r;
 						$b = Utils::readByte($this->get(1), false);
 					}
 					$this->data[] = $m;

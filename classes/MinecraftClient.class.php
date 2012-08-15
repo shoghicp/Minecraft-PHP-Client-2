@@ -499,25 +499,40 @@ class MinecraftClient{
 				$this->trigger("onEntityAction_".$data[1], $this->entities[$data[0]]);
 				break;
 			case "recieved_14":
-				$this->entities[$data[0]] = new Entity($data[0], 0);
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PLAYER);
 				$this->players[$data[1]] =& $this->entities[$data[0]];
 				$this->entities[$data[0]]->setName($data[1]);
 				$this->entities[$data[0]]->setCoords($data[2] >> 5,$data[3] >> 5,$data[4] >> 5);
+				$this->entities[$data[0]]->setMetadata($data[8]);
 				console("[INFO] Player \"".$data[1]."\" (EID: ".$data[0].") spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")");
 				$this->trigger("onPlayerSpawn", $this->entities[$data[0]]);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_15":
 				console("[DEBUG] Item (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[4] >> 5).",".($data[5] >> 5).",".($data[6] >> 5).")", true, true, 2);
-				$this->entities[$data[0]] = new Entity($data[0], $data[1], true);
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_ITEM, $data[1]);
 				$this->entities[$data[0]]->setCoords($data[4] >> 5,$data[5] >> 5,$data[6] >> 5);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_17":
 			case "recieved_18":
-				console("[DEBUG] Entity (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
-				$this->entities[$data[0]] = new Entity($data[0], $data[1], ($event === "recieved_17" ? true:false));
+				$this->entities[$data[0]] = new Entity($data[0], ($event === "recieved_17" ? ENTITY_OBJECT:ENTITY_MOB), $data[1]);
 				$this->entities[$data[0]]->setCoords($data[2] >> 5,$data[3] >> 5,$data[4] >> 5);
+				$this->entities[$data[0]]->setMetadata(($this->protocol > 29 ? $data[11]:$data[8]));
+				console("[DEBUG] Entity (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
+				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
+				break;
+			case "recieved_19":
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PAINTING);
+				$this->entities[$data[0]]->setName($data[1]);
+				$this->entities[$data[0]]->setCoords($data[2],$data[3],$data[4]);
+				console("[DEBUG] Painting (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".$data[2].",".$data[3].",".$data[4].")", true, true, 2);
+				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
+				break;
+			case "recieved_1a":
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_EXPERIENCE);
+				$this->entities[$data[0]]->setCoords($data[1],$data[2],$data[3]);
+				console("[DEBUG] Experience Orb (EID: ".$data[0].") spawned at (".$data[1].",".$data[2].",".$data[3].")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_1d":
@@ -546,6 +561,14 @@ class MinecraftClient{
 					$this->entities[$data[0]]->setCoords($data[1] >> 5,$data[2] >> 5,$data[3] >> 5);
 					$this->trigger("onEntityMove", $this->entities[$data[0]]);
 					$this->trigger("onEntityMove_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
+				}
+				break;
+			case "recieved_28":
+				if(isset($this->entities[$data[0]])){
+					$this->entities[$data[0]]->setMetadata($data[1]);
+					$this->trigger("onEntityMetadataChange", $this->entities[$data[0]]);
+					$this->trigger("onEntityMetadataChange_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
+					console("[DEBUG] EID ".$data[0]." metadata changed", true, true, 2);
 				}
 				break;
 			case "recieved_46";
@@ -666,10 +689,13 @@ class MinecraftClient{
 		$this->event("recieved_15", "handler", true);
 		$this->event("recieved_17", "handler", true);
 		$this->event("recieved_18", "handler", true);
+		$this->event("recieved_19", "handler", true);
+		$this->event("recieved_1a", "handler", true);
 		$this->event("recieved_1d", "handler", true);
 		$this->event("recieved_1f", "handler", true);
 		$this->event("recieved_21", "handler", true);
 		$this->event("recieved_22", "handler", true);
+		$this->event("recieved_28", "handler", true);
 		$this->event("recieved_32", "mapHandler", true);
 		$this->event("recieved_33", "mapHandler", true);
 		$this->event("recieved_34", "mapHandler", true);

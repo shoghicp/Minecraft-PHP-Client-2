@@ -29,14 +29,38 @@ the Free Software Foundation, either version 3 of the License, or
 
 */
 
+
+define("ENTITY_PLAYER", 0);
+define("ENTITY_MOB", 1);
+define("ENTITY_OBJECT", 2);
+define("ENTITY_ITEM", 3);
+define("ENTITY_PAINTING", 4);
+define("ENTITY_EXPERIENCE", 5);
+
 class Entity{
-	var $eid, $type, $name, $object, $position, $dead;
+	var $eid, $type, $name, $position, $dead, $metadata;
 	protected $health, $food;
 	
-	function __construct($eid, $type, $object = false){ //$type = 0 ---> player
-		$this->eid = intval($eid);
-		$this->object = $object;
-		$this->type = intval($type);
+	function __construct($eid, $class, $type = 0){ //$type = 0 ---> player
+		$this->eid = (int) $eid;
+		$this->type = (int) $type;
+		$this->class = (int) $class;
+		$this->metadata = array();
+		include("misc/entities.php");
+		switch($this->class){
+			case ENTITY_PLAYER:
+			case ENTITY_ITEM:
+			case ENTITY_EXPERIENCE:
+				break;
+				
+			case ENTITY_MOB:
+				$this->name = isset($mobs[$this->type]) ? $mobs[$this->type]:$this->type;
+				break;
+			case ENTITY_OBJECT:
+				$this->name = isset($objects[$this->type]) ? $objects[$this->type]:$this->type;
+				break;
+		}
+		
 		$this->health = 20;
 		$this->food = 20;
 		$this->dead = false;
@@ -52,6 +76,29 @@ class Entity{
 	
 	public function setName($name){
 		$this->name = $name;
+	}
+	
+	public function setMetadata($metadata){
+		foreach($metadata as $key => $value){
+			switch($key){
+				case 0:
+					$this->metadata["onFire"] = ($value & 0x01) === 0x01 ? true:false;
+					$this->metadata["crouched"] = ($value & 0x02) === 0x02 ? true:false;
+					$this->metadata["riding"] = ($value & 0x04) === 0x04 ? true:false;
+					$this->metadata["sprinting"] = ($value & 0x08) === 0x08 ? true:false;
+					$this->metadata["action"] = ($value & 0x10) === 0x10 ? true:false;
+					break;
+				case 1:
+					$this->metadata["air"] = $value;
+					break;
+				case 8:
+					$this->metadata["effectColor"] = $value;
+					break;
+				case 12:
+					$this->metadata["grow"] = $value;
+					break;
+			}
+		}
 	}
 	
 	public function setCoords($x, $y, $z){

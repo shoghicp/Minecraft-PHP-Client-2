@@ -85,6 +85,8 @@ onEntityAction_[ID]					object Entity
 onTick								time
 onPlayerPing						array(name => name, ping => ping)
 onPlayerPingRemove					name
+onEntityMetadataChange				object Entity
+onEntityMetadataChange_[EID]		object Entity
 
 
 Special events:
