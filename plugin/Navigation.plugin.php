@@ -40,7 +40,7 @@ class Navigation{
 		$this->material = $material;
 		$this->client->event("onSpoutBlock", "spoutBlock", $this);
 		$this->last = microtime(true);
-		$this->maxBlocksPerTick = 0.1; //speed
+		$this->maxBlocksPerTick = 0.2; //speed
 		$this->fly = false;
 		$this->speedY = 0;
 		$this->event = $this->client->event("onTick", "walker", $this);

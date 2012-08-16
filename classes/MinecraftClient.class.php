@@ -40,7 +40,7 @@ class MinecraftClient{
 		$this->server = $server;
 		$this->port = $port;
 		
-		$this->protocol = intval($protocol);
+		$this->protocol = (int) $protocol;
 		console("[INFO] Connecting to Minecraft server protocol ".$this->protocol);
 		$this->interface = new MinecraftInterface($server, $protocol, $port);
 		$this->cnt = 1;
@@ -503,7 +503,9 @@ class MinecraftClient{
 				$this->players[$data[1]] =& $this->entities[$data[0]];
 				$this->entities[$data[0]]->setName($data[1]);
 				$this->entities[$data[0]]->setCoords($data[2] >> 5,$data[3] >> 5,$data[4] >> 5);
-				$this->entities[$data[0]]->setMetadata($data[8]);
+				if($this->protocol > 29){
+					$this->entities[$data[0]]->setMetadata($data[8]);
+				}
 				console("[INFO] Player \"".$data[1]."\" (EID: ".$data[0].") spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")");
 				$this->trigger("onPlayerSpawn", $this->entities[$data[0]]);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
@@ -1106,7 +1108,7 @@ class MinecraftInterface{
 	
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
 		$this->server = new Socket($server, $port);
-		$this->protocol = intval($protocol);
+		$this->protocol = (int) $protocol;
 		require("pstruct/".$this->protocol.".php");
 		require("pstruct/packetName.php");
 		$this->pstruct = $pstruct;

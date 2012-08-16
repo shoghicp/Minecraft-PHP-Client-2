@@ -191,17 +191,17 @@ class Utils{
 	
 	public static function readByte($c, $signed = true){
 		$b = ord($c{0});
-		if($signed === true and ($b & 128) === 128){ //calculate Two's complement
-			$b = -128 + ($b & 127);
+		if($signed === true and ($b & 0x80) === 0x80){ //calculate Two's complement
+			$b = -0x80 + ($b & 0x7f);
 		}
 		return $b;
 	}
 	
 	public static function writeByte($c){
-		if($c > 255){
+		if($c > 0xff){
 			return false;
 		}
-		if($c < 0 and $c >= -128){
+		if($c < 0 and $c >= -0x80){
 			$c = 0xff + $c + 1;
 		}
 		return chr($c);
@@ -209,15 +209,15 @@ class Utils{
 
 	public static function readShort($str){
 		list(,$unpacked) = unpack("n", $str);
-		if($unpacked > 32767){
-			$unpacked -= pow(2, 16); // Convert unsigned short to signed short
+		if($unpacked > 0x7fff){
+			$unpacked -= 0x10000; // Convert unsigned short to signed short
 		}
 		return $unpacked;
 	}
 	
 	public static function writeShort($value){
 		if($value < 0){
-			$value += pow(2, 16); 
+			$value += 0x10000; 
 		}
 		return pack("n", $value);
 	}
@@ -229,7 +229,7 @@ class Utils{
 	
 	public static function writeInt($value){
 		if($value < 0){
-			$value += pow(2, 32); 
+			$value += 0x100000000; 
 		}
 		return pack("N", $value);
 	}
@@ -255,9 +255,9 @@ class Utils{
 	public static function readLong($str){		
 		list(,$firstHalf,$secondHalf) = unpack("N*", $str);
 		if(GMPEXT === true){
-			$value = gmp_add($secondHalf, gmp_mul($firstHalf, "4294967296"));
-			if(gmp_cmp($value, "9223372036854775808") >= 0){
-				$value = gmp_sub($value, "18446744073709551616");
+			$value = gmp_add($secondHalf, gmp_mul($firstHalf, "0x100000000"));
+			if(gmp_cmp($value, "0x8000000000000000") >= 0){
+				$value = gmp_sub($value, "0x10000000000000000");
 			}
 			return gmp_strval($value);
 		}else{
