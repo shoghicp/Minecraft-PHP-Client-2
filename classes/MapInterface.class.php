@@ -31,15 +31,26 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class MapInterface{
-	protected $map, $floor, $column, $material;
+	protected $map, $floor, $column, $biome, $material;
 	
 	function __construct($client){
 		$this->client = $client;
 		$this->map = $this->client->mapParser;
 		$this->floor = method_exists($this->map, "getFloor");
 		$this->column = method_exists($this->map, "getColumn");
+		$this->biome = method_exists($this->map, "getBiome");
 		include("misc/materials.php");
 		$this->material = $material;
+	}
+	
+	public function getBiome($x, $z){
+		$x = (int) $x;
+		$z = (int) $z;
+		if($this->biome === true){
+			return $this->map->getBiome($x, $z);
+		}else{
+			return 0;
+		}
 	}
 	
 	public function getFloor($x, $z){

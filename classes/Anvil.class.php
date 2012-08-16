@@ -74,7 +74,7 @@ class Anvil{
 		if(!isset($this->block[$X])){
 			$this->block[$X] = array();
 		}
-		$this->block[$X][$Z] = array(0 => $blockData, 1 => $metaData, 2 => $lastBlock);
+		$this->block[$X][$Z] = array(0 => $blockData, 1 => $metaData, 2 => $lastBlock, 3 => $biomeData);
 		console("[DEBUG] [Anvil] Parsed X ".$X.", Z ".$Z, true, true, 2);
 	}
 	
@@ -162,6 +162,11 @@ class Anvil{
 			return array($block, $meta);
 		}
 		return array(0, 0);
+	}
+	
+	public function getBiome($x, $z){
+		$index = $this->getIndex($x, 0, $z);
+		return ord($this->block[$index[0]][$index[1]][3]{(($z - $index[1]) << 4) + ($x - $index[0])});
 	}
 	
 	public function changeBlock($x, $y, $z, $block, $metadata = 0){
