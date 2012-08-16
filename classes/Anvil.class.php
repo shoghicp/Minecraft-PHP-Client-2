@@ -39,6 +39,7 @@ class Anvil{
 		"addData" => 2048,	
 	);
 	protected $block, $material, $air;
+	var $sectionSize;
 	
 	function __construct(){
 		include("misc/materials.php");
@@ -46,6 +47,13 @@ class Anvil{
 		$this->block = array();
 		$this->height = (int) ((string) log(HEIGHT_LIMIT, 2));
 		$this->air = str_repeat("\x00", 2048);
+		$this->sectionSize = 0;
+		foreach($this->sections as $type => $size){
+			if($type === "addData"){
+				continue;
+			}
+			$this->sectionSize += $size;
+		}
 	}
 	
 	protected function splitColumns($data, $bitmask, $addBitmask, $X, $Z){

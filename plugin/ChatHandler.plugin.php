@@ -139,7 +139,7 @@ class ChatHandler{
 			$message = implode(" ", $message);
 		}
 		$info = array("owner" => $owner, "group" => $group, "world" => $world, "message" => $message, "type" => $type);
-		console("[DEBUG] [ChatHandler] ".ChatHandler::format($info), true, true, 2);
+		console("[INTERNAL] [ChatHandler] ".ChatHandler::format($info), true, true, 3);
 		if(isset($this->blacklist[$owner])){
 			return;
 		}

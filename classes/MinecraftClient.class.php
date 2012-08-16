@@ -361,8 +361,8 @@ class MinecraftClient{
 						$d = "";
 						for($i = 0; $i < (HEIGHT_LIMIT >> 4); ++$i){
 							if($bitmask & (1 << $i)){
-								$d .= substr($data[2],$offsetData,10240);
-								$offsetData += 10240;
+								$d .= substr($data[2], $offsetData, $this->mapParser->sectionSize);
+								$offsetData += $this->mapParser->sectionSize;
 							}
 							if($add_bitmask & (1 << $i)){
 								$offsetData += 2048;
