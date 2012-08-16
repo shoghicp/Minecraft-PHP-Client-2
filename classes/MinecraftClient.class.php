@@ -369,7 +369,7 @@ class MinecraftClient{
 							}							
 						}
 						$offsetData += 256;
-						$this->mapParser->addChunk($X, $Z, $d, $bitmask, false);
+						$this->mapParser->addChunk($X, $Z, $d, $bitmask, false, $add_bitmask);
 					}
 				}
 				break;
@@ -389,10 +389,10 @@ class MinecraftClient{
 						if($data[2] === true and $data[3] === 0){
 							$this->mapParser->unloadChunk($data[0], $data[1]);
 						}else{
-							$this->mapParser->addChunk($data[0], $data[1], $data[6], $data[3]);
+							$this->mapParser->addChunk($data[0], $data[1], $data[6], $data[3], true, $data[4]);
 						}
 					}elseif($this->protocol >= 28){
-						$this->mapParser->addChunk($data[0], $data[1], $data[7], $data[3]);
+						$this->mapParser->addChunk($data[0], $data[1], $data[7], $data[3], true, $data[4]);
 					}else{
 						if($data[4] >= 127){
 							$this->mapParser->addChunk($data[0], $data[2], $data[7]);

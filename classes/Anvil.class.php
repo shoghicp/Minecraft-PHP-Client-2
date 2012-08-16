@@ -31,43 +31,46 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class Anvil{
-	protected $block, $material;
+	private $sections = array(
+		"blockData" => 4096,
+		"metaData" => 2048,
+		"lightData" => 2048,
+		"skyLightData" => 2048,
+		"addData" => 2048,	
+	);
+	protected $block, $material, $air;
 	
 	function __construct(){
 		include("misc/materials.php");
 		$this->material = $material;
 		$this->block = array();
 		$this->height = (int) ((string) log(HEIGHT_LIMIT, 2));
+		$this->air = str_repeat("\x00", 2048);
 	}
 	
-	protected function splitColumns($data, $bitmask, $X, $Z){
+	protected function splitColumns($data, $bitmask, $addBitmask, $X, $Z){
 		$offset = 0;
-		$blockData = b"";
-		$metaData = b"";
 		$len = HEIGHT_LIMIT >> 4;
-		$lastBlock = 0;
-		for($i = 0; $i < $len; ++$i){
-			if ($bitmask & (1 << $i)){
-				$blockData .= substr($data, $offset, 4096);
-				$offset += 4096;
-				$lastBlock = $i << 4;
-			}elseif(isset($this->block[$X][$Z])){
-				$blockData .= substr($this->block[$X][$Z][0], $i << 12, 4096);
-				$lastBlock = $i << 4;
-			}else{
-				$blockData .= str_repeat("\x00", 4096);
+		$lastBlock = 0;		
+		foreach($this->sections as $type => $size){
+			$$type = b"";
+			for($i = 0; $i < $len; ++$i){
+				if (($type !== "addData" and $bitmask & (1 << $i)) or ($type === "addData" and $addBitmask & (1 << $i))){
+					$$type .= substr($data, $offset, $size);
+					$offset += $size;
+					$lastBlock = $i << 4;
+				}elseif($type === "blockData" and isset($this->block[$X][$Z])){
+					$$type .= substr($this->block[$X][$Z][0], $i << 12, $size);
+					$lastBlock = $i << 4;
+				}elseif($type === "metaData" and isset($this->block[$X][$Z])){
+					$$type .= substr($this->block[$X][$Z][1], $i << 11, $size);
+				}else{
+					$$type .= $size === 4096 ? $this->air.$this->air:$this->air;
+				}
 			}
-		}
-		for($i=0; $i < $len; ++$i){
-			if ($bitmask & (1 << $i)){
-				$metaData .= substr($data, $offset, 2048);
-				$offset += 2048;
-			}elseif(isset($this->block[$X][$Z])){
-				$metaData .= substr($this->block[$X][$Z][1], $i << 11, 2048);
-			}else{
-				$metaData .= str_repeat("\x00", 2048);
-			}
-		}
+		}		
+		$biomeData = substr($data, $offset, 256);
+
 		if(!isset($this->block[$X])){
 			$this->block[$X] = array();
 		}
@@ -75,10 +78,10 @@ class Anvil{
 		console("[DEBUG] [Anvil] Parsed X ".$X.", Z ".$Z, true, true, 2);
 	}
 	
-	public function addChunk($X, $Z, $data, $bitmask, $compressed = true){
+	public function addChunk($X, $Z, $data, $bitmask, $compressed = true, $addBitmask = 0){
 		$X *= 16;
 		$Z *= 16;
-		$this->splitColumns(($compressed === true ? gzinflate(substr($data,2)):$data), $bitmask, $X, $Z);
+		$this->splitColumns(($compressed === true ? gzinflate(substr($data,2)):$data), $bitmask, $addBitmask, $X, $Z);
 		console("[INTERNAL] [Anvil] Loaded X ".$X.", Z ".$Z, true, true, 3);
 	}
 	

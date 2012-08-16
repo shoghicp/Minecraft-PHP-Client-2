@@ -153,7 +153,7 @@ class Socket{
 			}elseif($read === ""){
 				$this->close(false);
 			}else{
-				usleep(10000);
+				usleep(50000);
 			}
 		}
 	}
