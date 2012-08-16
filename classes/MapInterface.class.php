@@ -31,7 +31,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class MapInterface{
-	protected $map, $floor, $column, $biome, $material;
+	protected $map, $floor, $column, $biome, $material, $biomes;
 	
 	function __construct($client){
 		$this->client = $client;
@@ -41,6 +41,8 @@ class MapInterface{
 		$this->biome = method_exists($this->map, "getBiome");
 		include("misc/materials.php");
 		$this->material = $material;
+		include("misc/biomes.php");
+		$this->biomes = $biomes;
 	}
 	
 	public function getBiome($x, $z){
@@ -51,6 +53,16 @@ class MapInterface{
 		}else{
 			return 0;
 		}
+	}
+	
+	public function getBiomeName($x, $z){
+		$biome = $this->getBiome($x, $z);
+		return isset($this->biomes[$biome]) ? $this->biomes[$biome]:"Unknown";
+	}
+	
+	public function getBlockName($x, $y, $z){
+		$block = $this->getBlock($x, $y, $z);
+		return isset($this->material[$block[0]]) ? $this->material[$block[0]]:"Unknown";
 	}
 	
 	public function getFloor($x, $z){
