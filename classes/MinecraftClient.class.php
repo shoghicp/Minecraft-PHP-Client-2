@@ -491,7 +491,7 @@ class MinecraftClient{
 				$this->trigger("onEntityMove_".$this->player->eid, $this->player);
 			case "onTick":
 				if($this->player->dead === false){
-					$this->send("0d",$this->player->packet("0d"));
+					$this->send("0d", $this->player->packet("0d"));
 				}
 				break;
 			case "recieved_13":
@@ -520,7 +520,9 @@ class MinecraftClient{
 			case "recieved_18":
 				$this->entities[$data[0]] = new Entity($data[0], ($event === "recieved_17" ? ENTITY_OBJECT:ENTITY_MOB), $data[1]);
 				$this->entities[$data[0]]->setCoords($data[2] >> 5,$data[3] >> 5,$data[4] >> 5);
-				$this->entities[$data[0]]->setMetadata(($this->protocol > 29 ? $data[11]:$data[8]));
+				if($event === "recieved_18"){
+					$this->entities[$data[0]]->setMetadata(($this->protocol > 29 ? $data[11]:$data[8]));
+				}
 				console("[DEBUG] Entity (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
@@ -570,7 +572,7 @@ class MinecraftClient{
 					$this->entities[$data[0]]->setMetadata($data[1]);
 					$this->trigger("onEntityMetadataChange", $this->entities[$data[0]]);
 					$this->trigger("onEntityMetadataChange_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
-					console("[DEBUG] EID ".$data[0]." metadata changed", true, true, 2);
+					console("[INTERNAL] EID ".$data[0]." metadata changed", true, true, 3);
 				}
 				break;
 			case "recieved_46";
@@ -753,7 +755,6 @@ class MinecraftClient{
 				$this->player->setName($this->auth["user"]);
 				console("[INFO] Logged in as ".$this->auth["user"]);
 				console("[DEBUG] Player EID: ".$this->player->eid, true, true, 2);
-				$this->player->dead = true;
 				$this->startHandlers();
 				$this->trigger("onConnect");
 				$this->process();

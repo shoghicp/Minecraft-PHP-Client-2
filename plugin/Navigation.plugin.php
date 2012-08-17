@@ -29,9 +29,10 @@ the Free Software Foundation, either version 3 of the License, or
 
 */
 
+require_once("plugin/PathFind.plugin.php");
 
 class Navigation{
-	protected $client, $player, $map, $materials, $event;
+	protected $client, $player, $map, $materials, $event, $path, $maxBlocksPerTick, $lastBlock;
 	function __construct($client){
 		$this->client = $client;
 		$this->player = $this->client->getPlayer();
@@ -44,11 +45,15 @@ class Navigation{
 		$this->fly = false;
 		$this->speedY = 0;
 		$this->event = $this->client->event("onTick", "walker", $this);
+		$this->path = null;
+		$this->b = null;
 		console("[INFO] [Navigation] Loaded");
 	}
 	
 	public function go($x, $y, $z){
-		$this->target = array("x" => $x, "y" => $y, "z" => $z);
+		$this->lastBlock = array($this->player->getPosition(true), 0);
+		$this->path = new PathFind($this->client, $this->lastBlock[0], array("x" => $x, "y" => $y, "z" => $z));
+		var_dump($this->path->path);
 	}
 	
 	public function stop(){
@@ -60,15 +65,31 @@ class Navigation{
 		if($pos === false or $pos["y"] < 0){
 			return false;
 		}
-		$zone = $this->getZone(1,true);
-		if(isset($zone[0][0][-1]) and isset($this->material["nosolid"][$zone[0][0][-1][0]]) and $this->fly === false){ //Air
-			$this->speedY += 0.9;
-			$pos["y"] -= $this->speedY;
-			$pos["ground"] = false;
-		}elseif($this->fly === false){
-			$pos["y"] = floor($pos["y"]);
-			$this->speedY = 0;
-			$pos["ground"] = true;
+		
+		if($this->path !== null){
+			if($this->lastBlock[1] === 0){
+				$this->lastBlock = array($this->b, 10);
+				$this->b = $this->path->getNextBlock();
+			}
+			if($this->b !== null){
+				$pos["x"] += ($this->b["x"] - $this->lastBlock["x"]) / $this->maxBlocksPerTick;
+				$pos["y"] += ($this->b["y"] - $this->lastBlock["y"]) / $this->maxBlocksPerTick;
+				$pos["z"] += ($this->b["z"] - $this->lastBlock["z"]) / $this->maxBlocksPerTick;
+				--$this->lastBlock[1];
+			}else{
+				$this->path = null;
+			}
+		}else{
+			$zone = $this->getZone(1,true);
+			if(isset($zone[0][0][-1]) and isset($this->material["nosolid"][$zone[0][0][-1][0]]) and $this->fly === false){ //Air
+				$this->speedY += 0.9;
+				$pos["y"] -= $this->speedY;
+				$pos["ground"] = false;
+			}elseif($this->fly === false){
+				$pos["y"] = floor($pos["y"]);
+				$this->speedY = 0;
+				$pos["ground"] = true;
+			}
 		}
 		
 		$this->player->setPosition($pos["x"],$pos["y"],$pos["z"],$pos["stance"],$pos["yaw"],$pos["pitch"],$pos["ground"]);
