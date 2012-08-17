@@ -177,7 +177,7 @@ class Anvil{
 		return ord($this->block[$index[0]][$index[1]][3]{(($z - $index[1]) << 4) + ($x - $index[0])});
 	}
 	
-	public function changeBlock($x, $y, $z, $block, $metadata = 0){
+	public function changeBlock($x, $y, $z, $block, $meta = 0){
 		console("[INTERNAL] [Anvil] Changed block X ".$x." Y ".$y." Z ".$z, true, true, 3);
 		$index = $this->getIndex($x, $y, $z);
 		if(isset($this->block[$index[0]][$index[1]][0]{$index[2]})){
