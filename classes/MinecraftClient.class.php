@@ -31,7 +31,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class MinecraftClient{
-	private $server, $port, $player, $entities, $players, $key;
+	private $server, $port, $player, $entities, $players, $key, $material;
 	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions, $useMap;
 	var $time, $protocol, $map, $auth, $mapParser;
 	
@@ -55,6 +55,8 @@ class MinecraftClient{
 		$this->players = array();
 		$this->useMap = true;	
 		$this->auth = array();
+		include("misc/materials.php");
+		$this->material = $material;
 		register_shutdown_function("logg", "", "console", false, 0, true);
 		register_shutdown_function("logg", "", "packets", false, 0, true);
 	}
@@ -380,7 +382,27 @@ class MinecraftClient{
 				break;
 			case "recieved_34":
 				if($this->useMap === true){
-				
+					$X = $data[0];
+					$Z = $data[1];
+					$offset = 0;
+					for($i = 0; $i < $data[2]; ++$i){
+						$coord = ord($data[4]{$offset});
+						++$offset;
+						$x = $coord >> 1;
+						$z = $coord & 0x0F;
+						$y = ord($data[4]{$offset});
+						++$offset;
+						$block = Utils::readShort(substr($data[4]), $offset, 2);
+						$offset += 2;
+						$metadata = $block & 0x000F;
+						$block = $block >> 4;
+						$this->map->changeBlock($X + $x, $y, $Z + $z, $block, $metadata);
+					}
+				}
+				break;
+			case "recieved_3c":
+				if($this->useMap === true){
+					
 				}
 				break;
 			case "recieved_33":
@@ -412,14 +434,6 @@ class MinecraftClient{
 	
 	private function handler($data, $event){
 		switch($event){
-			case "recieved_c9":
-				console("[INTERNAL] ".$data[0]." ping: ".$data[2], true, true, 3);
-				if($data[1] === false){
-					$this->trigger("onPlayerPingRemove", $data[0]);
-				}else{
-					$this->trigger("onPlayerPing", array("name" => $data[0], "ping" => $data[2]));
-				}
-				break;
 			case "recieved_00":
 				$this->send("00", array(0 => $data[0]));
 				break;
@@ -444,7 +458,7 @@ class MinecraftClient{
 				break;
 			case "recieved_06":
 				$this->info["spawn"] = array("x" => $data[0], "y" => $data[1], "z" => $data[2]);
-				console("[INFO] Got spawn: (".$data[0].",".$data[1].",".$data[2].")");
+				console("[DEBUG] Got spawn: (".$data[0].",".$data[1].",".$data[2].")", true, true, 2);
 				$this->trigger("onSpawnChange", $this->info["spawn"]);
 				break;
 			case "recieved_08":
@@ -468,7 +482,7 @@ class MinecraftClient{
 						$this->send("09", $d);
 					}
 					$this->trigger("onRespawn", $d);
-					console("[DEBUG] Death", true, true, 2);
+					console("[INFO] Death");
 				}
 				if(isset($data[1])){ //Food
 					$this->player->setFood($data[1]);
@@ -484,7 +498,7 @@ class MinecraftClient{
 				break;
 			case "recieved_0d":
 				$this->player->setPosition($data[0], $data[2], $data[3], $data[1], $data[4], $data[5], $data[6]);
-				console("[DEBUG] Got position: (".$data[0].",".$data[2].",".$data[3].")", true, true, 2);
+				console("[INFO] Got position: (".$data[0].",".$data[2].",".$data[3].")");
 				$this->send("0d",$this->player->packet("0d"));
 				$this->trigger("onMove", $this->player);
 				$this->trigger("onEntityMove", $this->player);
@@ -511,7 +525,7 @@ class MinecraftClient{
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_15":
-				console("[DEBUG] Item (EID: ".$data[0].") type ".$data[1]." spawned at (".($data[4] >> 5).",".($data[5] >> 5).",".($data[6] >> 5).")", true, true, 2);
+				console("[DEBUG] Item (EID: ".$data[0].") type ".(isset($this->material[$data[1]]) ? $this->material[$data[1]]:$data[1])." spawned at (".($data[4] >> 5).",".($data[5] >> 5).",".($data[6] >> 5).")", true, true, 2);
 				$this->entities[$data[0]] = new Entity($data[0], ENTITY_ITEM, $data[1]);
 				$this->entities[$data[0]]->setCoords($data[4] >> 5,$data[5] >> 5,$data[6] >> 5);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
@@ -555,7 +569,7 @@ class MinecraftClient{
 			case "recieved_1f":
 			case "recieved_21":
 				if(isset($this->entities[$data[0]])){
-					$this->entities[$data[0]]->move($data[1] >> 5,$data[2] >> 5,$data[3] >> 5);
+					$this->entities[$data[0]]->move($data[1] >> 5, $data[2] >> 5, $data[3] >> 5);
 					$this->trigger("onEntityMove", $this->entities[$data[0]]);
 					$this->trigger("onEntityMove_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
 				}
@@ -572,7 +586,6 @@ class MinecraftClient{
 					$this->entities[$data[0]]->setMetadata($data[1]);
 					$this->trigger("onEntityMetadataChange", $this->entities[$data[0]]);
 					$this->trigger("onEntityMetadataChange_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
-					console("[INTERNAL] EID ".$data[0]." metadata changed", true, true, 3);
 				}
 				break;
 			case "recieved_46";
@@ -628,6 +641,14 @@ class MinecraftClient{
 				$text = $data[3].PHP_EOL.$data[4].PHP_EOL.$data[5].PHP_EOL.$data[6];
 				console("[INTERNAL] Sign at (".$data[0].",".$data[1].",".$data[2].")".PHP_EOL.implode(PHP_EOL."[INTERNAL]\t",explode(PHP_EOL,$text)), true, true, 3);
 				$this->trigger("onSignUpdate", array("coords" => array("x" => $data[0], "y" => $data[1], "z" => $data[2]), "text" => $text));
+				break;
+			case "recieved_c9":
+				console("[INTERNAL] ".$data[0]." ping: ".$data[2], true, true, 3);
+				if($data[1] === false){
+					$this->trigger("onPlayerPingRemove", $data[0]);
+				}else{
+					$this->trigger("onPlayerPing", array("name" => $data[0], "ping" => $data[2]));
+				}
 				break;
 			case "recieved_fa":
 				$this->trigger("onPluginMessage", array("channel" => $data[0], "data" => $data[2]));
@@ -705,6 +726,7 @@ class MinecraftClient{
 		$this->event("recieved_34", "mapHandler", true);
 		$this->event("recieved_35", "mapHandler", true);
 		$this->event("recieved_38", "mapHandler", true);
+		$this->event("recieved_3c", "mapHandler", true);
 		$this->event("recieved_46", "handler", true);
 		$this->event("recieved_47", "handler", true);
 		$this->event("recieved_67", "handler", true);
@@ -716,7 +738,7 @@ class MinecraftClient{
 		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
 		register_shutdown_function(array($this, "logout"));
 		$this->action(50000, '$this->trigger("onTick", $time);');
-		$this->action(10000000, 'console("[DEBUG] Memory Usage: ".round((memory_get_usage(true) / 1024) / 1024, 2)." MB", true, true, 2);');
+		$this->action(15000000, 'console("[DEBUG] Memory Usage: ".round((memory_get_usage(true) / 1024) / 1024, 2)." MB", true, true, 2);');
 		$this->event("onTick", "handler", true);
 		if(isset($this->auth["session_id"])){
 			$this->action(300000000, 'Utils::curl_get("https://login.minecraft.net/session?name=".$this->auth["user"]."&session=".$this->auth["session_id"]);');

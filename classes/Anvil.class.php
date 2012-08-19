@@ -87,19 +87,22 @@ class Anvil{
 	}
 	
 	public function addChunk($X, $Z, $data, $bitmask, $compressed = true, $addBitmask = 0){
-		$X *= 16;
-		$Z *= 16;
+		$X = $X << 4;
+		$Z = $Z << 4;
 		$this->splitColumns(($compressed === true ? gzinflate(substr($data,2)):$data), $bitmask, $addBitmask, $X, $Z);
 		console("[INTERNAL] [Anvil] Loaded X ".$X.", Z ".$Z, true, true, 3);
 	}
 	
+	//O(1)
 	public function unloadChunk($X, $Z){
-		$X *= 16;
-		$Z *= 16;
+		$X = $X << 4;
+		$Z = $Z << 4;
 		unset($this->block[$X][$Z]);
 		console("[DEBUG] [Anvil] Unloaded X ".$X." Z ".$Z, true, true, 2);
 	}
 	
+	
+	//O(1)
 	public function getIndex($x, $y, $z){
 		$X = ($x >> 4) << 4;
 		$Z = ($z >> 4) << 4;

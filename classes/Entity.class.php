@@ -117,7 +117,6 @@ class Entity{
 		$this->position["y"] = $y;
 		$this->position["z"] = $z;
 		$this->updateStance();
-		return true;
 	}
 	
 	public function move($x, $y, $z, $yaw = 0, $pitch = 0){
@@ -136,11 +135,10 @@ class Entity{
 		$this->position["y"] += $y;
 		$this->position["z"] += $z;
 		$this->position["yaw"] += $yaw;
-		$this->position["yaw"] = $this->position["yaw"] < 0 ? (360 - $this->position["yaw"]):($this->position["yaw"] > 360 ? ($this->position["yaw"] - 360):$this->position["yaw"]);
+		$this->position["yaw"] = abs($this->position["yaw"] % 360);
 		$this->position["pitch"] += $pitch;
-		$this->position["pitch"] = $this->position["pitch"] > 90 ? 90:($this->position["pitch"] < -90 ? -90:$this->position["pitch"]);
+		$this->position["pitch"] = abs($this->position["pitch"] % 90);
 		$this->updateStance();
-		return true;
 	}
 	
 	public function setPosition($x, $y, $z, $stance, $yaw, $pitch, $ground){
@@ -158,7 +156,6 @@ class Entity{
 	}
 	
 	protected function updateStance(){
-		$this->position["y"] = max(0, $this->position["y"]);
 		$this->position["stance"] = $this->position["y"] + 1.3;
 	}
 	
