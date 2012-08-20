@@ -386,23 +386,31 @@ class MinecraftClient{
 					$Z = $data[1];
 					$offset = 0;
 					for($i = 0; $i < $data[2]; ++$i){
-						$coord = ord($data[4]{$offset});
-						++$offset;
-						$x = $coord >> 1;
-						$z = $coord & 0x0F;
-						$y = ord($data[4]{$offset});
-						++$offset;
-						$block = Utils::readShort(substr($data[4]), $offset, 2);
-						$offset += 2;
-						$metadata = $block & 0x000F;
-						$block = $block >> 4;
+						$d = Utils::readInt(substr($data[4], $offset, 4));
+						$offset += 4;
+						$x = $d >> 28;
+						$z = ($d >> 24) & 0x0F;
+						$y = ($d >> 16) & 0xFF;
+						$block = ($d >> 4) & 0x0FFF;
+						$metadata = $d & 0x0F;
 						$this->map->changeBlock($X + $x, $y, $Z + $z, $block, $metadata);
 					}
 				}
 				break;
 			case "recieved_3c":
 				if($this->useMap === true){
-					
+					$X = $data[0];
+					$Z = $data[1];
+					$offset = 0;
+					for($i = 0; $i < $data[4]; ++$i){
+						$x = ord($data[5]{$offset});
+						++$offset;
+						$y = ord($data[5]{$offset});
+						++$offset;
+						$z = ord($data[5]{$offset});
+						++$offset;
+						$this->map->changeBlock($X + $x, $y, $Z + $z, 0, 0);
+					}					
 				}
 				break;
 			case "recieved_33":
