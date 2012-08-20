@@ -400,12 +400,13 @@ class MinecraftClient{
 			case "recieved_3c":
 				if($this->useMap === true){
 					$X = $data[0];
-					$Z = $data[1];
+					$Y = $data[1];
+					$Z = $data[2];
 					foreach($data[5] as $d){
 						$x = $d[0];
 						$y = $d[1];
 						$z = $d[2];
-						$this->map->changeBlock($X + $x, $y, $Z + $z, 0, 0);
+						$this->map->changeBlock($X + $x, $Y + $y, $Z + $z, 0, 0);
 					}					
 				}
 				break;
