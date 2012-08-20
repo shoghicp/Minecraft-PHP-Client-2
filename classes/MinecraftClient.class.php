@@ -382,8 +382,8 @@ class MinecraftClient{
 				break;
 			case "recieved_34":
 				if($this->useMap === true){
-					$X = $data[0];
-					$Z = $data[1];
+					$X = $data[0] << 4;
+					$Z = $data[1] << 4;
 					$offset = 0;
 					for($i = 0; $i < $data[2]; ++$i){
 						$d = Utils::readInt(substr($data[4], $offset, 4));
