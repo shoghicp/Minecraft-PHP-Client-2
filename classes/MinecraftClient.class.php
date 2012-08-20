@@ -401,14 +401,10 @@ class MinecraftClient{
 				if($this->useMap === true){
 					$X = $data[0];
 					$Z = $data[1];
-					$offset = 0;
-					for($i = 0; $i < $data[4]; ++$i){
-						$x = ord($data[5]{$offset});
-						++$offset;
-						$y = ord($data[5]{$offset});
-						++$offset;
-						$z = ord($data[5]{$offset});
-						++$offset;
+					foreach($data[5] as $d){
+						$x = $d[0];
+						$y = $d[1];
+						$z = $d[2];
 						$this->map->changeBlock($X + $x, $y, $Z + $z, 0, 0);
 					}					
 				}
