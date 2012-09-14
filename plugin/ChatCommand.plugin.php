@@ -74,10 +74,12 @@ class ChatCommand{
 			}
 		}
 		if(isset($this->commands[$command])){
-			console("[INFO] [ChatCommand] Command by ".$owner.": ".$command);
+			console("[DEBUG] [ChatCommand] Command by ".$owner.": ".$command, true, true, 2);
 			foreach($this->commands[$command] as $c){
 				if(($c[1] == false or ($c[1] == true and isset($this->owners[$owner]))) and (($c[0] == true and $info["type"] == "private") or $c[0] == false)){		
 					$this->client->trigger("onChatCommand_".$command, array("text" => implode(" ", $message), "owner" => $owner));
+				}elseif((($c[0] == true and $info["type"] == "private") or $c[0] == false) and $c[1] == true and !isset($this->owners[$owner])){
+					$this->client->trigger("onChatCommand_NO_PERMISSIONS", array("command" => $command, "owner" => $owner));
 				}
 			}
 		}

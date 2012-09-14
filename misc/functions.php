@@ -151,7 +151,7 @@ function hexdump($data, $htmloutput = true, $uppercase = false, $return = false)
         $hexi .= Utils::strToHex($data[$i]);
  
         // Replace non-viewable bytes with '.'
-        if (ord($data[$i]) >= 32 and ord($data[$i]) < 0x80) {
+        if (ord($data[$i]) >= 0x20 and ord($data[$i]) < 0x80) {
             $ascii .= ($htmloutput === true) ?
                             htmlentities($data[$i]) :
                             $data[$i];

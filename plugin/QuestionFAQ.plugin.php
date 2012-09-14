@@ -55,7 +55,7 @@ class QuestionFAQ{
 	}
 
 	public function handler($message){
-		if((isset($this->state[$message["owner"]]) and $this->state[$message["owner"]] == false) or !isset($this->state[$message["owner"]])){
+		if((isset($this->state[$message["owner"]]) and $this->state[$message["owner"]] === false) or !isset($this->state[$message["owner"]])){
 			$owner = $message["owner"];
 			$type = $message["type"];
 			$message = " ".trim(strtolower($message["message"]))." ";

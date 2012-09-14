@@ -72,7 +72,6 @@ class PathFind{
                 break;
             }
 			$pos = $n[0];
-			echo $pos["x"]."|".$pos["y"]."|".$pos["z"]."|".$pos["g"].PHP_EOL;
 			if($pos["x"] == $this->end["x"] and $pos["y"] == $this->end["y"] and $pos["z"] == $this->end["z"]){
 				$adjacentBlock = $pos;
 				while($adjacentBlock != null and ($adjacentBlock["x"] != $this->start["x"] or $adjacentBlock["y"] != $this->start["y"] or $adjacentBlock["z"] != $this->start["z"])) {
