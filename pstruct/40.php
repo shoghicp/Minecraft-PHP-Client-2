@@ -356,7 +356,7 @@ $pstruct = array(
 		"int",
 		"byte",
 		"byte",
-		"byte",
+		"short",
 	),
 	
 	"37" => array(

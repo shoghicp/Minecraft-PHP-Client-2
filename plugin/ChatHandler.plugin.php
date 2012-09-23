@@ -96,9 +96,9 @@ class ChatHandler{
 			console("[INTERNAL] [ChatHandler] ".ChatHandler::format($info), true, true, 3);
 			if(isset($this->blacklist[$owner])){
 				$this->client->trigger("onChatHandler_blacklisted", $info);
-				return;
+			}else{
+				$this->client->trigger("onChatHandler", $info);
 			}
-			$this->client->trigger("onChatHandler", $info);
 		}else{
 			return $info;
 		}
