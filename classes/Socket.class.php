@@ -131,21 +131,19 @@ class Socket{
 	
 	public function recieve($str){ //Auto write a packet
 		if($str != ""){
-			$str = $this->encryption === true ? $this->decrypt->decrypt($str):$str;
-			$this->buffer .= $str;
+			$this->buffer .= $this->encryption === true ? $this->decrypt->decrypt($str):$str;
 		}
 	}
 	
 	public function write($str){
 		if($str != ""){
-			$str = $this->encryption === true ? $this->encrypt->encrypt($str):$str;
-			return @socket_write($this->sock, $str);
+			return @socket_write($this->sock, ($this->encryption === true ? $this->encrypt->encrypt($str):$str));
 		}
 	}
 	
 	function get($len){
 		if(!isset($this->buffer{$len}) and $this->connected === true){
-			$read = @socket_read($this->sock,$len, PHP_BINARY_READ);
+			$read = @socket_read($this->sock, $len, PHP_BINARY_READ);
 			if($read !== "" and $read !== false){
 				$this->recieve($read);
 			}elseif($read === false and isset($this->errors[socket_last_error($this->sock)])){

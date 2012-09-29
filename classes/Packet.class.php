@@ -158,7 +158,7 @@ class Packet{
 					$this->data[] = Utils::readByte($this->get(1));
 					break;				
 				case "ubyte":
-					$this->data[] = Utils::readByte($this->get(1), false);
+					$this->data[] = ord($this->get(1));
 					break;
 				case "float":
 					$this->data[] = Utils::readFloat($this->get(4));
@@ -167,6 +167,8 @@ class Packet{
 					$this->data[] = Utils::readDouble($this->get(8));
 					break;
 				case "ushort":
+					$this->data[] = Utils::readShort($this->get(2), false);
+					break;
 				case "short":
 					$this->data[] = Utils::readShort($this->get(2));
 					break;
@@ -271,7 +273,7 @@ class Packet{
 					break;
 				case "entityMetadata":
 					$m = array();
-					$b = Utils::readByte($this->get(1), false);
+					$b = ord($this->get(1));
 					while($b != 127){
 						$bottom = $b & 0x1F;
 						$type = $b >> 5;
@@ -303,7 +305,7 @@ class Packet{
 								
 						}
 						$m[$bottom] = $r;
-						$b = Utils::readByte($this->get(1), false);
+						$b = ord($this->get(1));
 					}
 					$this->data[] = $m;
 					break;

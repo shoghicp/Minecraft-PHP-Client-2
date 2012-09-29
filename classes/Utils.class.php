@@ -207,9 +207,9 @@ class Utils{
 		return chr($c);
 	}
 
-	public static function readShort($str){
+	public static function readShort($str, $signed = true){
 		list(,$unpacked) = unpack("n", $str);
-		if($unpacked > 0x7fff){
+		if($unpacked > 0x7fff and $signed === true){
 			$unpacked -= 0x10000; // Convert unsigned short to signed short
 		}
 		return $unpacked;
