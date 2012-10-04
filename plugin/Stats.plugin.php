@@ -31,7 +31,8 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class Stats{
-	protected $client, $stats, $file;
+	var $stats;
+	protected $client, $file;
 	function __construct($client, $file){
 		$this->client = $client;
 		$this->file = $file;

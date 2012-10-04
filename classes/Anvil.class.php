@@ -138,12 +138,16 @@ class Anvil{
 		return $data;
 	}
 	
-	public function getFloor($x, $z){ //Fast method
+	public function getFloor($x, $z, $startY = -1){ //Fast method
 		$index = $this->getIndex($x, HEIGHT_LIMIT, $z);
 		if(!isset($this->block[$index[0]][$index[1]])){
 			return array(0, 0, 0);
 		}
-		$i = $this->block[$index[0]][$index[1]][2] + 16;
+		if(((int) $startY) > -1){
+			$i = ((int) $startY >> 4) << 4;
+		}else{
+			$i = $this->block[$index[0]][$index[1]][2] + 16;
+		}
 		$index[2] -= (HEIGHT_LIMIT - $i) << $this->height;
 		$b =& $this->block[$index[0]][$index[1]][0];
 		

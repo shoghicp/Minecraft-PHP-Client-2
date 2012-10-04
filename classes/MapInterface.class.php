@@ -65,16 +65,17 @@ class MapInterface{
 		return isset($this->material[$block[0]]) ? $this->material[$block[0]]:"Unknown";
 	}
 	
-	public function getFloor($x, $z){
+	public function getFloor($x, $z, $startY = -1){	
 		$x = (int) $x;
 		$z = (int) $z;
 		$this->client->toggleEvent("onTick");
 		if($this->floor === true){
-			$map = $this->map->getFloor($x, $z);
+			$map = $this->map->getFloor($x, $z, $startY);
 			$this->client->toggleEvent("onTick");
 			return $map;
-		}else{			
-			for($y = HEIGHT_LIMIT - 1; $y > 0; --$y){
+		}else{
+			$startY = ((int) $startY) > -1 ? ((int) $startY):HEIGHT_LIMIT - 1;
+			for($y = $startY; $y > 0; --$y){
 				$block = $this->getBlock($x, $y, $z);
 				if(!isset($this->material["nosolid"][$block[0]])){
 					break;

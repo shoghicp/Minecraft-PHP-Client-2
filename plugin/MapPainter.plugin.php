@@ -41,7 +41,7 @@ class MapPainter{
 		console("[INFO] [MapPainter] loaded");
 	}
 	
-	public function getMap($floor = -1, $radius = 16, $blockSize = 1){
+	public function getMap($floor = -1, $radius = 16, $blockSize = 1, $startY = -1){
 		$map = array();
 		$pos = $this->player->getPosition(true);
 		$radius = $radius * $blockSize;
@@ -56,7 +56,7 @@ class MapPainter{
 			$j = 0;
 			for($z = $startZ; $z < $endZ; $z += $blockSize){
 				if($floor === -1){
-					$map[$i][$j] = $this->map->getFloor($x, $z);
+					$map[$i][$j] = $this->map->getFloor($x, $z, $startY);
 				}else{
 					$b = $this->map->getBlock($x, $floor, $z);
 					$map[$i][$j] = array(0, $b[0], $b[1]);
@@ -75,9 +75,9 @@ class MapPainter{
 		}
 	}
 	
-	public function drawMap($dest, $floor = -1, $radius = 16, $width = 1, $blockSize = 1){
+	public function drawMap($dest, $floor = -1, $radius = 16, $width = 1, $blockSize = 1, $startY = -1){
 		$s = ($radius << 1) * $width;
-		$map = $this->getMap($floor, $radius, $blockSize);
+		$map = $this->getMap($floor, $radius, $blockSize, $startY);
 		$img = imagecreatetruecolor($s, $s);
 		$c =& $this->material["color"];
 		foreach($map as $x => $d){

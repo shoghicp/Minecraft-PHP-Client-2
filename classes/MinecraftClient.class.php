@@ -852,16 +852,16 @@ class MinecraftClient{
 			php_uname(),
 			phpversion(),
 			zend_version(),
-			function_exists("openssl_random_pseudo_bytes") ? openssl_random_pseudo_bytes(16):microtime(true),
-			function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16):microtime(true),
+			//function_exists("openssl_random_pseudo_bytes") ? openssl_random_pseudo_bytes(16):microtime(true),
+			//function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16):microtime(true),
 			uniqid(microtime(true),true),
-			file_exists("/dev/random") ? fread(fopen("/dev/random", "r"),16):microtime(true),
+			//file_exists("/dev/random") ? fread(fopen("/dev/random", "r"),16):microtime(true),
 		);
 		shuffle($entropy);
 		$value = Utils::hexToStr(md5((string) $startEntropy));
 		unset($startEntropy);
 		foreach($entropy as $c){
-			for($i = 0; $i < 64; ++$i){
+			for($i = 0; $i < 4; ++$i){
 				$value ^= md5($c.lcg_value().$value.microtime(true).mt_rand(0,mt_getrandmax()), true);
 				$value ^= substr(sha1($c.lcg_value().$value.microtime(true).mt_rand(0,mt_getrandmax()), true),0,16);
 			}

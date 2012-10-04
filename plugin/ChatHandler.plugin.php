@@ -55,19 +55,19 @@ class ChatHandler{
 		$world = "";
 		$owner = "";
 		$receptor = "";
-		if(preg_match("/([a-zA-Z0-9_]{2,16})\ whispers ([a-zA-Z0-9_]{2,16})/",$mess,$username) > 0){ //Default MP
+		if(preg_match("/([a-zA-Z0-9_~]{2,16})\ whispers ([a-zA-Z0-9_]{2,16})/",$mess,$username) > 0){ //Default MP
 			$owner = $username[1];
 			$type = "private";
 			$receptor = $username[2];
 			$message = ltrim(substr($mess, strpos($mess, $username[0]) + strlen($username[0])));
-		}elseif(preg_match("/\[([a-zA-Z0-9_]{2,16}) \-> ([a-zA-Z0-9_]{2,16})\]/",$mess,$username) > 0){ //Essentials MP
+		}elseif(preg_match("/\[([a-zA-Z0-9_~]{2,16}) \-> ([a-zA-Z0-9_]{2,16})\]/",$mess,$username) > 0){ //Essentials MP
 			$owner = $username[1];
 			if($owner != "me" and $owner != "yo"){
 				$type = "private";
 			}
 			$receptor = $username[2];
 			$message = ltrim(substr($mess, strpos($mess, $username[0]) + strlen($username[0])));
-		}elseif(preg_match("#([\(<][ ]{0,1}|)([a-zA-Z0-9_]{2,16})(:|[ ]{0,1}[\)>])#", $mess, $username) > 0){ //Catch them all!!
+		}elseif(preg_match("#([\(<\{][ ]{0,1}|)([a-zA-Z0-9_]{2,16})(:|[ ]{0,1}[\)>\}])#", $mess, $username) > 0){ //Catch them all!!
 			if(preg_match("#[\[]([a-zA-Z0-9\-_ |]*)[\]]#", $mess, $zone) > 0){
 				$zone = explode("|", $zone[1]);
 				if(count($zone) > 1){
@@ -79,12 +79,14 @@ class ChatHandler{
 			}
 			$owner = trim($username[2]);
 			$message = ltrim(substr($mess, strpos($mess, $username[0]) + strlen($username[0])));
-		}elseif(preg_match("/([a-zA-Z0-9_]{2,16}) joined the game/",$mess,$username) > 0){
+		}elseif(preg_match("/([a-zA-Z0-9_]{2,16}) ([a-z]*) the game/",$mess,$username) > 0){
 			$owner = $username[1];
-			$type = "join";
-		}elseif(preg_match("/([a-zA-Z0-9_]{2,16}) left the game/",$mess,$username) > 0){
+			$type = $username[2] == "joined" ? "join":"left";
+		}elseif(preg_match("/([a-zA-Z0-9_]{2,16}) (drowned|hit the ground too hard|was (slain|shot|killed|fireballed|pummeled) by |fell out of the world|tried to swim in lava|went up in flames|burned to death|suffocated in a wall|was pricked to death|starved to death|died|withered away)([a-zA-Z0-9_]{0,16})/",$mess,$username) > 0){
 			$owner = $username[1];
-			$type = "left";
+			$type = "kill";
+			$receptor = $username[4];
+			$message = "was killed".($receptor != "" ? " by ".$receptor:"");
 		}else{
 			$message = trim($mess);
 			if($mess == ""){

@@ -112,7 +112,7 @@ class Utils{
 		return $ret;
 	}
 	
-	public static function curl_post($page, $args){
+	public static function curl_post($page, $args, $timeout = 10){
 		$ch = curl_init($page);
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
@@ -120,7 +120,7 @@ class Utils{
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client 2'));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, (int) $timeout);
 		$ret = curl_exec($ch);
 		curl_close($ch);
 		return $ret;
