@@ -853,9 +853,9 @@ class MinecraftClient{
 			phpversion(),
 			zend_version(),
 			//function_exists("openssl_random_pseudo_bytes") ? openssl_random_pseudo_bytes(16):microtime(true),
-			//function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16):microtime(true),
+			function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16, MCRYPT_DEV_URANDOM):microtime(true),
 			uniqid(microtime(true),true),
-			//file_exists("/dev/random") ? fread(fopen("/dev/random", "r"),16):microtime(true),
+			file_exists("/dev/urandom") ? fread(fopen("/dev/urandom", "r"),16):microtime(true),
 		);
 		shuffle($entropy);
 		$value = Utils::hexToStr(md5((string) $startEntropy));

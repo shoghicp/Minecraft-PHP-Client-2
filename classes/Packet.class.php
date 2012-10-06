@@ -200,6 +200,21 @@ class Packet{
 					}
 					$this->data[] = array_map("Utils::readInt",str_split($this->get($len << 2),4));
 					break;
+				case "dropArray":
+					$item = Utils::readShort($this->get(2));
+					$this->data[] = $item;
+					if($item === -1){
+						$this->data[] = 0;
+						$this->data[] = 0;
+					}else{
+						$this->data[] = ord($this->get(1));
+						$this->data[] = Utils::readShort($this->get(2));
+						$f = Utils::readShort($this->get(2));
+						if($f !== -1){
+							$d = $this->get(Utils::readShort($this->get(2)));
+						}
+					}
+					break;
 				case "chunkInfo":
 					$n = $this->data[0];
 					$this->data[] = $this->get($n * 12);
@@ -294,7 +309,12 @@ class Packet{
 								$r = Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
 								break;
 							case 5:
-								$r = array("id" => Utils::readShort($this->get(2)), "count" => Utils::readByte($this->get(1)), "damage" => Utils::readShort($this->get(2)));
+								$r = array();
+								$r[] = Utils::readShort($this->get(2));
+								if($this->protocol < 41 or $r[0] !== -1){
+									$r[] = Utils::readByte($this->get(1));
+									$r[] = Utils::readShort($this->get(2));
+								}
 								break;
 							case 6:
 								$r = array();
