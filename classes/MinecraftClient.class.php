@@ -697,6 +697,16 @@ class MinecraftClient{
 		));
 	}
 	
+	public function debugInfo($console = false){
+		$info = array();
+		$info["memory_usage"] = round((memory_get_usage(true) / 1024) / 1024, 2)."MB";
+		$info["entities"] = count($this->entities);
+		if($console === true){
+			console("[DEBUG] Memory usage: ".$info["memory_usage"].", Entities: ".$info["entities"], true, true, 2);
+		}
+		return $info;
+	}
+	
 	protected function startHandlers(){
 	
 		if(ACTION_MODE === 1){
@@ -743,7 +753,7 @@ class MinecraftClient{
 		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
 		register_shutdown_function(array($this, "logout"));
 		$this->action(50000, '$this->trigger("onTick", $time);');
-		$this->action(15000000, 'console("[DEBUG] Memory Usage: ".round((memory_get_usage(true) / 1024) / 1024, 2)." MB", true, true, 2);');
+		$this->action(15000000, '$this->debugInfo(true);');
 		$this->event("onTick", "handler", true);
 		if(isset($this->auth["session_id"])){
 			$this->action(300000000, 'Utils::curl_get("https://login.minecraft.net/session?name=".$this->auth["user"]."&session=".$this->auth["session_id"]);');

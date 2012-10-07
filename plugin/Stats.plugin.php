@@ -52,6 +52,7 @@ class Stats{
 	
 	public function set($stat, $value){
 		$this->stats[$stat] = $value;
+		$this->save();
 	}
 	
 	public function get($stat){

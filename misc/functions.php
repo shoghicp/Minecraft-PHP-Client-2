@@ -108,8 +108,7 @@ function console($message, $EOL = true, $log = true, $level = 1){
 		$message = date("H:i:s"). " ". $message;
 		if($log === true and (!defined("LOG") or LOG === true)){
 			logg($message, "console", false, $level);
-		}
-	
+		}	
 		echo $message;
 	}
 }
