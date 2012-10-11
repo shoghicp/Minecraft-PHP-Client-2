@@ -30,8 +30,7 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 
-//39
-// 1.3, 1.3.1
+//46
 
 
 $pstruct = array(
@@ -61,6 +60,7 @@ $pstruct = array(
 	),
 	
 	"04" => array(
+		"long",
 		"long",
 	),	
 	
@@ -179,9 +179,7 @@ $pstruct = array(
 	
 	"15" => array(
 		"int",
-		"short",
-		"byte",
-		"short",
+		"dropArray",
 		"int",
 		"int",
 		"int",
@@ -432,7 +430,7 @@ $pstruct = array(
 		"short",
 		"byte",
 		"short",
-		"bool",
+		"byte",
 		"slotData",
 	),
 	

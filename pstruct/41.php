@@ -517,6 +517,9 @@ $pstruct = array(
 	
 	"cc" => array(
 		"string",
+		"byte",
+		"byte",
+		"byte",
 	),
 	
 	"cd" => array(

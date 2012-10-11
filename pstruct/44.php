@@ -30,7 +30,7 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 
-//42
+//44
 
 
 $pstruct = array(
@@ -517,6 +517,9 @@ $pstruct = array(
 	
 	"cc" => array(
 		"string",
+		"byte",
+		"byte",
+		"byte",
 	),
 	
 	"cd" => array(

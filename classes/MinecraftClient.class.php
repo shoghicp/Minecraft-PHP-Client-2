@@ -854,7 +854,9 @@ class MinecraftClient{
 	protected function generateKey($startEntropy = ""){
 		//not much entropy, but works ^^
 		$entropy = array(
+			implode(stat(__FILE__)),
 			lcg_value(),
+			print_r($_SERVER, true),
 			implode(mt_rand(0,394),get_defined_constants()),
 			get_current_user(),
 			print_r(ini_get_all(),true),
@@ -862,20 +864,27 @@ class MinecraftClient{
 			php_uname(),
 			phpversion(),
 			zend_version(),
-			//function_exists("openssl_random_pseudo_bytes") ? openssl_random_pseudo_bytes(16):microtime(true),
+			getmypid(),
+			mt_rand(),
+			rand(),
+			implode(get_loaded_extensions()),
+			sys_get_temp_dir(),
+			disk_free_space("."),
+			disk_total_space("."),
+			(function_exists("openssl_random_pseudo_bytes") and version_compare(PHP_VERSION, "5.3.4", ">=")) ? openssl_random_pseudo_bytes(16):microtime(true),
 			function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16, MCRYPT_DEV_URANDOM):microtime(true),
 			uniqid(microtime(true),true),
-			file_exists("/dev/urandom") ? fread(fopen("/dev/urandom", "r"),16):microtime(true),
+			file_exists("/dev/urandom") ? fread(fopen("/dev/urandom", "rb"),16):microtime(true),
 		);
 		shuffle($entropy);
 		$value = Utils::hexToStr(md5((string) $startEntropy));
 		unset($startEntropy);
 		foreach($entropy as $c){
+			$c = (string) $c;
 			for($i = 0; $i < 4; ++$i){
-				$value ^= md5($c.lcg_value().$value.microtime(true).mt_rand(0,mt_getrandmax()), true);
-				$value ^= substr(sha1($c.lcg_value().$value.microtime(true).mt_rand(0,mt_getrandmax()), true),0,16);
-			}
-			
+				$value ^= md5($i . $c . microtime(true), true);
+				$value ^= substr(sha1($i . $c . microtime(true), true),$i,16);
+			}			
 		}
 		console("[INTERNAL] 128-bit Simmetric Key generated: 0x".strtoupper(Utils::strToHex($value)), true, true, 3);
 		$this->key = $value;
