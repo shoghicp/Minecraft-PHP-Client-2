@@ -44,6 +44,9 @@ the Free Software Foundation, either version 3 of the License, or
 		61 => "Blaze",
 		62 => "Magma Cube",
 		63 => "Ender Dragon",
+		64 => "Wither",
+		65 => "Bat",
+		66 => "Witch",
 		
 		90 => "Pig",
 		91 => "Sheep",
@@ -62,17 +65,27 @@ the Free Software Foundation, either version 3 of the License, or
 	
 	$objects = array(
 		1 => "Boat",
+		
 		10 => "Minecart",
 		11 => "Minecart (storage)",
 		12 => "Minecart (powered)",
+		
 		50 => "Activated TNT",
 		51 => "EnderCrystal",
+		
 		60 => "Arrow",
 		61 => "Snowball",
 		62 => "Egg",
+		
+		65 => "Thrown Enderpearl",
+		66 => "Wither Skull",
 		70 => "Falling Block",
+		71 => "Item Frame",
 		72 => "Eye of Ender",
+		73 => "Thrown Potion",
 		74 => "Falling Dragon Egg",
+		75 => "Thrown Exp Bottle",
+		
 		90 => "Fishing Float",
 	
 	);

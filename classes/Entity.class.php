@@ -97,6 +97,172 @@ class Entity{
 				case 12:
 					$this->metadata["grow"] = $value;
 					break;
+				case 16:
+					switch($this->class){							
+						case ENTITY_MOB:
+							switch($this->type){
+								case 50:
+									$this->metadata["status"] = $value;
+									break;
+								case 52:
+								case 59:
+								case 56: //Ghast
+								case 61: //Blaze
+									$this->metadata["aggresive"] = $value === 1 ? true:false;
+									break;
+								case 55:
+								case 62:
+									$this->metadata["size"] = $value;
+									break;
+								case 58:
+									$this->metadata["item"] = $value;
+									break;
+								case 63:
+								case 64: //Wither
+									$this->metadata["health"] = $value;
+									break;
+								case 90:
+									$this->metadata["saddle"] = $value === 1 ? true:false;
+									break;
+								case 91:
+									$this->metadata["color"] = $value & 0x0F;
+									$this->metadata["sheared"] = ($value & 0x10) === 0x10 ? true:false;
+									break;
+								case 95:
+									$this->metadata["sit"] = ($value & 0x01) === 0x01 ? true:false;
+									$this->metadata["aggresive"] = ($value & 0x02) === 0x02 ? true:false;
+									$this->metadata["tamed"] = ($value & 0x04) === 0x04 ? true:false;
+									break;
+								case 98:
+									$this->metadata["sit"] = ($value & 0x01) === 0x01 ? true:false;
+									$this->metadata["tamed"] = ($value & 0x04) === 0x04 ? true:false;								
+									break;
+								case 99:
+									$this->metadata["flower"] = $value === 1 ? true:false;
+									break;
+								case 120:
+									$this->metadata["type"] = $value;
+									break;
+							}
+							
+							break;
+						case ENTITY_OBJECT:
+							switch($this->type){
+								case 60:
+									$this->metadata["recoverable"] = $value === 1 ? true:false;
+									break;
+								case 10:
+								case 11:
+								case 12:
+									$this->metadata["fuel"] = ($value & 0x01) === 0x01 ? true:false;
+									break;
+							}
+							break;					
+					}
+					break;
+				case 17:
+					switch($this->class){							
+						case ENTITY_MOB:
+							switch($this->type){
+								case 50:
+									$this->metadata["charged"] = $value === 1 ? true:false;
+									break;
+								case 58:
+									$this->metadata["metadata"] = $value;
+									break;
+								case 95:
+								case 98:
+									$this->metadata["player"] = $value;							
+									break;
+								case 99:
+									$this->metadata["flower"] = $value === 1 ? true:false;
+									break;
+								case 120:
+									$this->metadata["type"] = $value;
+									break;
+							}
+							
+							break;
+						case ENTITY_OBJECT:
+							switch($this->type){
+								case 10:
+								case 11:
+								case 12:
+									$this->metadata[17] = $value;
+									break;
+								case 1:
+									$this->metadata["hit"] = $value;
+									break;
+							}
+							break;					
+					}
+					break;
+				case 18:
+					switch($this->class){							
+						case ENTITY_MOB:
+							switch($this->type){
+								case 58:
+									$this->metadata["aggresive"] = $value === 1 ? true:false;
+									break;
+								case 95:
+								case 98:
+									$this->metadata["health"] = $value;
+									break;
+							}
+							
+							break;
+						case ENTITY_OBJECT:
+							switch($this->type){
+								case 10:
+								case 11:
+								case 12:
+									$this->metadata[18] = $value;
+									break;
+								case 1:
+									$this->metadata["direction"] = $value;
+									break;
+							}
+							break;					
+					}
+					break;
+				case 19:
+					switch($this->class){							
+						case ENTITY_MOB:
+							switch($this->type){
+								case 95:
+									$this->metadata[19] = $value === 1 ? true:false;
+									break;
+							}
+							
+							break;
+						case ENTITY_OBJECT:
+							switch($this->type){
+								case 10:
+								case 11:
+								case 12:
+								case 1:
+									$this->metadata["damage"] = $value;
+									break;
+							}
+							break;					
+					}
+					break;
+				case 20:
+					switch($this->class){							
+						case ENTITY_MOB:
+							switch($this->type){
+								case 64: //Wither
+									$this->metadata["counter"] = $value;
+									break;
+							}
+							
+							break;
+						case ENTITY_OBJECT:
+							switch($this->type){
+							}
+							break;					
+					}
+					break;
 			}
 		}
 	}

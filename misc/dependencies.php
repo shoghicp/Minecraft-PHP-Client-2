@@ -96,5 +96,7 @@ require_once("classes/Socket.class.php");
 require_once("classes/Entity.class.php");
 require_once("classes/MapInterface.class.php");
 require_once("classes/Path.class.php");
+require_once("classes/MinecraftInterface.class.php");
+require_once("classes/phpseclib/Crypt/RSA.php");
 
 ?>

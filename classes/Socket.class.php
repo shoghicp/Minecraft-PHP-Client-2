@@ -118,6 +118,10 @@ class Socket{
 				break;
 			}
 		}
+		if(!isset($this->buffer{$len-1})){
+			return "";
+		}
+		
 		if($len === 1){
 			$ret = $this->buffer{0};
 		}else{

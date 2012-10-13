@@ -31,19 +31,22 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class MinecraftClient{
-	private $server, $port, $player, $entities, $players, $key, $material;
+	private $server, $port, $player, $entities, $players, $key, $material, $interface, $proxymode;
 	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions, $useMap;
 	var $time, $protocol, $map, $auth, $mapParser;
 	
 	
-	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
+	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = 25565){
 		$this->server = $server;
 		$this->port = $port;
 		
 		$this->protocol = (int) $protocol;
-		console("[INFO] Connecting to Minecraft server protocol ".$this->protocol);
+		console("[INFO] Connecting to Minecraft Server");
+		console("[INFO] Server: ".$this->server.":".$this->port);
+		console("[INFO] Protocol: ".$this->protocol);
 		$this->interface = new MinecraftInterface($server, $protocol, $port);
 		$this->cnt = 1;
+		$this->proxymode = false;
 		$this->events = array("recieved_ff" => array(0 => array('close', true)), "disabled" => array());
 		$this->responses = array();
 		$this->info = array();
@@ -61,10 +64,14 @@ class MinecraftClient{
 		register_shutdown_function("logg", "", "packets", false, 0, true);
 	}
 	
+	public function proxyMode(){
+		$this->proxymode = true;	
+	}
+	
 	public function disableMap(){
 		$this->useMap = false;
 		unset($this->mapParser, $this->map);
-		console("[DEBUG] Map disabled", true, true, 2);
+		console("[DEBUG] Map parsing disabled", true, true, 2);
 	}
 	
 	public function activateSpout(){
@@ -440,6 +447,7 @@ class MinecraftClient{
 	private function handler($data, $event){
 		switch($event){
 			case "recieved_00":
+				if($this->proxymode === true){break;}
 				$this->send("00", array(0 => $data[0]));
 				break;
 			case "recieved_03":
@@ -502,6 +510,7 @@ class MinecraftClient{
 				console("[INFO] Respawned");
 				break;
 			case "recieved_0d":
+				if($this->proxymode === true){break;}
 				$this->player->setPosition($data[0], $data[2], $data[3], $data[1], $data[4], $data[5], $data[6]);
 				console("[INFO] Got position: (".$data[0].",".$data[2].",".$data[3].")");
 				$this->send("0d",$this->player->packet("0d"));
@@ -509,6 +518,7 @@ class MinecraftClient{
 				$this->trigger("onEntityMove", $this->player);
 				$this->trigger("onEntityMove_".$this->player->eid, $this->player);
 			case "onTick":
+				if($this->proxymode === true){break;}
 				if($this->player->dead === false){
 					$this->send("0d", $this->player->packet("0d"));
 				}
@@ -649,7 +659,7 @@ class MinecraftClient{
 				break;
 			case "recieved_c9":
 				console("[INTERNAL] ".$data[0]." ping: ".$data[2], true, true, 3);
-				if($data[1] === false){
+				if($data[1] == false){
 					$this->trigger("onPlayerPingRemove", $data[0]);
 				}else{
 					$this->trigger("onPlayerPing", array("name" => $data[0], "ping" => $data[2]));
@@ -700,9 +710,10 @@ class MinecraftClient{
 	public function debugInfo($console = false){
 		$info = array();
 		$info["memory_usage"] = round((memory_get_usage(true) / 1024) / 1024, 2)."MB";
+		$info["memory_peak_usage"] = round((memory_get_peak_usage(true) / 1024) / 1024, 2)."MB";
 		$info["entities"] = count($this->entities);
 		if($console === true){
-			console("[DEBUG] Memory usage: ".$info["memory_usage"].", Entities: ".$info["entities"], true, true, 2);
+			console("[DEBUG] Memory usage: ".$info["memory_usage"]." (Peak ".$info["memory_peak_usage"]."), Entities: ".$info["entities"], true, true, 2);
 		}
 		return $info;
 	}
@@ -851,45 +862,6 @@ class MinecraftClient{
 		}
 	}
 	
-	protected function generateKey($startEntropy = ""){
-		//not much entropy, but works ^^
-		$entropy = array(
-			implode(stat(__FILE__)),
-			lcg_value(),
-			print_r($_SERVER, true),
-			implode(mt_rand(0,394),get_defined_constants()),
-			get_current_user(),
-			print_r(ini_get_all(),true),
-			(string) memory_get_usage(),
-			php_uname(),
-			phpversion(),
-			zend_version(),
-			getmypid(),
-			mt_rand(),
-			rand(),
-			implode(get_loaded_extensions()),
-			sys_get_temp_dir(),
-			disk_free_space("."),
-			disk_total_space("."),
-			(function_exists("openssl_random_pseudo_bytes") and version_compare(PHP_VERSION, "5.3.4", ">=")) ? openssl_random_pseudo_bytes(16):microtime(true),
-			function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16, MCRYPT_DEV_URANDOM):microtime(true),
-			uniqid(microtime(true),true),
-			file_exists("/dev/urandom") ? fread(fopen("/dev/urandom", "rb"),16):microtime(true),
-		);
-		shuffle($entropy);
-		$value = Utils::hexToStr(md5((string) $startEntropy));
-		unset($startEntropy);
-		foreach($entropy as $c){
-			$c = (string) $c;
-			for($i = 0; $i < 4; ++$i){
-				$value ^= md5($i . $c . microtime(true), true);
-				$value ^= substr(sha1($i . $c . microtime(true), true),$i,16);
-			}			
-		}
-		console("[INTERNAL] 128-bit Simmetric Key generated: 0x".strtoupper(Utils::strToHex($value)), true, true, 3);
-		$this->key = $value;
-	}
-	
 	protected function newAuthentication($data, $event){
 		switch($event){
 			case "recieved_fd":
@@ -903,7 +875,8 @@ class MinecraftClient{
 				$rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
 				$rsa->loadKey($publicKey, CRYPT_RSA_PUBLIC_FORMAT_PKCS1);
 				console("[DEBUG] Generating simmetric key...", true, true, 2);
-				$this->generateKey($data[0].$data[4]);
+				$this->key = Utils::generateKey($data[0].$data[4]);
+				console("[INTERNAL] 128-bit Simmetric Key generated: 0x".strtoupper(Utils::strToHex($this->key)), true, true, 3);
 				console("[DEBUG] [RSA-1024] Encrypting simmetric key...", true, true, 2);
 				$encryptedKey = $rsa->encrypt($this->key);
 				$encryptedToken = $rsa->encrypt($data[4]);
@@ -1145,96 +1118,7 @@ class MinecraftClient{
 				break;
 		}
 	
-	}	
+	}
 
-}
-
-class MinecraftInterface{
-	protected $protocol;
-	var $pstruct, $name, $server;
-	
-	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = "25565"){
-		$this->server = new Socket($server, $port);
-		$this->protocol = (int) $protocol;
-		require("pstruct/".$this->protocol.".php");
-		require("pstruct/packetName.php");
-		$this->pstruct = $pstruct;
-		$this->name = $packetName;
-	}
-	
-	public function close(){
-		return $this->server->close();
-	}
-	
-	protected function getPID($chr){
-		return Utils::strToHex($chr{0});
-	}
-	
-	protected function getStruct($pid){
-		if(isset($this->pstruct[$pid])){
-			return $this->pstruct[$pid];
-		}
-		return false;
-	}
-	
-	protected function writeDump($pid, $raw, $data, $origin = "client"){
-		if(LOG === true and DEBUG >= 2){
-			$p = "[".microtime(true)."] [".($origin === "client" ? "CLIENT->SERVER":"SERVER->CLIENT")."]: ".$this->name[$pid]." (0x$pid) [lenght ".strlen($raw)."]".PHP_EOL;
-			$p .= hexdump($raw, false, false, true);
-			foreach($data as $i => $d){
-				$p .= $i ." => ".(!is_array($d) ? $this->pstruct[$pid][$i]."(".(($this->pstruct[$pid][$i] === "byteArray" or $this->pstruct[$pid][$i] === "newChunkArray" or $this->pstruct[$pid][$i] === "chunkArray" or $this->pstruct[$pid][$i] === "chunkInfo" or $this->pstruct[$pid][$i] === "multiblockArray" or $this->pstruct[$pid][$i] === "newMultiblockArray") ? Utils::strToHex($d):$d).")":$this->pstruct[$pid][$i]."(***)").PHP_EOL;
-			}
-			$p .= PHP_EOL;
-			logg($p, "packets", false);
-		}
-	
-	}
-	
-	public function readPacket(){
-		if($this->server->connected === false){
-			return array("pid" => "ff", "data" => array(0 => 'Connection error'));
-		}
-		$pid = $this->getPID($this->server->read(1));
-		$struct = $this->getStruct($pid);
-		if($struct === false){
-			$this->server->unblock();
-			$p = "[".microtime(true)."] [SERVER->CLIENT]: Error, bad packet id 0x$pid".PHP_EOL;
-			$p .= hexdump(Utils::hexToStr($pid).$this->server->read(1024, true), false, false, true);
-			$p .= PHP_EOL . "--------------- (1024 byte max extract) ----------" .PHP_EOL;
-			logg($p, "packets");
-			
-			$this->buffer = "";
-			$this->server->recieve("\xff".Utils::writeString('Bad packet id '.$pid.''));
-			$this->writePacket("ff", array(0 => 'Bad packet id '.$pid.''));
-			return array("pid" => "ff", "data" => array(0 => 'Bad packet id '.$pid.''));
-		}
-		
-		$packet = new Packet($pid, $struct, $this->server);
-		$packet->protocol = $this->protocol;
-		$packet->parse();
-		
-		$this->writeDump($pid, $packet->raw, $packet->data, "server");		
-		return array("pid" => $pid, "data" => $packet->data);
-	}
-	
-	public function writePacket($pid, $data = array(), $raw = false){
-		$struct = $this->getStruct($pid);
-		if($this->protocol >= 32){
-			if($pid === "01"){
-				$struct = array();
-			}elseif($pid === "09"){
-				$struct = array();
-			}
-		}
-		$packet = new Packet($pid, $struct);
-		$packet->protocol = $this->protocol;
-		$packet->data = $data;
-		$packet->create($raw);
-		$write = $this->server->write($packet->raw);
-		
-		$this->writeDump($pid, $packet->raw, $data, "client");
-		return true;
-	}
-	
 }
 ?>
