@@ -32,37 +32,45 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class Socket{
-	private $sock, $encrypt, $decrypt, $encryption;
-	var $buffer, $connected, $errors;
+	private $encrypt, $decrypt, $encryption;
+	var $buffer, $connected, $errors, $sock;
 
-	function __construct($server, $port, $listen = false){
+	function __construct($server, $port, $listen = false, $socket = false){
 		$this->errors = array_fill(88,(125 - 88) + 1, true);
-		
-		if($listen !== true){
-			$this->sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-			if(@socket_connect($this->sock, $server, $port) === false){
-				$this->connected = false;
-			}else{
-				$this->connected = true;
-				$this->buffer = "";
-				$this->block();
-				$this->encryption = false;
-				socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);
-			}
+		if($socket !== false){
+			$this->sock = $socket;
+			$this->connected = true;
+			$this->buffer = "";
+			$this->unblock();
+			$this->encryption = false;
+			socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);	
 		}else{
-			$this->sock = socket_create_listen($port);
-			while(true){
-				if(($sock = socket_accept($this->sock)) !== false){
-					break;
+			if($listen !== true){
+				$this->sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+				if(@socket_connect($this->sock, $server, $port) === false){
+					$this->connected = false;
+				}else{
+					$this->connected = true;
+					$this->buffer = "";
+					$this->block();
+					$this->encryption = false;
+					socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);
 				}
+			}else{
+				$this->sock = socket_create_listen($port);
+				$this->unblock();	
 			}
-			$this->sock = $sock;
-				$this->connected = true;
-				$this->buffer = "";
-				$this->unblock();
-				$this->encryption = false;
-				socket_set_option($this->sock, SOL_SOCKET, SO_KEEPALIVE, 1);	
 		}
+	}
+	
+	function listenSocket(){
+		$sock = @socket_accept($this->sock);
+		if($sock !== false){
+			$sock = new Socket(false, false, false, $sock);
+			$sock->unblock();
+			return $sock;
+		}
+		return false;
 	}
 	
 	function startAES($key){

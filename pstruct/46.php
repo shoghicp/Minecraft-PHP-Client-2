@@ -520,6 +520,7 @@ $pstruct = array(
 		"byte",
 		"byte",
 		"byte",
+		"bool",
 	),
 	
 	"cd" => array(
