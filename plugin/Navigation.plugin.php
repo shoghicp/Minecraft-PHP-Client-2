@@ -60,6 +60,14 @@ class Navigation{
 		$this->deleteEvent("onTick", $this->event);
 	}
 	
+	
+	public function isSolid($block){
+		if(isset($this->material["nosolid"][$block])){
+			return true;
+		}
+		return false;
+	}
+	
 	public function walker($time){
 		$pos = $this->player->getPosition();
 		if($pos === false or $pos["y"] < 0){
@@ -81,7 +89,7 @@ class Navigation{
 			}
 		}else{
 			$zone = $this->getZone(1,true);
-			if(isset($zone[0][0][-1]) and isset($this->material["nosolid"][$zone[0][0][-1][0]]) and $this->fly === false){ //Air
+			if(isset($zone[0][0][-1]) and $this->isSolid($zone[0][0][-1][0]) and $this->fly === false){ //Air
 				$this->speedY += 0.9;
 				$pos["y"] -= $this->speedY;
 				$pos["ground"] = false;
@@ -115,7 +123,7 @@ class Navigation{
 	}
 	
 	public function getRelativeBlock($x = 0, $y = 0, $z = 0){
-		$pos = $this->player->getPosition();
+		$pos = $this->player->getPosition(true);
 		if($pos === false){
 			return false;
 		}
@@ -123,7 +131,7 @@ class Navigation{
 	}
 	
 	public function getRelativeColumn($x, $z){
-		$pos = $this->player->getPosition();
+		$pos = $this->player->getPosition(true);
 		if($pos === false){
 			return false;
 		}

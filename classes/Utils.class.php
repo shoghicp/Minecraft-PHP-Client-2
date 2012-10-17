@@ -100,6 +100,15 @@ class Utils{
 		return $value;
 	}
 	
+	public static function round($number){
+		return round($number, 0, PHP_ROUND_HALF_DOWN);
+	}
+	
+	public static function distance($pos1, $pos2){
+		return sqrt(pow($pos1["x"] - $pos2["x"], 2) + pow($pos1["y"] - $pos2["y"], 2) + pow($pos1["z"] - $pos2["z"], 2));
+	
+	}
+	
 	public static function sha1($input){
 		$binary = Utils::hexToBin(sha1($input));
 		$negative = false;
@@ -262,6 +271,9 @@ class Utils{
 
 	public static function readInt($str){
 		list(,$unpacked) = unpack("N", $str);
+		if($unpacked >= 2147483648){
+			$unpacked -= 4294967296;
+		}
 		return (int) $unpacked;
 	}
 	

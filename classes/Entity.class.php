@@ -38,7 +38,7 @@ define("ENTITY_PAINTING", 4);
 define("ENTITY_EXPERIENCE", 5);
 
 class Entity{
-	var $eid, $type, $name, $position, $dead, $metadata;
+	var $eid, $type, $name, $position, $dead, $metadata, $class;
 	protected $health, $food;
 	
 	function __construct($eid, $class, $type = 0){ //$type = 0 ---> player
@@ -80,6 +80,7 @@ class Entity{
 	
 	public function setMetadata($metadata){
 		foreach($metadata as $key => $value){
+			$this->metadata[$key] = $value;
 			switch($key){
 				case 0:
 					$this->metadata["onFire"] = ($value & 0x01) === 0x01 ? true:false;
@@ -98,7 +99,10 @@ class Entity{
 					$this->metadata["grow"] = $value;
 					break;
 				case 16:
-					switch($this->class){							
+					switch($this->class){
+						case ENTITY_PLAYER:
+							$this->metadata["showCape"] = $value === 1 ? true:false;
+							break;
 						case ENTITY_MOB:
 							switch($this->type){
 								case 50:
@@ -188,7 +192,7 @@ class Entity{
 								case 10:
 								case 11:
 								case 12:
-									$this->metadata[17] = $value;
+									//$this->metadata[17] = $value;
 									break;
 								case 1:
 									$this->metadata["hit"] = $value;
@@ -216,7 +220,7 @@ class Entity{
 								case 10:
 								case 11:
 								case 12:
-									$this->metadata[18] = $value;
+									//$this->metadata[18] = $value;
 									break;
 								case 1:
 									$this->metadata["direction"] = $value;
@@ -326,7 +330,7 @@ class Entity{
 	}
 	
 	public function getPosition($round = false){
-		return !isset($this->position) ? false:($round === true ? array_map("round", $this->position):$this->position);
+		return !isset($this->position) ? false:($round === true ? array_map("floor", $this->position):$this->position);
 	}
 	
 	public function setGround($ground){

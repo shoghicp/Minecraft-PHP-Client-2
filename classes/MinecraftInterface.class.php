@@ -85,7 +85,7 @@ class MinecraftInterface{
 			$p = "[".microtime(true)."] [SERVER->CLIENT]: Error, bad packet id 0x$pid".PHP_EOL;
 			$p .= hexdump(Utils::hexToStr($pid).$this->server->read(1024, true), false, false, true);
 			$p .= PHP_EOL . "--------------- (1024 byte max extract) ----------" .PHP_EOL;
-			logg($p, "packets");
+			logg($p, "packets", true, 3);
 			
 			$this->buffer = "";
 			$this->server->recieve("\xff".Utils::writeString('Bad packet id '.$pid.''));

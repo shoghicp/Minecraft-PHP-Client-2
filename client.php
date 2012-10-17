@@ -105,7 +105,7 @@ Parameters:
 \toptimize => Disables resource-intensive things (default false)
 
 Example:
-php {$argv[0]} --server=127.0.0.1 --username=Player --version=1.2.5 --debug=1
+php {$argv[0]} --server=127.0.0.1 --username=Player --version=1.2.5 --debug=debug
 
 USAGE;
 die();

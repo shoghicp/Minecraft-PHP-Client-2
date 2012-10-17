@@ -76,6 +76,8 @@ the Free Software Foundation, either version 3 of the License, or
 		60 => "Arrow",
 		61 => "Snowball",
 		62 => "Egg",
+		63 => "Fireball",
+		64 => "Small Fireball",
 		
 		65 => "Thrown Enderpearl",
 		66 => "Wither Skull",

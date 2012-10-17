@@ -93,7 +93,7 @@ class ChatHandler{
 				return array("owner" => "", "receptor" => "", "group" => "", "world" => "", "message" => "", "type" => "");
 			}
 		}
-		$info = array("owner" => $owner, "receptor" => $receptor, "group" => $group, "world" => $world, "message" => $message, "type" => $type);
+		$info = array("owner" => $owner, "receptor" => $receptor, "group" => $group, "world" => $world, "message" => $message, "type" => $type, "raw" => $mess);
 		if($event != "internal"){
 			console("[INTERNAL] [ChatHandler] ".ChatHandler::format($info), true, true, 3);
 			if(isset($this->blacklist[$owner])){

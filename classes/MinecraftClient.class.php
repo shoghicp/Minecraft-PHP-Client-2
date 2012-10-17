@@ -31,9 +31,9 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class MinecraftClient{
-	private $server, $port, $player, $entities, $players, $key, $material, $interface, $proxymode;
-	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions, $useMap;
-	var $time, $protocol, $map, $auth, $mapParser;
+	private $server, $port, $player, $key, $material, $interface, $proxymode;
+	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions, $useMap, $windows;
+	var $time, $protocol, $map, $auth, $mapParser, $entities, $players, $mobs;
 	
 	
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = 25565){
@@ -50,7 +50,9 @@ class MinecraftClient{
 		$this->events = array("recieved_ff" => array(0 => array('close', true)), "disabled" => array());
 		$this->responses = array();
 		$this->info = array();
+		$this->windows = array();
 		$this->entities = array();
+		$this->mobs = array();
 		$this->inventory = array();
 		$this->connected = true;
 		$this->actions = array();
@@ -92,6 +94,7 @@ class MinecraftClient{
 		}elseif($name === ""){
 			return $this->player;
 		}
+		return false;
 	}
 	
 	public function logout($message = "Quitting"){
@@ -274,8 +277,17 @@ class MinecraftClient{
 		$this->trigger("onEntityMove_".$this->player->eid, $this->player);
 	}
 	
+	/*public function look($x, $y, $z){
+		$pos = $this->player->getPosition();
+		$tan = sqrt($pos["x"] - $pos["x"]
+	}*/
+	
 	public function useEntity($eid, $left = true){
 		$this->trigger("onUseEntity", array("eid" => $eid, "left" => $left));
+		$this->send("12", array(
+			0 => $this->player->eid,
+			1 => 1,
+		));
 		$this->send("07", array(
 			0 => $this->player->eid,
 			1 => $eid,
@@ -393,14 +405,16 @@ class MinecraftClient{
 					$Z = $data[1] << 4;
 					$offset = 0;
 					for($i = 0; $i < $data[2]; ++$i){
-						$d = Utils::readInt(substr($data[4], $offset, 4));
-						$offset += 4;
-						$x = $d >> 28;
-						$z = ($d >> 24) & 0x0F;
-						$y = ($d >> 16) & 0xFF;
-						$block = ($d >> 4) & 0x0FFF;
-						$metadata = $d & 0x0F;
-						$this->map->changeBlock($X + $x, $y, $Z + $z, $block, $metadata);
+						$var6 = Utils::readShort(substr($data[4], $offset, 2));
+						$offset += 2;
+						$var7 = Utils::readShort(substr($data[4], $offset, 2));
+						$offset += 2;
+						$var8 = ($var7 >> 4) & 4095;
+						$var9 = $var7 & 15;
+						$var10 = ($var6 >> 12) & 15;
+						$var11 = ($var6 >> 8) & 15;
+						$var12 = $var6 & 255;
+						$this->map->changeBlock($var10 + $X, $var12, $var11 + $Z, $var8, $var9);
 					}
 				}
 				break;
@@ -451,7 +465,7 @@ class MinecraftClient{
 				$this->send("00", array(0 => $data[0]));
 				break;
 			case "recieved_03":
-				console("[DEBUG] Chat: ".$data[0], true, true, 2);
+				console("[INTERNAL] Chat: ".$data[0], true, true, 3);
 				$this->trigger("onChat", $data[0]);
 				break;
 			case "recieved_04":
@@ -535,6 +549,7 @@ class MinecraftClient{
 				if($this->protocol > 29){
 					$this->entities[$data[0]]->setMetadata($data[8]);
 				}
+				$this->mobs[$data[0]] =& $this->entities[$data[0]];
 				console("[INFO] Player \"".$data[1]."\" (EID: ".$data[0].") spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")");
 				$this->trigger("onPlayerSpawn", $this->entities[$data[0]]);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
@@ -550,6 +565,7 @@ class MinecraftClient{
 				$this->entities[$data[0]] = new Entity($data[0], ($event === "recieved_17" ? ENTITY_OBJECT:ENTITY_MOB), $data[1]);
 				$this->entities[$data[0]]->setCoords($data[2] >> 5,$data[3] >> 5,$data[4] >> 5);
 				if($event === "recieved_18"){
+					$this->mobs[$data[0]] =& $this->entities[$data[0]];
 					$this->entities[$data[0]]->setMetadata(($this->protocol > 29 ? $data[11]:$data[8]));
 				}
 				console("[DEBUG] Entity (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
@@ -573,10 +589,13 @@ class MinecraftClient{
 					console("[DEBUG] EID ".$data[0]." despawned", true, true, 2);
 					$this->trigger("onEntityDespawn", $data[0]);
 					unset($this->entities[$data[0]]);
+					unset($this->mobs[$data[0]]);
 				}else{
 					foreach($data[1] as $eid){
 						console("[DEBUG] EID ".$eid." despawned", true, true, 2);
-						$this->trigger("onEntityDespawn", $eid);					
+						$this->trigger("onEntityDespawn", $eid);
+						unset($this->entities[$eid]);	
+						unset($this->mobs[$eid]);
 					}
 				}
 				
@@ -629,6 +648,9 @@ class MinecraftClient{
 			case "recieved_47":
 				console("[DEBUG] Thunderbolt at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
 				$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] >> 5, "y" => $data[3] >> 5, "z" => $data[4] >> 5)));
+				break;
+			case "recieved_64":
+				//$w = $this->windows[$data[0]] = new Window
 				break;
 			case "recieved_67":
 				if($data[0] === 0){
@@ -755,8 +777,15 @@ class MinecraftClient{
 		$this->event("recieved_3c", "mapHandler", true);
 		$this->event("recieved_46", "handler", true);
 		$this->event("recieved_47", "handler", true);
+		$this->event("recieved_64", "handler", true);
+		$this->event("recieved_65", "handler", true);
+		$this->event("recieved_66", "handler", true);
 		$this->event("recieved_67", "handler", true);
 		$this->event("recieved_68", "handler", true);
+		$this->event("recieved_69", "handler", true);
+		$this->event("recieved_6a", "handler", true);
+		$this->event("recieved_6b", "handler", true);
+		$this->event("recieved_6c", "handler", true);
 		$this->event("recieved_82", "handler", true);
 		$this->event("recieved_fa", "handler", true);
 		$this->event("recieved_c9", "handler", true);

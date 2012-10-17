@@ -42,6 +42,10 @@ class CacheFile{
 
 	public function handler($data, $event){
 		switch($event){
+			case "onPluginMessage_MC|TPack":
+				$dir = "texturepack/";
+				$file = substr($data, 0, -2);
+				break;
 			case "onSpoutCache":
 				$dir = "spout/";
 				$file = $data["file"];
