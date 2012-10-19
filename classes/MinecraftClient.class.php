@@ -622,6 +622,9 @@ class MinecraftClient{
 					$this->trigger("onEntityMetadataChange_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
 				}
 				break;
+			case "recieved_3c":
+				$this->trigger("onExplosion", array("radius" => $data[3], "speedX" => $data[6], "speedY" => $data[7], "speedZ" => $data[8]));
+				break;
 			case "recieved_46";
 				switch($data[0]){
 					case 0:
@@ -646,8 +649,11 @@ class MinecraftClient{
 				console("[INFO] Changed game state: ".$m);
 				break;
 			case "recieved_47":
-				console("[DEBUG] Thunderbolt at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
-				$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] >> 5, "y" => $data[3] >> 5, "z" => $data[4] >> 5)));
+				console("[DEBUG] Global Entity type ".$data[1]." at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
+				$this->trigger("onGlobalEntity", array("eid" => $data[0], "type" => $data[1], "coords" => array("x" => $data[2] >> 5, "y" => $data[3] >> 5, "z" => $data[4] >> 5)));
+				if($data[1] === 1){
+					$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] >> 5, "y" => $data[3] >> 5, "z" => $data[4] >> 5)));
+				}
 				break;
 			case "recieved_64":
 				//$w = $this->windows[$data[0]] = new Window
@@ -775,6 +781,7 @@ class MinecraftClient{
 		$this->event("recieved_35", "mapHandler", true);
 		$this->event("recieved_38", "mapHandler", true);
 		$this->event("recieved_3c", "mapHandler", true);
+		$this->event("recieved_3c", "handler", true);
 		$this->event("recieved_46", "handler", true);
 		$this->event("recieved_47", "handler", true);
 		$this->event("recieved_64", "handler", true);

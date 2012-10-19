@@ -65,6 +65,9 @@ class RemoteConsole{
 			$this->client->trigger("onRemoteConsoleConnect", array("ip" => $ip, "port" => $port));
 		}
 		foreach($this->clients as $i => $client){
+			if(isset($this->logins[$i])){
+				continue;
+			}
 			if(($pid = $client->read(1, true)) !== false){
 				$pid = ord($pid);
 				if(!isset($this->logins[$i]) and $pid !== 1){
@@ -77,7 +80,8 @@ class RemoteConsole{
 						$username = $client->read(Utils::readShort($client->read(2)));
 						$password = $client->read(Utils::readShort($client->read(2)));
 						if(isset($this->users[$username]) and $this->users[$username] === md5($password)){
-							$this->client->trigger("onRemoteConsoleJoin", $username);
+							socket_getpeername($connection->sock, $ip, $port);
+							$this->client->trigger("onRemoteConsoleJoin", array("ip" => $ip, "port" => $port, "username" => $username));
 							$this->logins[$i] = $username;
 						}else{
 							$client->close();

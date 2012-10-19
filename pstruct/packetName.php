@@ -86,7 +86,7 @@ $packetName = array(
 	"3e" => "Named Sound Effect",
 	
 	"46" => "Change Game State",
-	"47" => "Thunderbolt",
+	"47" => "Global Entity",
 	
 	"64" => "Open Window",
 	"65" => "Close Window",
