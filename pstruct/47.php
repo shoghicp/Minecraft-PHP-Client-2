@@ -30,7 +30,8 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 
-//46
+//47
+//1.4
 
 
 $pstruct = array(
@@ -390,6 +391,7 @@ $pstruct = array(
 		"byte",
 		"int",
 		"int",
+		"bool",
 	),
 	
 	"3e" => array(
@@ -549,6 +551,7 @@ $pstruct = array(
 	),
 	
 	"fe" => array(
+		"byte",
 	),
 	
 	"ff" => array(
