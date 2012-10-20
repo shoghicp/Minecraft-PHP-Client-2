@@ -311,7 +311,7 @@ class Packet{
 							case 5:
 								$r = array();
 								$r[] = Utils::readShort($this->get(2));
-								if($this->protocol < 41 or $r[0] !== -1){
+								if($this->protocol < 41 or $r[0] >= 0){
 									$r[] = Utils::readByte($this->get(1));
 									$r[] = Utils::readShort($this->get(2));
 								}

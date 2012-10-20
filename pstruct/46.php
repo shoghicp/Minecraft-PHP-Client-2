@@ -549,6 +549,7 @@ $pstruct = array(
 	),
 	
 	"fe" => array(
+		byte",
 	),
 	
 	"ff" => array(

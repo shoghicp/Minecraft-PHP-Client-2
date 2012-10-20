@@ -218,7 +218,7 @@ class MinecraftClient{
 	
 	public function ping($data = ""){
 		if($data === ""){
-			$this->send("fe");
+			$this->send("fe", array(1));
 			$this->deleteEvent("recieved_ff");
 			$eid = $this->event("recieved_ff", "ping", true);
 			$this->process();
