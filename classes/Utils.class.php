@@ -61,6 +61,17 @@ class Utils{
 		"e" => "1110",
 		"f" => "1111",		
 	);
+	
+	public static function hexdump($bin){
+		$output = "";
+		$bin = str_split($bin, 16);
+		foreach($bin as $counter => $line){
+			$hex = chunk_split(chunk_split(str_pad(bin2hex($line), 32, " ", STR_PAD_RIGHT), 2, " "), 24, " ");
+			$ascii = preg_replace('#([^\x20-\x7E])#', '.', $line);
+			$output .= str_pad(dechex($counter << 4), 4, "0", STR_PAD_LEFT). "  " . $hex . " " . $ascii . PHP_EOL;		
+		}
+		return $output;
+	}
 
 	public static function generateKey($startEntropy = ""){
 		//not much entropy, but works ^^

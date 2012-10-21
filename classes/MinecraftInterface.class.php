@@ -59,7 +59,7 @@ class MinecraftInterface{
 	protected function writeDump($pid, $raw, $data, $origin = "client"){
 		if(LOG === true and DEBUG >= 2){
 			$p = "[".microtime(true)."] [".($origin === "client" ? "CLIENT->SERVER":"SERVER->CLIENT")."]: ".$this->name[$pid]." (0x$pid) [lenght ".strlen($raw)."]".PHP_EOL;
-			$p .= hexdump($raw, false, false, true);
+			$p .= Utils::hexdump($raw);
 			if(is_array($data)){
 				foreach($data as $i => $d){
 					$p .= $i ." => ".(!is_array($d) ? $this->pstruct[$pid][$i]."(".(($this->pstruct[$pid][$i] === "byteArray" or $this->pstruct[$pid][$i] === "newChunkArray" or $this->pstruct[$pid][$i] === "chunkArray" or $this->pstruct[$pid][$i] === "chunkInfo" or $this->pstruct[$pid][$i] === "multiblockArray" or $this->pstruct[$pid][$i] === "newMultiblockArray") ? Utils::strToHex($d):$d).")":$this->pstruct[$pid][$i]."(***)").PHP_EOL;
@@ -83,7 +83,7 @@ class MinecraftInterface{
 		if($struct === false){
 			$this->server->unblock();
 			$p = "[".microtime(true)."] [SERVER->CLIENT]: Error, bad packet id 0x$pid".PHP_EOL;
-			$p .= hexdump(Utils::hexToStr($pid).$this->server->read(1024, true), false, false, true);
+			$p .= Utils::hexdump(Utils::hexToStr($pid).$this->server->read(1024, true));
 			$p .= PHP_EOL . "--------------- (1024 byte max extract) ----------" .PHP_EOL;
 			logg($p, "packets", true, 3);
 			
