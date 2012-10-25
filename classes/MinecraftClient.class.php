@@ -227,6 +227,8 @@ class MinecraftClient{
 			$eid = $this->event("recieved_ff", "ping", true);
 			$this->process();
 			return $this->response($eid);
+		}elseif($data === false){
+			return false;
 		}else{
 			if($this->protocol >= 47){
 				$data = explode("\x00", substr($data[0],3));
@@ -258,7 +260,7 @@ class MinecraftClient{
 	}
 	
 	public function say($message, $owner = false){
-		if($owner != false){
+		if($owner !== false){
 			foreach(explode("\n", wordwrap($message,100-strlen("/tell $owner "), "\n")) as $mess){
 				$this->send("03", array(
 					0 => "/tell $owner ".$mess,
