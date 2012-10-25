@@ -230,6 +230,9 @@ class MinecraftClient{
 		}elseif($data === false){
 			return false;
 		}else{
+			if(isset($data[1]) and $data[1] === true){
+				return false;
+			}
 			if($this->protocol >= 47){
 				$data = explode("\x00", substr($data[0],3));
 				return array(

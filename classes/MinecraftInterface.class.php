@@ -73,7 +73,7 @@ class MinecraftInterface{
 	
 	public function readPacket($mode = false){
 		if($this->server->connected === false){
-			return array("pid" => "ff", "data" => array(0 => 'Connection error'));
+			return array("pid" => "ff", "data" => array(0 => 'Connection error', 1 => true));
 		}
 		$pid = $this->getPID($this->server->read(1, $mode));
 		if($pid == ""){
