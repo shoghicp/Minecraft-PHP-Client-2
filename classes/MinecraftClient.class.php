@@ -250,6 +250,8 @@ class MinecraftClient{
 					"online" => $data[1],
 					2 => $data[2],
 					"max" => $data[2],
+					"protocol" => 0,
+					"version" => "???",
 				);
 			}
 		}
