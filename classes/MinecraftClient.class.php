@@ -218,14 +218,40 @@ class MinecraftClient{
 	
 	public function ping($data = ""){
 		if($data === ""){
-			$this->send("fe", array(1));
+			if($this->protocol >= 47){
+				$this->send("fe", array(1));
+			}else{
+				$this->send("fe");
+			}
 			$this->deleteEvent("recieved_ff");
 			$eid = $this->event("recieved_ff", "ping", true);
 			$this->process();
 			return $this->response($eid);
 		}else{
-			return explode("\xa7", $data[0]);
-			$this->close();
+			if($this->protocol >= 47){
+				$data = explode("\x00", substr($data[0],3));
+				return array(
+					"protocol" => $data[0],
+					"version" => $data[1],
+					"name" => $data[2],
+					"online" => $data[3],
+					"max" => $data[4],
+					0 => $data[2],
+					1 => $data[3],
+					2 => $data[4],
+				);
+			}else{
+				$data = explode("\xa7", $data[0]);
+				$this->close();
+				return array(
+					0 => $data[0],
+					"name" => $data[0],
+					1 => $data[1],
+					"online" => $data[1],
+					2 => $data[2],
+					"max" => $data[2],
+				);
+			}
 		}
 	}
 	

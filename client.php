@@ -31,6 +31,8 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 $versions = array(
+	"1.4.2" => 47,
+	"1.4.1" => 47,
 	"1.4.0" => 47,
 	"1.4" => 47,
 	"1.3.2" => 39,
@@ -161,9 +163,13 @@ if(OPTIMIZE === true){
 if(arg("ping", false) != false){
 	console("[INFO] Pinging ".$server.":".$port."...");
 	$info = $client->ping();
-	console("[INFO] Name: ".$info[0]);
-	console("[INFO] Online players: ".$info[1]);
-	console("[INFO] Max players: ".$info[2]);
+	console("[INFO] Name: ".$info["name"]);
+	console("[INFO] Online players: ".$info["online"]);
+	console("[INFO] Max players: ".$info["max"]);
+	if($client->protocol >= 47){
+		console("[INFO] Version: ".$info["version"]);
+		console("[INFO] Protocol: ".$info["protocol"]);
+	}
 	die();
 }
 require_once("plugin/ChatHandler.plugin.php");
