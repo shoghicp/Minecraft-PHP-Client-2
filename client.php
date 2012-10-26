@@ -262,7 +262,7 @@ function clientHandler($message, $event, $ob){
 		case "onChatCommand_dice":
 			$ob->say("Dice roll: ".mt_rand(1,((intval($message["text"])>0) ? intval($message["text"]):6))."!");
 			break;
-		case 'onChatCommand_coord':
+		case "onChatCommand_coord":
 			$p = $ob->getPlayer($message["owner"]);
 			if(is_object($p)){
 				$coords = $p->getPosition();
