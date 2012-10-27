@@ -52,12 +52,11 @@ class Attack{
 	function handler(){
 		$pos = $this->player->getPosition();
 		foreach($this->client->mobs as $EID => $entity){
-			if(($entity->class === ENTITY_PLAYER and isset($this->attack[$EID])) or $entity->class === ENTITY_MOB){
+			if((($entity->class === ENTITY_PLAYER and isset($this->attack[$EID])) or $entity->class === ENTITY_MOB) and ($this->aura === true or isset($this->attack[$EID]))){
 				$pos2 = $entity->getPosition();
 				$dist = Utils::distance($pos, $pos2);
-				if($dist <= 4 and ($this->aura === true or isset($this->attack[$EID]))){
-					$this->client->useEntity($EID);
-					var_dump($EID, $entity->class, $entity->name);
+				if($dist <= 4){
+					$this->client->useEntity($EID);	
 				}
 			}
 		

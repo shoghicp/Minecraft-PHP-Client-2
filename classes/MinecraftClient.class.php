@@ -578,30 +578,30 @@ class MinecraftClient{
 				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PLAYER);
 				$this->players[$data[1]] =& $this->entities[$data[0]];
 				$this->entities[$data[0]]->setName($data[1]);
-				$this->entities[$data[0]]->setCoords($data[2] >> 5,$data[3] >> 5,$data[4] >> 5);
+				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
 				if($this->protocol > 29){
 					$this->entities[$data[0]]->setMetadata($data[8]);
 				}
 				$this->mobs[$data[0]] =& $this->entities[$data[0]];
-				console("[INFO] Player \"".$data[1]."\" (EID: ".$data[0].") spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")");
+				console("[INFO] Player \"".$data[1]."\" (EID: ".$data[0].") spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")");
 				$this->trigger("onPlayerSpawn", $this->entities[$data[0]]);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_15":
-				console("[DEBUG] Item (EID: ".$data[0].") type ".(isset($this->material[$data[1]]) ? $this->material[$data[1]]:$data[1])." spawned at (".($data[4] >> 5).",".($data[5] >> 5).",".($data[6] >> 5).")", true, true, 2);
+				console("[DEBUG] Item (EID: ".$data[0].") type ".(isset($this->material[$data[1]]) ? $this->material[$data[1]]:$data[1])." spawned at (".($data[4] / 32).",".($data[5] / 32).",".($data[6] / 32).")", true, true, 2);
 				$this->entities[$data[0]] = new Entity($data[0], ENTITY_ITEM, $data[1]);
-				$this->entities[$data[0]]->setCoords($data[4] >> 5,$data[5] >> 5,$data[6] >> 5);
+				$this->entities[$data[0]]->setCoords($data[4] / 32,$data[5] / 32,$data[6] / 32);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_17":
 			case "recieved_18":
 				$this->entities[$data[0]] = new Entity($data[0], ($event === "recieved_17" ? ENTITY_OBJECT:ENTITY_MOB), $data[1]);
-				$this->entities[$data[0]]->setCoords($data[2] >> 5,$data[3] >> 5,$data[4] >> 5);
+				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
 				if($event === "recieved_18"){
 					$this->mobs[$data[0]] =& $this->entities[$data[0]];
 					$this->entities[$data[0]]->setMetadata(($this->protocol > 29 ? $data[11]:$data[8]));
 				}
-				console("[DEBUG] Entity (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
+				console("[DEBUG] Entity (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_19":
@@ -616,6 +616,11 @@ class MinecraftClient{
 				$this->entities[$data[0]]->setCoords($data[1],$data[2],$data[3]);
 				console("[DEBUG] Experience Orb (EID: ".$data[0].") spawned at (".$data[1].",".$data[2].",".$data[3].")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
+				break;
+			case "recieved_1c":
+				/*if(isset($this->entities[$data[0]])){
+					$this->entities[$data[0]]->setVelocity();
+				}*/
 				break;
 			case "recieved_1d":
 				if($this->protocol <= 29){
@@ -636,14 +641,14 @@ class MinecraftClient{
 			case "recieved_1f":
 			case "recieved_21":
 				if(isset($this->entities[$data[0]])){
-					$this->entities[$data[0]]->move($data[1] >> 5, $data[2] >> 5, $data[3] >> 5);
+					$this->entities[$data[0]]->move($data[1] / 32, $data[2] / 32, $data[3] / 32, ($event === "recieved_21" ? $data[4]:0), ($event === "recieved_21" ? $data[5]:0), true);
 					$this->trigger("onEntityMove", $this->entities[$data[0]]);
 					$this->trigger("onEntityMove_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
 				}
 				break;
 			case "recieved_22":
 				if(isset($this->entities[$data[0]])){
-					$this->entities[$data[0]]->setCoords($data[1] >> 5,$data[2] >> 5,$data[3] >> 5);
+					$this->entities[$data[0]]->setCoords($data[1] / 32,$data[2] / 32,$data[3] / 32);
 					$this->trigger("onEntityMove", $this->entities[$data[0]]);
 					$this->trigger("onEntityMove_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
 				}
@@ -682,10 +687,10 @@ class MinecraftClient{
 				console("[INFO] Changed game state: ".$m);
 				break;
 			case "recieved_47":
-				console("[DEBUG] Global Entity type ".$data[1]." at (".($data[2] >> 5).",".($data[3] >> 5).",".($data[4] >> 5).")", true, true, 2);
-				$this->trigger("onGlobalEntity", array("eid" => $data[0], "type" => $data[1], "coords" => array("x" => $data[2] >> 5, "y" => $data[3] >> 5, "z" => $data[4] >> 5)));
+				console("[DEBUG] Global Entity type ".$data[1]." at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
+				$this->trigger("onGlobalEntity", array("eid" => $data[0], "type" => $data[1], "coords" => array("x" => $data[2] / 32, "y" => $data[3] / 32, "z" => $data[4] / 32)));
 				if($data[1] === 1){
-					$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] >> 5, "y" => $data[3] >> 5, "z" => $data[4] >> 5)));
+					$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] / 32, "y" => $data[3] / 32, "z" => $data[4] / 32)));
 				}
 				break;
 			case "recieved_64":
@@ -803,6 +808,7 @@ class MinecraftClient{
 		$this->event("recieved_18", "handler", true);
 		$this->event("recieved_19", "handler", true);
 		$this->event("recieved_1a", "handler", true);
+		$this->event("recieved_1c", "handler", true);
 		$this->event("recieved_1d", "handler", true);
 		$this->event("recieved_1f", "handler", true);
 		$this->event("recieved_21", "handler", true);
