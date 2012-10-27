@@ -35,10 +35,11 @@ class Socket{
 	private $encrypt, $decrypt, $encryption;
 	var $buffer, $connected, $errors, $sock;
 
-	function __construct($server, $port, $listen = false, $socket = false){
+	function __construct($server, $port, $listen = false, $socket = false, $timeout = 30){
 		$this->errors = array_fill(88,(125 - 88) + 1, true);
 		if($socket !== false){
 			$this->sock = $socket;
+			$this->setTimeout((int) $timeout);
 			$this->connected = true;
 			$this->buffer = "";
 			$this->unblock();
@@ -47,6 +48,7 @@ class Socket{
 		}else{
 			if($listen !== true){
 				$this->sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+				$this->setTimeout((int) $timeout);
 				if(@socket_connect($this->sock, $server, $port) === false){
 					$this->connected = false;
 				}else{
@@ -61,6 +63,17 @@ class Socket{
 				$this->unblock();	
 			}
 		}
+	}
+	
+	public function setTimeout($sec, $usec = 0){
+		socket_set_option($this->sock, SOL_SOCKET, SO_RCVTIMEO, array(
+			"sec" => $sec,
+			"usec" => $usec
+		));
+		socket_set_option($this->sock, SOL_SOCKET, SO_SNDTIMEO, array(
+			"sec" => $sec,
+			"usec" => $usec
+		));
 	}
 	
 	function listenSocket(){

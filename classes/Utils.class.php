@@ -98,6 +98,7 @@ class Utils{
 			uniqid(microtime(true),true),
 			file_exists("/dev/urandom") ? fread(fopen("/dev/urandom", "rb"),16):microtime(true),
 		);
+		
 		shuffle($entropy);
 		$value = Utils::hexToStr(md5((string) $startEntropy));
 		unset($startEntropy);
@@ -105,9 +106,10 @@ class Utils{
 			$c = (string) $c;
 			for($i = 0; $i < 4; ++$i){
 				$value ^= md5($i . $c . microtime(true), true);
-				$value ^= substr(sha1($i . $c . microtime(true), true),$i,16);
+				$value ^= substr(sha1($i . $c . microtime(true), true), $i, 16);
 			}			
 		}
+		unset($entropy);
 		return $value;
 	}
 	
