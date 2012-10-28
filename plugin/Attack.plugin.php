@@ -77,7 +77,7 @@ class Attack{
 		}
 		while($entity = $entities->fetchArray(SQLITE3_ASSOC)){
 			if(($entity["class"] === ENTITY_PLAYER and isset($this->attack[$entity["EID"]])) or ($entity["class"] === ENTITY_MOB or $entity["class"] === ENTITY_OBJECT)){
-				$entity = $client->entities[$entity["EID"]];
+				$entity = $this->client->entities[$entity["EID"]];
 				$pos2 = $entity->getPosition();
 				$dist = Utils::distance($pos, $pos2);
 				if(isset($this->attack[$EID]) and $dist <= 20){

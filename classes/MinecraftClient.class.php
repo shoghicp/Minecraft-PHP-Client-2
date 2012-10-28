@@ -620,14 +620,14 @@ class MinecraftClient{
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_19":
-				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PAINTING, $this);
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PAINTING, 0, $this);
 				$this->entities[$data[0]]->setName($data[1]);
 				$this->entities[$data[0]]->setCoords($data[2],$data[3],$data[4]);
 				console("[DEBUG] Painting (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".$data[2].",".$data[3].",".$data[4].")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_1a":
-				$this->entities[$data[0]] = new Entity($data[0], ENTITY_EXPERIENCE, $this);
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_EXPERIENCE, 0, $this);
 				$this->entities[$data[0]]->setCoords($data[1],$data[2],$data[3]);
 				console("[DEBUG] Experience Orb (EID: ".$data[0].") spawned at (".$data[1].",".$data[2].",".$data[3].")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
