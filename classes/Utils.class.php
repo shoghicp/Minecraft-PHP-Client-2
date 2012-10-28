@@ -119,7 +119,16 @@ class Utils{
 	
 	public static function distance($pos1, $pos2){
 		return sqrt(pow($pos1["x"] - $pos2["x"], 2) + pow($pos1["y"] - $pos2["y"], 2) + pow($pos1["z"] - $pos2["z"], 2));
+	}
 	
+	public static function angle3D($pos1, $pos2){
+		$X = $pos1["x"] - $pos2["x"];
+		$Z = $pos1["z"] - $pos2["z"];
+		$dXZ = sqrt(pow($X, 2) + pow($Z, 2));
+		$Y = $pos1["y"] - $pos2["y"];
+		$hAngle = rad2deg(atan2($Z, $X) - M_PI_2);
+		$vAngle = rad2deg(-atan2($Y, $dXZ));
+		return array("yaw" => $hAngle, "pitch" => $vAngle);
 	}
 	
 	public static function sha1($input){

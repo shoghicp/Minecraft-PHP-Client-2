@@ -39,31 +39,38 @@ define("ENTITY_EXPERIENCE", 5);
 
 class Entity{
 	var $eid, $type, $name, $position, $dead, $metadata, $class;
-	protected $health, $food;
+	protected $health, $food, $client;
 	
-	function __construct($eid, $class, $type = 0){ //$type = 0 ---> player
+	function __construct($eid, $class, $type = 0, $client){ //$type = 0 ---> player
+		$this->client = $client;
 		$this->eid = (int) $eid;
 		$this->type = (int) $type;
-		$this->class = (int) $class;
+		$this->class = (int) $class;				
+		$this->health = 20;
+		$this->food = 20;
+		$this->dead = false;
+		$this->client->query("INSERT OR REPLACE INTO entities (EID, type, class, health) VALUES (".$this->eid.", ".$this->type.", ".$this->class.", ".$this->health.");");
 		$this->metadata = array();
 		include("misc/entities.php");
 		switch($this->class){
 			case ENTITY_PLAYER:
 			case ENTITY_ITEM:
+				break;
 			case ENTITY_EXPERIENCE:
+				$this->setName("XP Orb");
 				break;
 				
 			case ENTITY_MOB:
-				$this->name = isset($mobs[$this->type]) ? $mobs[$this->type]:$this->type;
+				$this->setName((isset($mobs[$this->type]) ? $mobs[$this->type]:$this->type));
 				break;
 			case ENTITY_OBJECT:
-				$this->name = isset($objects[$this->type]) ? $objects[$this->type]:$this->type;
+				$this->setName((isset($objects[$this->type]) ? $objects[$this->type]:$this->type));
 				break;
 		}
-		
-		$this->health = 20;
-		$this->food = 20;
-		$this->dead = false;
+	}
+	
+	public function __destruct(){
+		$this->client->query("DELETE FROM entities WHERE EID = ".$this->eid.";");	
 	}
 	
 	public function getEID(){
@@ -76,11 +83,11 @@ class Entity{
 	
 	public function setName($name){
 		$this->name = $name;
+		$this->client->query("UPDATE entities SET name = '".str_replace("'", "", $this->name)."' WHERE EID = ".$this->eid.";");
 	}
 	
 	public function setMetadata($metadata){
 		foreach($metadata as $key => $value){
-			$this->metadata[$key] = $value;
 			switch($key){
 				case 0:
 					$this->metadata["onFire"] = ($value & 0x01) === 0x01 ? true:false;
@@ -124,6 +131,7 @@ class Entity{
 								case 63:
 								case 64: //Wither
 									$this->metadata["health"] = $value;
+									$this->setHealth($value);
 									break;
 								case 90:
 									$this->metadata["saddle"] = $value === 1 ? true:false;
@@ -211,6 +219,7 @@ class Entity{
 								case 95:
 								case 98:
 									$this->metadata["health"] = $value;
+									$this->setHealth($value);
 									break;
 							}
 							
@@ -269,6 +278,17 @@ class Entity{
 					break;
 			}
 		}
+		foreach($this->metadata as $key => $value){
+			$this->client->query("INSERT OR REPLACE INTO metadata (EID, name, value) VALUES (".$this->eid.", '".$key."', '".$value."');");
+		}
+	}
+	
+	public function look($pos2){
+		$pos = $this->getPosition();
+		$angle = Utils::angle3D($pos2, $pos);
+		$this->position["yaw"] = $angle["yaw"];
+		$this->position["pitch"] = $angle["pitch"];
+	$this->client->query("UPDATE entities SET pitch = ".$this->position["pitch"].", yaw = ".$this->position["yaw"]." WHERE EID = ".$this->eid.";");
 	}
 	
 	public function setCoords($x, $y, $z){
@@ -286,6 +306,7 @@ class Entity{
 		$this->position["x"] = $x;
 		$this->position["y"] = $y;
 		$this->position["z"] = $z;
+		$this->client->query("UPDATE entities SET x = ".$this->position["x"].", y = ".$this->position["y"].", z = ".$this->position["z"]." WHERE EID = ".$this->eid.";");
 		$this->updateStance();
 	}
 	
@@ -305,9 +326,10 @@ class Entity{
 		$this->position["y"] += $y;
 		$this->position["z"] += $z;
 		$this->position["yaw"] += $yaw;
-		$this->position["yaw"] = abs($this->position["yaw"] % 360);
+		$this->position["yaw"] %= 360;
 		$this->position["pitch"] += $pitch;
-		$this->position["pitch"] = abs($this->position["pitch"] % 90);
+		$this->position["pitch"] %= 90;
+		$this->client->query("UPDATE entities SET x = ".$this->position["x"].", y = ".$this->position["y"].", z = ".$this->position["z"].", pitch = ".$this->position["pitch"].", yaw = ".$this->position["yaw"]." WHERE EID = ".$this->eid.";");
 		$this->updateStance();
 	}
 	
@@ -321,6 +343,7 @@ class Entity{
 			"pitch" => $pitch,
 			"ground" => $ground,
 		);
+		$this->client->query("UPDATE entities SET x = ".$this->position["x"].", y = ".$this->position["y"].", z = ".$this->position["z"].", pitch = ".$this->position["pitch"].", yaw = ".$this->position["yaw"]." WHERE EID = ".$this->eid.";");		
 		$this->updateStance();
 		return true;
 	}
@@ -330,15 +353,16 @@ class Entity{
 	}
 	
 	public function getPosition($round = false){
-		return !isset($this->position) ? false:($round === true ? array_map("round", $this->position):$this->position);
+		return !isset($this->position) ? false:($round === true ? array_map("floor", $this->position):$this->position);
 	}
 	
 	public function setGround($ground){
 		$this->position["ground"] = $ground;
 	}
 	
-	public function setHealth($health){
-		$this->health = $health;
+	public function setHealth($health){				
+		$this->health = (int) $health;
+		$this->client->query("UPDATE entities SET health = ".$this->health." WHERE EID = ".$this->eid.";");
 	}
 	
 	public function getHealth(){

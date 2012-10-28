@@ -57,12 +57,16 @@ if(!extension_loaded("gmp")){
 	define("GMPEXT", true);
 }
 
+if(!extension_loaded("sqlite3")){
+	console("[ERROR] Unable to find SQLite3 extension", true, true, 0);
+	++$errors;
+}
 
 if(extension_loaded("mcrypt") and mcrypt_module_self_test(MCRYPT_RIJNDAEL_128)){
 	define("CRYPTO_LIB", "mcrypt");	
 }elseif(!extension_loaded("openssl")){
 	console("[NOTICE] Unable to find Mcrypt extension", true, true, 0);
-	console("[ERROR] Unable to find OpenSSL extension (fallback)", true, true, 0);
+	console("[ERROR] [FallBack] Unable to find OpenSSL extension", true, true, 0);
 	++$errors;
 }else{
 	console("[NOTICE] Unable to find Mcrypt extension", true, true, 0);

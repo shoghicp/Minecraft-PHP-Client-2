@@ -41,6 +41,7 @@ class CacheFile{
 	}
 
 	public function handler($data, $event){
+		$redo = false;
 		switch($event){
 			case "onPluginMessage_MC|TPack":
 				$dir = "texturepack/";
@@ -53,15 +54,20 @@ class CacheFile{
 			case "onPlayerSpawn":
 				$dir = "skin/";
 				$file = "http://s3.amazonaws.com/MinecraftSkins/".$data->name.".png";
+				$redo = true;
 				break;
 			case "onPlayerPing":
 				$dir = "skin/";
 				$file = "http://s3.amazonaws.com/MinecraftSkins/".$data["name"].".png";
+				$redo = true;
 				break;
 		}
-		if(isset($file) and !file_exists(FILE_PATH . "/data/".$dir . basename($file))){
+		if(isset($file) and ($redo === true or !file_exists(FILE_PATH . "/data/".$dir . basename($file)))){
 			@mkdir(FILE_PATH . "/data/".$dir, 0777, true);
-			@file_put_contents(FILE_PATH . "/data/".$dir . basename($file), @file_get_contents($file));
+			$cnt = @file_get_contents($file);
+			if($cnt != ""){
+				@file_put_contents(FILE_PATH . "/data/".$dir . basename($file), $cnt);
+			}
 		}
 	}
 

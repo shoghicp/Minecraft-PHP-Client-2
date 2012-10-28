@@ -31,7 +31,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 
 class MinecraftClient{
-	private $server, $port, $player, $key, $material, $interface, $proxymode;
+	private $server, $port, $player, $key, $material, $interface, $database, $proxymode;
 	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions, $useMap, $windows;
 	var $time, $protocol, $map, $auth, $mapParser, $entities, $players, $mobs;
 	
@@ -39,12 +39,12 @@ class MinecraftClient{
 	function __construct($server, $protocol = CURRENT_PROTOCOL, $port = 25565){
 		$this->server = $server;
 		$this->port = $port;
-		
 		$this->protocol = (int) $protocol;
 		console("[INFO] Connecting to Minecraft Server");
 		console("[INFO] Server: ".$this->server.":".$this->port);
 		console("[INFO] Protocol: ".$this->protocol);
 		$this->interface = new MinecraftInterface($server, $protocol, $port);
+		$this->startDatabase();
 		$this->cnt = 1;
 		$this->proxymode = false;
 		$this->events = array("recieved_ff" => array(0 => array('close', true)), "disabled" => array());
@@ -64,6 +64,21 @@ class MinecraftClient{
 		$this->material = $material;
 		register_shutdown_function("logg", "", "console", false, 0, true);
 		register_shutdown_function("logg", "", "packets", false, 0, true);
+	}
+	
+	public function startDatabase(){
+		$this->database = new SQLite3(":memory:");
+		$this->query("CREATE TABLE entities (EID INTEGER PRIMARY KEY, type NUMERIC, class NUMERIC, name TEXT, x NUMERIC, y NUMERIC, z NUMERIC, yaw NUMERIC, pitch NUMERIC, health NUMERIC);");
+		$this->query("CREATE TABLE metadata (EID INTEGER PRIMARY KEY, name TEXT, value TEXT);");
+		$this->query("CREATE TABLE actions (ID INTEGER PRIMARY KEY, interval NUMERIC, last NUMERIC, code TEXT, repeat NUMERIC);");
+	}
+	
+	public function query($sql, $fetch = false){
+		$result = $this->database->query($sql);
+		if($fetch === true and ($result !== false and $result !== true)){
+			$result = $result->fetchArray(SQLITE3_ASSOC);
+		}
+		return $result;
 	}
 	
 	public function proxyMode(){
@@ -575,7 +590,7 @@ class MinecraftClient{
 				$this->trigger("onEntityAction_".$data[1], $this->entities[$data[0]]);
 				break;
 			case "recieved_14":
-				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PLAYER);
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PLAYER, 0, $this);
 				$this->players[$data[1]] =& $this->entities[$data[0]];
 				$this->entities[$data[0]]->setName($data[1]);
 				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
@@ -589,13 +604,13 @@ class MinecraftClient{
 				break;
 			case "recieved_15":
 				console("[DEBUG] Item (EID: ".$data[0].") type ".(isset($this->material[$data[1]]) ? $this->material[$data[1]]:$data[1])." spawned at (".($data[4] / 32).",".($data[5] / 32).",".($data[6] / 32).")", true, true, 2);
-				$this->entities[$data[0]] = new Entity($data[0], ENTITY_ITEM, $data[1]);
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_ITEM, $data[1], $this);
 				$this->entities[$data[0]]->setCoords($data[4] / 32,$data[5] / 32,$data[6] / 32);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_17":
 			case "recieved_18":
-				$this->entities[$data[0]] = new Entity($data[0], ($event === "recieved_17" ? ENTITY_OBJECT:ENTITY_MOB), $data[1]);
+				$this->entities[$data[0]] = new Entity($data[0], ($event === "recieved_17" ? ENTITY_OBJECT:ENTITY_MOB), $data[1], $this);
 				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
 				if($event === "recieved_18"){
 					$this->mobs[$data[0]] =& $this->entities[$data[0]];
@@ -605,14 +620,14 @@ class MinecraftClient{
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_19":
-				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PAINTING);
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PAINTING, $this);
 				$this->entities[$data[0]]->setName($data[1]);
 				$this->entities[$data[0]]->setCoords($data[2],$data[3],$data[4]);
 				console("[DEBUG] Painting (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".$data[2].",".$data[3].",".$data[4].")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "recieved_1a":
-				$this->entities[$data[0]] = new Entity($data[0], ENTITY_EXPERIENCE);
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_EXPERIENCE, $this);
 				$this->entities[$data[0]]->setCoords($data[1],$data[2],$data[3]);
 				console("[DEBUG] Experience Orb (EID: ".$data[0].") spawned at (".$data[1].",".$data[2].",".$data[3].")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
@@ -871,8 +886,8 @@ class MinecraftClient{
 				$this->info["dimension"] = $this->protocol <= 23 ? $data[5]:$data[4];
 				$this->info["difficulty"] = $this->protocol <= 23 ? $data[6]:$data[5];
 				$this->info["height"] = $this->protocol <= 23 ? $data[7]:$data[6];
-				$this->info["max_players"] = $this->protocol <= 23 ? $data[8]:$data[7];
-				$this->entities[$data[0]] = new Entity($data[0], 0);
+				$this->info["max_players"] = $this->protocol <= 23 ? $data[8]:$data[7];			
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PLAYER, 0, $this);
 				$this->player =& $this->entities[$data[0]];
 				$this->players[$this->player->getName()] =& $this->player;
 				$this->player->setName($this->auth["user"]);
@@ -993,7 +1008,7 @@ class MinecraftClient{
 				$this->info["difficulty"] = $data[4];
 				$this->info["height"] = $data[5];
 				$this->info["max_players"] = $data[6];
-				$this->entities[$data[0]] = new Entity($data[0], 0);
+				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PLAYER, 0, $this);
 				$this->player =& $this->entities[$data[0]];
 				$this->players[$this->player->getName()] =& $this->player;
 				$this->player->setName($this->auth["user"]);
