@@ -74,7 +74,7 @@ class MinecraftClient{
 	}
 	
 	public function query($sql, $fetch = false){
-		$result = $this->database->query($sql);
+		$result = $this->database->query($sql) or console("[ERROR] [SQL Error] ".$this->database->lastErrorMsg().". Query: ".$sql, true, true, 0);
 		if($fetch === true and ($result !== false and $result !== true)){
 			$result = $result->fetchArray(SQLITE3_ASSOC);
 		}

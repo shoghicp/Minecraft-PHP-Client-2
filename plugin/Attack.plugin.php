@@ -58,6 +58,9 @@ class Attack{
 	
 	function handler($time){
 		$pos = $this->player->getPosition();
+		if($pos === false){
+			return;
+		}
 		$action = false;
 		if($this->boss === true){
 			foreach($this->special as $i => $info){
@@ -68,7 +71,7 @@ class Attack{
 				}
 			}
 		}
-		$entities = $this->client->query("SELECT EID,class FROM entities WHERE (class = ".ENTITY_PLAYER." AND abs(x - ".$pos["x"].") <= 20 AND abs(y - ".$pos["y"]." <= 4 AND abs(z - ".$pos["z"].") <= 20) <= 20)".($this->aura === true ? " OR ((class = ".ENTITY_MOB." OR class = ".ENTITY_OBJECT.") AND abs(x - ".$pos["x"].") <= 4 AND abs(y - ".$pos["y"]." <= 4 AND abs(z - ".$pos["z"].") <= 4)":"").");");
+		$entities = $this->client->query("SELECT EID,class FROM entities WHERE (class = ".ENTITY_PLAYER." AND abs(x - ".$pos["x"].") <= 20 AND abs(y - ".$pos["y"].") <= 4 AND abs(z - ".$pos["z"].") <= 20)".($this->aura === true ? " OR ((class = ".ENTITY_MOB." OR class = ".ENTITY_OBJECT.") AND abs(x - ".$pos["x"].") <= 4 AND abs(y - ".$pos["y"].") <= 4 AND abs(z - ".$pos["z"].") <= 4)":"").";");
 		if($entities === false or $entities === true){
 			return;
 		}
