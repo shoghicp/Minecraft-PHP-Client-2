@@ -80,7 +80,7 @@ class Attack{
 				$entity = $this->client->entities[$entity["EID"]];
 				$pos2 = $entity->getPosition();
 				$dist = Utils::distance($pos, $pos2);
-				if(isset($this->attack[$EID]) and $dist <= 20){
+				if(isset($this->attack[$entity->eid]) and $dist <= 20){
 					$this->player->look($pos2);
 					if($this->action !== false){
 						eval(str_replace("{{PLAYER}}", $entity->name, $action));

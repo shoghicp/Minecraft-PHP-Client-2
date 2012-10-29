@@ -98,7 +98,7 @@ require_once("classes/Utils.class.php");
 require_once("classes/Packet.class.php");
 require_once("classes/Socket.class.php");
 require_once("classes/Entity.class.php");
-require_once("classes/Window.class.php");
+//require_once("classes/Window.class.php");
 require_once("classes/MapInterface.class.php");
 require_once("classes/Path.class.php");
 require_once("classes/MinecraftInterface.class.php");
