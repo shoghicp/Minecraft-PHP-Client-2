@@ -70,7 +70,7 @@ class Entity{
 	}
 	
 	public function __destruct(){
-		$this->client->query("DELETE FROM entities WHERE EID = ".$this->eid.";");	
+		$this->client->query("UPDATE entities SET dead = 1 WHERE EID = ".$this->eid.";");	
 	}
 	
 	public function getEID(){

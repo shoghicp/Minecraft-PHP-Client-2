@@ -33,6 +33,7 @@ require_once("plugin/PathFind.plugin.php");
 
 class Navigation{
 	protected $client, $player, $map, $materials, $event, $path, $maxBlocksPerTick, $lastBlock;
+	var $fly;
 	function __construct($client){
 		$this->client = $client;
 		$this->player = $this->client->getPlayer();

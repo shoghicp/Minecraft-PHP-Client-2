@@ -68,7 +68,7 @@ class MinecraftClient{
 	
 	public function startDatabase(){
 		$this->database = new SQLite3(":memory:");
-		$this->query("CREATE TABLE entities (EID INTEGER PRIMARY KEY, type NUMERIC, class NUMERIC, name TEXT, x NUMERIC, y NUMERIC, z NUMERIC, yaw NUMERIC, pitch NUMERIC, health NUMERIC);");
+		$this->query("CREATE TABLE entities (EID INTEGER PRIMARY KEY, type NUMERIC, class NUMERIC, name TEXT, x NUMERIC, y NUMERIC, z NUMERIC, yaw NUMERIC, pitch NUMERIC, health NUMERIC, dead NUMERIC);");
 		$this->query("CREATE TABLE metadata (EID INTEGER PRIMARY KEY, name TEXT, value TEXT);");
 		$this->query("CREATE TABLE actions (ID INTEGER PRIMARY KEY, interval NUMERIC, last NUMERIC, code TEXT, repeat NUMERIC);");
 	}
@@ -855,6 +855,7 @@ class MinecraftClient{
 		register_shutdown_function(array($this, "logout"));
 		$this->action(50000, '$this->trigger("onTick", $time);');
 		$this->action(15000000, '$this->debugInfo(true);');
+		$this->action(1000000, '$this->query("DELETE FROM entities WHERE dead = 1;");');
 		$this->event("onTick", "handler", true);
 		if(isset($this->auth["session_id"])){
 			$this->action(300000000, 'Utils::curl_get("https://login.minecraft.net/session?name=".$this->auth["user"]."&session=".$this->auth["session_id"]);');
