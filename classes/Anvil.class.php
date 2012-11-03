@@ -68,7 +68,7 @@ class Anvil{
 	protected function splitColumns($data, $bitmask, $addBitmask, $X, $Z){
 		$offset = 0;
 		$len = HEIGHT_LIMIT >> 4;
-		$lastBlock = 0;		
+		$lastBlock = 0;
 		foreach($this->sections as $type => $size){
 			$$type = b"";
 			for($i = 0; $i < $len; ++$i){
@@ -82,10 +82,10 @@ class Anvil{
 				}elseif($type === "metaData" and isset($this->column[$X][$Z])){
 					$$type .= substr($this->column[$X][$Z][1], $i << 11, $size);
 				}else{
-					$$type .= $size === 4096 ? $this->air.$this->air:$this->air;
+					$$type .= $size === 4096 ? $this->air . $this->air:$this->air;
 				}
 			}
-		}		
+		}
 		$biomeData = substr($data, $offset, 256);
 
 		if(!isset($this->column[$X])){

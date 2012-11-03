@@ -80,6 +80,7 @@ class MinecraftClient{
 		$this->query("CREATE TABLE entities (EID INTEGER PRIMARY KEY, type NUMERIC, class NUMERIC, name TEXT, x NUMERIC, y NUMERIC, z NUMERIC, yaw NUMERIC, pitch NUMERIC, health NUMERIC, dead NUMERIC);");
 		$this->query("CREATE TABLE metadata (EID INTEGER PRIMARY KEY, name TEXT, value TEXT);");
 		$this->query("CREATE TABLE actions (ID INTEGER PRIMARY KEY, interval NUMERIC, last NUMERIC, code TEXT, repeat NUMERIC);");
+		$this->query("CREATE TABLE events (ID INTEGER PRIMARY KEY, event TEXT, disabled INTEGER);");
 	}
 	
 	public function query($sql, $fetch = false){
@@ -184,15 +185,15 @@ class MinecraftClient{
 	
 	public function trigger($event, $data = ""){
 		console("[INTERNAL] Event ". $event, true, true, 3);
-		if(isset($this->events[$event]) and !isset($this->events["disabled"][$event])){
-			foreach($this->events[$event] as $eid => $ev){
-				if(isset($ev[1]) and ($ev[1] === true or is_object($ev[1]))){
-					$this->responses[$eid] = call_user_func(array(($ev[1] === true ? $this:$ev[1]), $ev[0]), $data, $event, $this);
-				}else{
-					$this->responses[$eid] = call_user_func($ev[0], $data, $event, $this);
-				}
+		$events = $this->query("SELECT * FROM events WHERE event = '".$event."' AND disabled = 0;");
+		while($evn = $events->fetchArray(SQLITE3_ASSOC)){
+			$ev = $this->events[$event][$evn["ID"]];
+			if(isset($ev[1]) and ($ev[1] === true or is_object($ev[1]))){
+				$this->responses[$eid] = call_user_func(array(($ev[1] === true ? $this:$ev[1]), $ev[0]), $data, $event, $this);
+			}else{
+				$this->responses[$eid] = call_user_func($ev[0], $data, $event, $this);
 			}
-		}	
+		}
 	}	
 	
 	public function response($eid){
@@ -226,9 +227,11 @@ class MinecraftClient{
 	public function toggleEvent($event){
 		if(isset($this->events["disabled"][$event])){
 			unset($this->events["disabled"][$event]);
+			$this->query("UPDATE events SET disabled = 0 WHERE event = '".$event."';");
 			console("[INTERNAL] Enabled event ".$event, true, true, 3);
 		}else{
 			$this->events["disabled"][$event] = false;
+			$this->query("UPDATE events SET disabled = 1 WHERE event = '".$event."';");
 			console("[INTERNAL] Disabled event ".$event, true, true, 3);
 		}	
 	}
@@ -238,18 +241,23 @@ class MinecraftClient{
 		if(!isset($this->events[$event])){
 			$this->events[$event] = array();
 		}
+		$this->query("INSERT INTO events (ID, event, disabled) VALUES (".$this->cnt.", '".str_replace("'", "\\'", $event)."', 0);");
 		$this->events[$event][$this->cnt] = array($func, $in);
 		console("[INTERNAL] Attached to event ".$event, true, true, 3);
 		return $this->cnt;
 	}
 	
 	public function deleteEvent($event, $id = -1){
+		$id = (int) $id;
 		if($id === -1){
 			unset($this->events[$event]);
+			$this->query("DELETE FROM events WHERE event = '".str_replace("'", "\\'", $event)."';");
 		}else{
 			unset($this->events[$event][$id]);
+			$this->query("DELETE FROM events WHERE ID = ".$id.";");
 			if(isset($this->events[$event]) and count($this->events[$event]) === 0){
 				unset($this->events[$event]);
+				$this->query("DELETE FROM events WHERE event = '".str_replace("'", "\\'", $event)."';");
 			}
 		}
 	}
