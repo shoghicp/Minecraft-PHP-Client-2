@@ -80,7 +80,8 @@ class MinecraftClient{
 		$this->query("CREATE TABLE entities (EID INTEGER PRIMARY KEY, type NUMERIC, class NUMERIC, name TEXT, x NUMERIC, y NUMERIC, z NUMERIC, yaw NUMERIC, pitch NUMERIC, health NUMERIC, dead NUMERIC);");
 		$this->query("CREATE TABLE metadata (EID INTEGER PRIMARY KEY, name TEXT, value TEXT);");
 		$this->query("CREATE TABLE actions (ID INTEGER PRIMARY KEY, interval NUMERIC, last NUMERIC, code TEXT, repeat NUMERIC);");
-		$this->query("CREATE TABLE events (ID INTEGER PRIMARY KEY, event TEXT, disabled INTEGER);");
+		$this->query("CREATE TABLE events (ID INTEGER PRIMARY KEY, eventName TEXT, disabled INTEGER);");
+		$this->database->createFunction("unhex", "Utils::hexToStr", 1);
 	}
 	
 	public function query($sql, $fetch = false){
@@ -185,7 +186,10 @@ class MinecraftClient{
 	
 	public function trigger($event, $data = ""){
 		console("[INTERNAL] Event ". $event, true, true, 3);
-		$events = $this->query("SELECT * FROM events WHERE event = '".$event."' AND disabled = 0;");
+		$events = $this->query("SELECT * FROM events WHERE eventName = '".$event."' AND disabled = 0;");
+		if($events === false or $events === true){
+			return;
+		}
 		while($evn = $events->fetchArray(SQLITE3_ASSOC)){
 			$ev = $this->events[$event][$evn["ID"]];
 			if(isset($ev[1]) and ($ev[1] === true or is_object($ev[1]))){
@@ -214,6 +218,9 @@ class MinecraftClient{
 		//actions that repeat every x time will go here
 		$time = microtime(true);
 		$actions = $this->query("SELECT * FROM actions WHERE last <= (".$time." - interval);");
+		if($actions === false or $actions === true){
+			return;
+		}
 		while($action = $actions->fetchArray(SQLITE3_ASSOC)){
 			eval($action["code"]);
 			if($action["repeat"] === 0){
@@ -227,11 +234,11 @@ class MinecraftClient{
 	public function toggleEvent($event){
 		if(isset($this->events["disabled"][$event])){
 			unset($this->events["disabled"][$event]);
-			$this->query("UPDATE events SET disabled = 0 WHERE event = '".$event."';");
+			$this->query("UPDATE events SET disabled = 0 WHERE eventName = '".$event."';");
 			console("[INTERNAL] Enabled event ".$event, true, true, 3);
 		}else{
 			$this->events["disabled"][$event] = false;
-			$this->query("UPDATE events SET disabled = 1 WHERE event = '".$event."';");
+			$this->query("UPDATE events SET disabled = 1 WHERE eventName = '".$event."';");
 			console("[INTERNAL] Disabled event ".$event, true, true, 3);
 		}	
 	}
@@ -241,7 +248,7 @@ class MinecraftClient{
 		if(!isset($this->events[$event])){
 			$this->events[$event] = array();
 		}
-		$this->query("INSERT INTO events (ID, event, disabled) VALUES (".$this->cnt.", '".str_replace("'", "\\'", $event)."', 0);");
+		$this->query("INSERT INTO events (ID, eventName, disabled) VALUES (".$this->cnt.", '".str_replace("'", "\\'", $event)."', 0);");
 		$this->events[$event][$this->cnt] = array($func, $in);
 		console("[INTERNAL] Attached to event ".$event, true, true, 3);
 		return $this->cnt;
@@ -251,13 +258,13 @@ class MinecraftClient{
 		$id = (int) $id;
 		if($id === -1){
 			unset($this->events[$event]);
-			$this->query("DELETE FROM events WHERE event = '".str_replace("'", "\\'", $event)."';");
+			$this->query("DELETE FROM events WHERE eventName = '".str_replace("'", "\\'", $event)."';");
 		}else{
 			unset($this->events[$event][$id]);
 			$this->query("DELETE FROM events WHERE ID = ".$id.";");
 			if(isset($this->events[$event]) and count($this->events[$event]) === 0){
 				unset($this->events[$event]);
-				$this->query("DELETE FROM events WHERE event = '".str_replace("'", "\\'", $event)."';");
+				$this->query("DELETE FROM events WHERE eventName = '".str_replace("'", "\\'", $event)."';");
 			}
 		}
 	}
@@ -405,12 +412,16 @@ class MinecraftClient{
 				$this->tickerFunction();
 				break;
 			case "onPluginMessage_REGISTER":
-				$this->trigger("onPluginChannelRegister", $data);
-				$this->trigger("onPluginChannelRegister_".$data);
+				foreach(explode("\x00", $data) as $channel){
+					$this->trigger("onPluginChannelRegister", $channel);
+					$this->trigger("onPluginChannelRegister_".$channel);
+				}
 				break;
 			case "onPluginMessage_UNREGISTER":
-				$this->trigger("onPluginChannelUnregister", $data);
-				$this->trigger("onPluginChannelUnegister_".$data);
+				foreach(explode("\x00", $data) as $channel){
+					$this->trigger("onPluginChannelUnregister", $channel);
+					$this->trigger("onPluginChannelUnegister_".$channel);
+				}
 				break;
 		}
 	}
@@ -781,7 +792,7 @@ class MinecraftClient{
 		$this->send("fa", array(
 			0 => "REGISTER",
 			1 => strlen($channel),
-			2 => $channel,			
+			2 => "\x00" . $channel,			
 		));
 	}
 
@@ -821,7 +832,7 @@ class MinecraftClient{
 	
 	public function tick(){
 		$time = microtime(true);
-		if($this->lastTick <= ($time + 0.05)){
+		if($this->lastTick <= ($time - 0.05)){
 			$this->lastTick = $time;
 			$this->trigger("onTick", $time);
 		}
