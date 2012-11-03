@@ -122,7 +122,7 @@ class ASNValue
     function GetIntBuffer()    
     {        
         $result = $this->Value;
-        if (ord($result{0}) == 0x00) {
+        if (ord($result{0}) === 0x00) {
             $result = substr($result, 1);
         }
         

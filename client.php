@@ -197,7 +197,7 @@ if($spout === true){
 	$client->activateSpout();
 }
 $client->event("onConnect", "clientHandler");
-if(arg("lastlogin", false) == true){
+if(arg("lastlogin", false) === true){
 	require("plugin/LastLogin.plugin.php");
 	$cred = new LastLogin;
 	$cred = $cred->get();

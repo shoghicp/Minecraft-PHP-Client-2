@@ -76,7 +76,7 @@ class ChatCommand{
 		$command = strtolower(array_shift($message));
 		
 		foreach($this->alias as $alias){
-			if($command == $alias){
+			if($command === $alias){
 				$command = strtolower(array_shift($message));
 				$info["type"] = "private";
 				break;

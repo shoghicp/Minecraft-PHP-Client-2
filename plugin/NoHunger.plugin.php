@@ -57,13 +57,13 @@ class NoHunger{
 		include("misc/materials.php");
 		for($i=36;$i<=44;++$i){
 			$slot = $this->client->getInventorySlot($i);
-			if($event == "onHealthChange" and isset($food[$slot[0]]) == true and ($health["food"] + $food[$slot[0]]) <= 20){
+			if($event === "onHealthChange" and isset($food[$slot[0]]) === true and ($health["food"] + $food[$slot[0]]) <= 20){
 				$this->client->changeSlot($i-36);
 				$this->client->eatSlot();
 				$eat = true;
 				console("[DEBUG] [NoHunger] Eated ".$slot[0], true, true, 2);
 				break;
-			}elseif(!isset($food[$slot[0]]) and $this->only_food == true){
+			}elseif(!isset($food[$slot[0]]) and $this->only_food === true){
 				for($a=0;$a<min(3,$slot[1]);++$a){
 					$this->client->changeSlot($i-36);
 					$this->client->dropSlot();

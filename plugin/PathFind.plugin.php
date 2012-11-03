@@ -81,7 +81,7 @@ class PathFind{
                 break;
             }
 			$pos = $n[0];
-			if($pos["x"] == $this->end["x"] and $pos["y"] == $this->end["y"] and $pos["z"] == $this->end["z"]){
+			if($pos["x"] === $this->end["x"] and $pos["y"] === $this->end["y"] and $pos["z"] === $this->end["z"]){
 				$adjacentBlock = $pos;
 				while($adjacentBlock != null and ($adjacentBlock["x"] != $this->start["x"] or $adjacentBlock["y"] != $this->start["y"] or $adjacentBlock["z"] != $this->start["z"])) {
                     $this->path->add($adjacentBlock);

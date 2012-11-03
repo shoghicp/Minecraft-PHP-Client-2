@@ -777,7 +777,7 @@ class MinecraftClient{
 				break;
 			case "received_c9":
 				console("[INTERNAL] ".$data[0]." ping: ".$data[2], true, true, 3);
-				if($data[1] == false){
+				if($data[1] === false){
 					$this->trigger("onPlayerPingRemove", $data[0]);
 				}else{
 					$this->trigger("onPlayerPing", array("name" => $data[0], "ping" => $data[2]));
@@ -982,10 +982,10 @@ class MinecraftClient{
 	}
 	
 	public function loginServer($hash){
-		if($hash == "" or strpos($hash, "&") !== false){
+		if($hash === "" or strpos($hash, "&") !== false){
 			console("[WARNING] NAME SPOOF DETECTED", true, true, 0);
 		}
-		if(!isset($this->auth["session_id"]) or $this->auth["session_id"] == ""){
+		if(!isset($this->auth["session_id"]) or $this->auth["session_id"] === ""){
 			$this->loginMinecraft($this->auth["user"], $this->auth["password"]);
 		}
 		$res = Utils::curl_get("http://session.minecraft.net/game/joinserver.jsp?user=".$this->auth["user"]."&sessionId=".$this->auth["session_id"]."&serverId=".$hash); //User check
@@ -1079,7 +1079,7 @@ class MinecraftClient{
 	}
 	
 	public function connect($user = "", $password = ""){
-		if($user != "" and (!isset($this->auth["user"]) or $this->auth["user"] == "")){
+		if($user != "" and (!isset($this->auth["user"]) or $this->auth["user"] === "")){
 			$this->auth = array("user" => $user, "password" => $password);
 			if($password != ""){
 				$this->loginMinecraft($user, $password);

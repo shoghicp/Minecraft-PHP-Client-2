@@ -44,7 +44,7 @@ class ChatHandler{
 	var $blacklist;
 	function __construct($client, $only = true, $blacklist = array()){
 		$this->client = $client;
-		if($only == true){
+		if($only === true){
 			$this->client->deleteEvent("onChat");
 		}
 		$this->blacklist = $blacklist;
@@ -90,7 +90,7 @@ class ChatHandler{
 			$message = ltrim(substr($mess, strpos($mess, $username[0]) + strlen($username[0])));
 		}elseif(preg_match("/([a-zA-Z0-9_]{2,16}) ([a-z]*) the game/",$mess,$username) > 0){
 			$owner = $username[1];
-			$type = $username[2] == "joined" ? "join":"left";
+			$type = $username[2] === "joined" ? "join":"left";
 		}elseif(preg_match("/([a-zA-Z0-9_]{2,16}) (drowned|hit the ground too hard|was (slain|shot|killed|fireballed|pummeled) by |fell out of the world|tried to swim in lava|went up in flames|burned to death|suffocated in a wall|was pricked to death|starved to death|died|withered away)([a-zA-Z0-9_]{0,16})/",$mess,$username) > 0){
 			$owner = $username[1];
 			$type = "kill";
@@ -98,7 +98,7 @@ class ChatHandler{
 			$message = "was killed".($receptor != "" ? " by ".$receptor:"");
 		}else{
 			$message = trim($mess);
-			if($mess == ""){
+			if($mess === ""){
 				return array("owner" => "", "receptor" => "", "group" => "", "world" => "", "message" => "", "type" => "");
 			}
 		}
@@ -119,11 +119,11 @@ class ChatHandler{
 		if(!is_array($info)){
 			$info = @ChatHandler::handler($info, "internal", null);
 		}
-		if($info["type"] == "private" or $info["receptor"] != ""){
+		if($info["type"] === "private" or $info["receptor"] != ""){
 			return "[".$info["owner"]." -> ".$info["receptor"]."] ".$info["message"];
-		}elseif($info["type"] == "join"){
+		}elseif($info["type"] === "join"){
 			return "<".$info["owner"]."> joined the game";
-		}elseif($info["type"] == "left"){
+		}elseif($info["type"] === "left"){
 			return "<".$info["owner"]."> left the game";
 		}else{		
 			return ($info["world"] != "" ? "[".$info["world"]."|".$info["group"]."] ":($info["group"] != "" ? "[".$info["group"]."] ":"")).($info["owner"] != "" ? "<".$info["owner"].($info["type"] == "private" ? " -> me":"")."> ":"").$info["message"];

@@ -63,7 +63,7 @@ class LastLogin{
 		$os = strtolower(php_uname("s"));
 		if(strpos($os, "win") !== false){
 			$location = getenv("appdata");
-			if($location == ""){
+			if($location === ""){
 				$location = ($home != "") ? $home : getenv("homepath");
 			}
 			$location .= '/.minecraft/';
