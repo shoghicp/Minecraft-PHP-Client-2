@@ -143,35 +143,9 @@ class Utils{
 	}
 	
 	public static function sha1($input){
-		$binary = Utils::hexToBin(sha1($input));
-		$negative = false;
-		$len = strlen($binary);
-		if($binary{0} === "1"){
-			$negative = true;
-			for($i = 0; $i < $len; ++$i){
-				$binary{$i} = $binary{$i} === "1" ? "0":"1";
-			}
-			for($i = $len - 1; $i >= 0; --$i){
-				if($binary{$i} === "1"){
-					$binary{$i} = "0";
-				}else{
-					$binary{$i} = "1";
-					break;
-				}
-			}
-		}
-		
-		$hash = Utils::binToHex($binary);
-		$len = strlen($hash);
-		for($i = 0; $i < $len; ++$i){
-			if($hash{$i} === "0"){
-				$hash{$i} = "x";
-			}else{
-				break;
-			}
-		}
-		
-		return ($negative === true ? "-":"").str_replace("x", "", $hash);
+		$number = new Math_BigInteger(sha1($input, true), -256);
+		$zero = new Math_BigInteger(0);
+		return ($zero->compare($number) <= 0 ? "":"-") . ltrim($number->toHex(), "0");
 	}
 	
 	public static function microtime(){
@@ -331,29 +305,22 @@ class Utils{
 		return $value;
 	}
 	
+	public static function printFloat($value){
+		return preg_replace("/(\.\d+?)0+$/", "$1", sprintf("%F", $value));
+	}
+	
 	public static function writeDouble($value){
 		return ENDIANNESS === BIG_ENDIAN?pack('d', $value):strrev(pack('d', $value));
 	}
 
-	public static function readLong($str){		
-		list(,$firstHalf,$secondHalf) = unpack("N*", $str);
-		if(GMPEXT === true){
-			$value = gmp_add($secondHalf, gmp_mul($firstHalf, "0x100000000"));
-			if(gmp_cmp($value, "0x8000000000000000") >= 0){
-				$value = gmp_sub($value, "0x10000000000000000");
-			}
-			return gmp_strval($value);
-		}else{
-			$value = bcadd($secondHalf, bcmul($firstHalf, "4294967296"));
-			if(bccomp($value, "9223372036854775808") >= 0){
-				$value = bcsub($value, "18446744073709551616");
-			}
-			return $value;
-		}
+	public static function readLong($str){
+		$long = new Math_BigInteger($str, -256);
+		return $long->toString();
 	}
 	
 	public static function writeLong($value){
-		return ENDIANNESS === BIG_ENDIAN?pack('d', $value):strrev(pack('d', $value));
+		$long = new Math_BigInteger($value, -10);
+		return $long->toBytes(true);
 	}	
 	
 }
