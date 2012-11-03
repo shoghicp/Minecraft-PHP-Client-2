@@ -56,7 +56,7 @@ class MinecraftClient{
 		$this->startDatabase();
 		$this->cnt = 1;
 		$this->proxymode = false;
-		$this->events = array("recieved_ff" => array(0 => array('close', true)), "disabled" => array());
+		$this->events = array(0xff => array(0 => array('close', true)), "disabled" => array());
 		$this->responses = array();
 		$this->info = array();
 		$this->windows = array();
@@ -104,9 +104,9 @@ class MinecraftClient{
 	
 	public function activateSpout(){
 		$this->event("onConnect", "spoutHandler", true);
-		$this->event("recieved_c3", "spoutHandler", true);
-		$this->interface->name["c3"] = "Spout Message";
-		$this->interface->pstruct["c3"] = array(
+		$this->event("received_c3", "spoutHandler", true);
+		$this->interface->name[0xc3] = "Spout Message";
+		$this->interface->pstruct[0xc3] = array(
 			"short",
 			"short",
 			"int",
@@ -124,7 +124,7 @@ class MinecraftClient{
 	}
 	
 	public function logout($message = "Quitting"){
-		$this->send("ff", array(0 => $message));
+		$this->send(0xff, array(0 => $message));
 		sleep(1);
 		$this->close(array(0 => $message));
 	}
@@ -154,16 +154,16 @@ class MinecraftClient{
 	}
 	
 	public function changeSlot($id){
-		$this->send("10", array(0 => $id));
+		$this->send(0x10, array(0 => $id));
 	}
 	
 	public function animation($id){
-		$this->send("12", array(0 => $this->player->getEID(), 1 => $id));
+		$this->send(0x12, array(0 => $this->player->getEID(), 1 => $id));
 	}
 	
 	public function send($pid, $data = array(), $raw = false){
 		if($this->connected === true){
-			$this->trigger("sent_".$pid, $data);
+			$this->trigger("sent_".Utils::strTohex(chr($pid)), $data);
 			$this->trigger("onSentPacket", $data);
 			$this->interface->writePacket($pid, $data, $raw);
 		}
@@ -173,14 +173,14 @@ class MinecraftClient{
 		$this->stop = true;
 	}	
 	
-	public function process($stop = "ff"){
+	public function process($stop = 0xff){
 		$pid = "";
 		$this->stop = false;
 		while($pid !== $stop and $this->stop === false and $this->connected === true){
 			$packet = $this->interface->readPacket();
 			$this->trigger("onRecievedPacket", $packet);
 			$pid = $packet["pid"];
-			$this->trigger("recieved_".$pid, $packet["data"]);
+			$this->trigger("received_".Utils::strTohex(chr($pid)), $packet["data"]);
 		}
 	}
 	
@@ -272,12 +272,12 @@ class MinecraftClient{
 	public function ping($data = ""){
 		if($data === ""){
 			if($this->protocol >= 47){
-				$this->send("fe", array(1));
+				$this->send(0xfe, array(1));
 			}else{
-				$this->send("fe");
+				$this->send(0xfe);
 			}
-			$this->deleteEvent("recieved_ff");
-			$eid = $this->event("recieved_ff", "ping", true);
+			$this->deleteEvent("received_ff");
+			$eid = $this->event("received_ff", "ping", true);
 			$this->process();
 			return $this->response($eid);
 		}elseif($data === false){
@@ -318,13 +318,13 @@ class MinecraftClient{
 	public function say($message, $owner = false){
 		if($owner !== false){
 			foreach(explode("\n", wordwrap($message,100-strlen("/tell $owner "), "\n")) as $mess){
-				$this->send("03", array(
+				$this->send(0x03, array(
 					0 => "/tell $owner ".$mess,
 				));
 			}
 		}else{
 			foreach(explode("\n", wordwrap($message,100, "\n")) as $mess){
-				$this->send("03", array(
+				$this->send(0x03, array(
 					0 => $mess,
 				));
 			}
@@ -335,7 +335,7 @@ class MinecraftClient{
 	public function jump(){
 		$this->player->move(0, 1, 0);
 		if($this->player->dead === false){
-			$this->send("0b",$this->player->packet("0b"));
+			$this->send(0x0b,$this->player->packet(0x0b));
 		}
 		$this->trigger("onMove", $this->player);
 		$this->trigger("onEntityMove", $this->player);
@@ -345,7 +345,7 @@ class MinecraftClient{
 	public function moveFromHere($x, $y, $z, $yaw = 0, $pitch = 0){
 		$this->player->move($x, $y, $z, $yaw, $pitch);
 		if($this->player->dead === false){
-			$this->send("0d",$this->player->packet("0d"));
+			$this->send(0x0d,$this->player->packet(0x0d));
 		}
 		$this->trigger("onMove", $this->player);
 		$this->trigger("onEntityMove", $this->player);
@@ -356,7 +356,7 @@ class MinecraftClient{
 		$this->player->setCoords($x, $y, $z);
 		$this->player->setGround($ground);
 		if($this->player->dead === false){
-			$this->send("0b",$this->player->packet("0b"));
+			$this->send(0x0b,$this->player->packet(0x0b));
 		}
 		$this->trigger("onMove", $this->player);
 		$this->trigger("onEntityMove", $this->player);
@@ -370,11 +370,11 @@ class MinecraftClient{
 	
 	public function useEntity($eid, $left = true){
 		$this->trigger("onUseEntity", array("eid" => $eid, "left" => $left));
-		$this->send("12", array(
+		$this->send(0x12, array(
 			0 => $this->player->eid,
 			1 => 1,
 		));
-		$this->send("07", array(
+		$this->send(0x07, array(
 			0 => $this->player->eid,
 			1 => $eid,
 			2 => $left,
@@ -383,7 +383,7 @@ class MinecraftClient{
 	
 	public function dropSlot(){
 		$this->trigger("onDropSlot");
-		$this->send("0e", array(
+		$this->send(0x0e, array(
 			0 => 4,
 			1 => 0,
 			2 => 0,
@@ -397,7 +397,7 @@ class MinecraftClient{
 	
 	public function eatSlot(){
 		$this->trigger("onEatSlot");
-		$this->send("0f", array(
+		$this->send(0x0f, array(
 			0 => -1,
 			1 => -1,
 			2 => -1,
@@ -444,7 +444,7 @@ class MinecraftClient{
 				}
 				$this->map = new MapInterface($this);
 				break;
-			case "recieved_38":
+			case "received_38":
 				if($this->useMap === true){
 					$offset = 0;
 					$data[2] = gzinflate(substr($data[2],2));
@@ -473,12 +473,12 @@ class MinecraftClient{
 					}
 				}
 				break;
-			case "recieved_35":
+			case "received_35":
 				if($this->useMap === true){
 					$this->map->changeBlock($data[0], $data[1], $data[2], $data[3], $data[4]);
 				}
 				break;
-			case "recieved_34":
+			case "received_34":
 				if($this->useMap === true){
 					$X = $data[0] << 4;
 					$Z = $data[1] << 4;
@@ -497,7 +497,7 @@ class MinecraftClient{
 					}
 				}
 				break;
-			case "recieved_3c":
+			case "received_3c":
 				if($this->useMap === true){
 					$X = $data[0];
 					$Y = $data[1];
@@ -510,7 +510,7 @@ class MinecraftClient{
 					}					
 				}
 				break;
-			case "recieved_33":
+			case "received_33":
 				if($this->useMap === true){
 					if($this->protocol > 29){
 						if($data[2] === true and $data[3] === 0){
@@ -527,7 +527,7 @@ class MinecraftClient{
 					}
 				}
 				break;
-			case "recieved_32":
+			case "received_32":
 				if($this->useMap === true){
 					if($data[2] === false){
 						$this->mapParser->unloadChunk($data[0], $data[1]);
@@ -539,15 +539,17 @@ class MinecraftClient{
 	
 	private function handler($data, $event){
 		switch($event){
-			case "recieved_00":
-				if($this->proxymode === true){break;}
-				$this->send("00", array(0 => $data[0]));
+			case "received_00":
+				if($this->proxymode === true){
+					break;
+				}
+				$this->send(0x00, array(0 => $data[0]));
 				break;
-			case "recieved_03":
+			case "received_03":
 				console("[INTERNAL] Chat: ".$data[0], true, true, 3);
 				$this->trigger("onChat", $data[0]);
 				break;
-			case "recieved_04":
+			case "received_04":
 				$this->time = ($this->protocol > 39 ? $data[1]:$data[0]) % 24000;
 				console("[DEBUG] Time: ".((intval($this->time/1000+6) % 24)).':'.str_pad(intval(($this->time/1000-floor($this->time/1000))*60),2,"0",STR_PAD_LEFT).', '.(($this->time > 23100 or $this->time < 12900) ? "day":"night"), true, true, 2);
 				$this->trigger("onTimeChange", $this->time);
@@ -562,12 +564,12 @@ class MinecraftClient{
 					}
 				}
 				break;
-			case "recieved_06":
+			case "received_06":
 				$this->info["spawn"] = array("x" => $data[0], "y" => $data[1], "z" => $data[2]);
 				console("[DEBUG] Got spawn: (".$data[0].",".$data[1].",".$data[2].")", true, true, 2);
 				$this->trigger("onSpawnChange", $this->info["spawn"]);
 				break;
-			case "recieved_08":
+			case "received_08":
 				$this->player->setHealth($data[0]);
 				if($data[0] <= 0){ //Respawn
 					$this->player->dead = true;
@@ -583,9 +585,9 @@ class MinecraftClient{
 						$d[5] = $this->info["level_type"];
 					}
 					if($this->protocol >= 36){						
-						$this->send("cd", array(1));
+						$this->send(0xcd, array(1));
 					}else{
-						$this->send("09", $d);
+						$this->send(0x09, $d);
 					}
 					$this->trigger("onRespawn", $d);
 					console("[INFO] Death");
@@ -598,29 +600,33 @@ class MinecraftClient{
 				}
 				$this->trigger("onHealthChange", array("health" => $this->player->getHealth(), "food" => $this->player->getFood()));
 				break;
-			case "recieved_09":
+			case "received_09":
 				$this->player->dead = false;
 				console("[INFO] Respawned");
 				break;
-			case "recieved_0d":
-				if($this->proxymode === true){break;}
+			case "received_0d":
+				if($this->proxymode === true){
+					break;
+				}
 				$this->player->setPosition($data[0], $data[2], $data[3], $data[1], $data[4], $data[5], $data[6]);
 				console("[INFO] Got position: (".$data[0].",".$data[2].",".$data[3].")");
-				$this->send("0d",$this->player->packet("0d"));
+				$this->send(0x0d,$this->player->packet(0x0d));
 				$this->trigger("onMove", $this->player);
 				$this->trigger("onEntityMove", $this->player);
 				$this->trigger("onEntityMove_".$this->player->eid, $this->player);
 			case "onTick":
-				if($this->proxymode === true){break;}
+				if($this->proxymode === true){
+					break;
+				}
 				if($this->player->dead === false){
-					$this->send("0d", $this->player->packet("0d"));
+					$this->send(0x0d, $this->player->packet(0x0d));
 				}
 				break;
-			case "recieved_13":
+			case "received_13":
 				console("[DEBUG] Entity ".$data[0]." did action ".$data[1], true, true, 2);
 				$this->trigger("onEntityAction_".$data[1], $this->entities[$data[0]]);
 				break;
-			case "recieved_14":
+			case "received_14":
 				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PLAYER, 0, $this);
 				$this->players[$data[1]] =& $this->entities[$data[0]];
 				$this->entities[$data[0]]->setName($data[1]);
@@ -633,42 +639,42 @@ class MinecraftClient{
 				$this->trigger("onPlayerSpawn", $this->entities[$data[0]]);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
-			case "recieved_15":
+			case "received_15":
 				console("[DEBUG] Item (EID: ".$data[0].") type ".(isset($this->material[$data[1]]) ? $this->material[$data[1]]:$data[1])." spawned at (".($data[4] / 32).",".($data[5] / 32).",".($data[6] / 32).")", true, true, 2);
 				$this->entities[$data[0]] = new Entity($data[0], ENTITY_ITEM, $data[1], $this);
 				$this->entities[$data[0]]->setCoords($data[4] / 32,$data[5] / 32,$data[6] / 32);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
-			case "recieved_17":
-			case "recieved_18":
-				$this->entities[$data[0]] = new Entity($data[0], ($event === "recieved_17" ? ENTITY_OBJECT:ENTITY_MOB), $data[1], $this);
+			case "received_17":
+			case "received_18":
+				$this->entities[$data[0]] = new Entity($data[0], ($event === "received_17" ? ENTITY_OBJECT:ENTITY_MOB), $data[1], $this);
 				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
-				if($event === "recieved_18"){
+				if($event === "received_18"){
 					$this->mobs[$data[0]] =& $this->entities[$data[0]];
 					$this->entities[$data[0]]->setMetadata(($this->protocol > 29 ? $data[11]:$data[8]));
 				}
 				console("[DEBUG] Entity (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
-			case "recieved_19":
+			case "received_19":
 				$this->entities[$data[0]] = new Entity($data[0], ENTITY_PAINTING, 0, $this);
 				$this->entities[$data[0]]->setName($data[1]);
 				$this->entities[$data[0]]->setCoords($data[2],$data[3],$data[4]);
 				console("[DEBUG] Painting (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".$data[2].",".$data[3].",".$data[4].")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
-			case "recieved_1a":
+			case "received_1a":
 				$this->entities[$data[0]] = new Entity($data[0], ENTITY_EXPERIENCE, 0, $this);
 				$this->entities[$data[0]]->setCoords($data[1],$data[2],$data[3]);
 				console("[DEBUG] Experience Orb (EID: ".$data[0].") spawned at (".$data[1].",".$data[2].",".$data[3].")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
-			case "recieved_1c":
+			case "received_1c":
 				/*if(isset($this->entities[$data[0]])){
 					$this->entities[$data[0]]->setVelocity();
 				}*/
 				break;
-			case "recieved_1d":
+			case "received_1d":
 				if($this->protocol <= 29){
 					console("[DEBUG] EID ".$data[0]." despawned", true, true, 2);
 					$this->trigger("onEntityDespawn", $data[0]);
@@ -684,32 +690,32 @@ class MinecraftClient{
 				}
 				
 				break;
-			case "recieved_1f":
-			case "recieved_21":
+			case "received_1f":
+			case "received_21":
 				if(isset($this->entities[$data[0]])){
-					$this->entities[$data[0]]->move($data[1] / 32, $data[2] / 32, $data[3] / 32, ($event === "recieved_21" ? $data[4]:0), ($event === "recieved_21" ? $data[5]:0), true);
+					$this->entities[$data[0]]->move($data[1] / 32, $data[2] / 32, $data[3] / 32, ($event === "received_21" ? $data[4]:0), ($event === "received_21" ? $data[5]:0), true);
 					$this->trigger("onEntityMove", $this->entities[$data[0]]);
 					$this->trigger("onEntityMove_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
 				}
 				break;
-			case "recieved_22":
+			case "received_22":
 				if(isset($this->entities[$data[0]])){
 					$this->entities[$data[0]]->setCoords($data[1] / 32,$data[2] / 32,$data[3] / 32);
 					$this->trigger("onEntityMove", $this->entities[$data[0]]);
 					$this->trigger("onEntityMove_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
 				}
 				break;
-			case "recieved_28":
+			case "received_28":
 				if(isset($this->entities[$data[0]])){
 					$this->entities[$data[0]]->setMetadata($data[1]);
 					$this->trigger("onEntityMetadataChange", $this->entities[$data[0]]);
 					$this->trigger("onEntityMetadataChange_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
 				}
 				break;
-			case "recieved_3c":
+			case "received_3c":
 				$this->trigger("onExplosion", array("radius" => $data[3], "speedX" => $data[6], "speedY" => $data[7], "speedZ" => $data[8]));
 				break;
-			case "recieved_46";
+			case "received_46";
 				switch($data[0]){
 					case 0:
 						$m = "Invalid bed";
@@ -732,17 +738,17 @@ class MinecraftClient{
 				}
 				console("[INFO] Changed game state: ".$m);
 				break;
-			case "recieved_47":
+			case "received_47":
 				console("[DEBUG] Global Entity type ".$data[1]." at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
 				$this->trigger("onGlobalEntity", array("eid" => $data[0], "type" => $data[1], "coords" => array("x" => $data[2] / 32, "y" => $data[3] / 32, "z" => $data[4] / 32)));
 				if($data[1] === 1){
 					$this->trigger("onThunderbolt", array("eid" => $data[0], "coords" => array("x" => $data[2] / 32, "y" => $data[3] / 32, "z" => $data[4] / 32)));
 				}
 				break;
-			case "recieved_64":
+			case "received_64":
 				$w = $this->windows[$data[0]] = new Window($data[0], $data[1], $data[2]);
 				break;
-			case "recieved_67":
+			case "received_67":
 				if($data[0] === 0){
 					if(!isset($data[2][0])){
 						$this->inventory[$data[1]] = array(0,0,0);
@@ -754,7 +760,7 @@ class MinecraftClient{
 					console("[DEBUG] Changed inventory slot ".$data[1], true, true, 2);
 				}
 				break;
-			case "recieved_68":
+			case "received_68":
 				if($data[0] === 0){
 					foreach($data[2] as $i => $slot){
 						$this->inventory[$i] = $slot;
@@ -764,12 +770,12 @@ class MinecraftClient{
 					console("[INFO] Recieved complete inventory");
 				}
 				break;
-			case "recieved_82":
+			case "received_82":
 				$text = $data[3].PHP_EOL.$data[4].PHP_EOL.$data[5].PHP_EOL.$data[6];
 				console("[INTERNAL] Sign at (".$data[0].",".$data[1].",".$data[2].")".PHP_EOL.implode(PHP_EOL."[INTERNAL]\t",explode(PHP_EOL,$text)), true, true, 3);
 				$this->trigger("onSignUpdate", array("coords" => array("x" => $data[0], "y" => $data[1], "z" => $data[2]), "text" => $text));
 				break;
-			case "recieved_c9":
+			case "received_c9":
 				console("[INTERNAL] ".$data[0]." ping: ".$data[2], true, true, 3);
 				if($data[1] == false){
 					$this->trigger("onPlayerPingRemove", $data[0]);
@@ -777,7 +783,7 @@ class MinecraftClient{
 					$this->trigger("onPlayerPing", array("name" => $data[0], "ping" => $data[2]));
 				}
 				break;
-			case "recieved_fa":
+			case "received_fa":
 				$this->trigger("onPluginMessage", array("channel" => $data[0], "data" => $data[2]));
 				$this->trigger("onPluginMessage_".$data[0], $data[2]);
 				break;
@@ -789,7 +795,7 @@ class MinecraftClient{
 		if($this->protocol < 23){
 			return false;
 		}
-		$this->send("fa", array(
+		$this->send(0xfa, array(
 			0 => "REGISTER",
 			1 => strlen($channel),
 			2 => "\x00" . $channel,			
@@ -800,7 +806,7 @@ class MinecraftClient{
 		if($this->protocol < 23){
 			return false;
 		}
-		$this->send("fa", array(
+		$this->send(0xfa, array(
 			0 => "UNREGISTER",
 			1 => strlen($channel),
 			2 => $channel,			
@@ -812,7 +818,7 @@ class MinecraftClient{
 		if($this->protocol < 23){
 			return false;
 		}
-		$this->send("fa", array(
+		$this->send(0xfa, array(
 			0 => $channel,
 			1 => strlen($data),
 			2 => $data,			
@@ -848,47 +854,47 @@ class MinecraftClient{
 			$this->event("onSentPacket", "backgroundHandler", true);
 		}
 		$this->mapHandler("","start");
-		$this->event("recieved_00", "handler", true);
-		$this->event("recieved_03", "handler", true);
-		$this->event("recieved_04", "handler", true);
-		$this->event("recieved_06", "handler", true);
-		$this->event("recieved_08", "handler", true);
-		$this->event("recieved_09", "handler", true);
-		$this->event("recieved_0d", "handler", true);
-		$this->event("recieved_13", "handler", true);
-		$this->event("recieved_14", "handler", true);
-		$this->event("recieved_15", "handler", true);
-		$this->event("recieved_17", "handler", true);
-		$this->event("recieved_18", "handler", true);
-		$this->event("recieved_19", "handler", true);
-		$this->event("recieved_1a", "handler", true);
-		$this->event("recieved_1c", "handler", true);
-		$this->event("recieved_1d", "handler", true);
-		$this->event("recieved_1f", "handler", true);
-		$this->event("recieved_21", "handler", true);
-		$this->event("recieved_22", "handler", true);
-		$this->event("recieved_28", "handler", true);
-		$this->event("recieved_32", "mapHandler", true);
-		$this->event("recieved_33", "mapHandler", true);
-		$this->event("recieved_34", "mapHandler", true);
-		$this->event("recieved_35", "mapHandler", true);
-		$this->event("recieved_38", "mapHandler", true);
-		$this->event("recieved_3c", "mapHandler", true);
-		$this->event("recieved_3c", "handler", true);
-		$this->event("recieved_46", "handler", true);
-		$this->event("recieved_47", "handler", true);
-		$this->event("recieved_64", "handler", true);
-		$this->event("recieved_65", "handler", true);
-		$this->event("recieved_66", "handler", true);
-		$this->event("recieved_67", "handler", true);
-		$this->event("recieved_68", "handler", true);
-		$this->event("recieved_69", "handler", true);
-		$this->event("recieved_6a", "handler", true);
-		$this->event("recieved_6b", "handler", true);
-		$this->event("recieved_6c", "handler", true);
-		$this->event("recieved_82", "handler", true);
-		$this->event("recieved_fa", "handler", true);
-		$this->event("recieved_c9", "handler", true);
+		$this->event("received_00", "handler", true);
+		$this->event("received_03", "handler", true);
+		$this->event("received_04", "handler", true);
+		$this->event("received_06", "handler", true);
+		$this->event("received_08", "handler", true);
+		$this->event("received_09", "handler", true);
+		$this->event("received_0d", "handler", true);
+		$this->event("received_13", "handler", true);
+		$this->event("received_14", "handler", true);
+		$this->event("received_15", "handler", true);
+		$this->event("received_17", "handler", true);
+		$this->event("received_18", "handler", true);
+		$this->event("received_19", "handler", true);
+		$this->event("received_1a", "handler", true);
+		$this->event("received_1c", "handler", true);
+		$this->event("received_1d", "handler", true);
+		$this->event("received_1f", "handler", true);
+		$this->event("received_21", "handler", true);
+		$this->event("received_22", "handler", true);
+		$this->event("received_28", "handler", true);
+		$this->event("received_32", "mapHandler", true);
+		$this->event("received_33", "mapHandler", true);
+		$this->event("received_34", "mapHandler", true);
+		$this->event("received_35", "mapHandler", true);
+		$this->event("received_38", "mapHandler", true);
+		$this->event("received_3c", "mapHandler", true);
+		$this->event("received_3c", "handler", true);
+		$this->event("received_46", "handler", true);
+		$this->event("received_47", "handler", true);
+		$this->event("received_64", "handler", true);
+		$this->event("received_65", "handler", true);
+		$this->event("received_66", "handler", true);
+		$this->event("received_67", "handler", true);
+		$this->event("received_68", "handler", true);
+		$this->event("received_69", "handler", true);
+		$this->event("received_6a", "handler", true);
+		$this->event("received_6b", "handler", true);
+		$this->event("received_6c", "handler", true);
+		$this->event("received_82", "handler", true);
+		$this->event("received_fa", "handler", true);
+		$this->event("received_c9", "handler", true);
 		$this->event("onPluginMessage_REGISTER", "backgroundHandler", true);
 		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
 		register_shutdown_function(array($this, "logout"));
@@ -904,7 +910,7 @@ class MinecraftClient{
 	
 	protected function authentication($data, $event){
 		switch($event){
-			case "recieved_02":
+			case "received_02":
 				$hash = $data[0];
 				if($hash != "-" and $hash != "+"){
 					console("[INFO] Server is Premium (SID: ".$hash.")");
@@ -912,14 +918,14 @@ class MinecraftClient{
 				}else{
 					console("[WARNING] Server is NOT Premium", true, true, 0);
 				}
-				$this->send("01", array(
+				$this->send(0x01, array(
 					0 => $this->protocol,
 					1 => $this->auth["user"],
 				));
-				$this->event("recieved_01", 'authentication', true);
-				$this->process("01");
+				$this->event("received_01", 'authentication', true);
+				$this->process(0x01);
 				break;
-			case "recieved_01":
+			case "received_01":
 				$this->info["seed"] = $data[2];
 				$this->info["level_type"] = $this->protocol >= 23 ? $data[3]:0;
 				$this->info["mode"] = $this->protocol <= 23 ? $data[4]:$data[3];
@@ -940,8 +946,7 @@ class MinecraftClient{
 		}
 	}
 	
-	public function loginMinecraft($username, $password){
-		$secure = true;
+	public function loginMinecraft($username, $password, $secure = true){
 		if($secure !== false){
 			$proto = "https";
 			console("[DEBUG] Using secure HTTPS connection", true, true, 2);
@@ -951,8 +956,8 @@ class MinecraftClient{
 			
 		$response = Utils::curl_get($proto."://login.minecraft.net/?user=".$username."&password=".$password."&version=".LAUNCHER_VERSION);
 		switch($response){
-			case 'Bad login':
-			case 'Bad Login':
+			case "Bad login":
+			case "Bad Login":
 				console("[ERROR] Bad Login", true, true, 0);
 				$this->close();
 				break;
@@ -994,7 +999,7 @@ class MinecraftClient{
 	
 	protected function newAuthentication($data, $event){
 		switch($event){
-			case "recieved_fd":
+			case "received_fd":
 				require_once("phpseclib/Crypt/RSA.php");
 				$publicKey = "-----BEGIN PUBLIC KEY-----".PHP_EOL.implode(PHP_EOL,str_split(base64_encode($data[2]),64)).PHP_EOL."-----END PUBLIC KEY-----";
 				console("[DEBUG] [RSA-1024] Server Public key:", true, true, 2);
@@ -1019,28 +1024,28 @@ class MinecraftClient{
 				}else{
 					console("[WARNING] Server is NOT Premium", true, true, 0);
 				}
-				$this->send("fc", array(
+				$this->send(0xfc, array(
 					0 => strlen($encryptedKey),
 					1 => $encryptedKey,
 					2 => strlen($encryptedToken),
 					3 => $encryptedToken,
 				));
 				console("[DEBUG] [RSA-1024] Sent encrypted shared secret and token", true, true, 2);
-				$this->event("recieved_fc", 'newAuthentication', true);
-				$this->process("fc");
+				$this->event("received_fc", 'newAuthentication', true);
+				$this->process(0xfc);
 				break;
-			case "recieved_fc":
+			case "received_fc":
 				if($this->protocol >= 34){
 					$this->interface->server->startAES($this->key);
-					$this->send("cd", array(0 => 0));
+					$this->send(0xcd, array(0 => 0));
 				}elseif($this->protocol <= 32){
 					$this->interface->server->startRC4($this->key);
-					$this->send("01", array());
+					$this->send(0x01, array());
 				}
-				$this->event("recieved_01", 'newAuthentication', true);
-				$this->process("01");
+				$this->event("received_01", 'newAuthentication', true);
+				$this->process(0x01);
 				break;
-			case "recieved_01":
+			case "received_01":
 				$this->info["seed"] = "";
 				$this->info["level_type"] = $data[1];
 				$this->info["mode"] = $data[2];
@@ -1063,14 +1068,14 @@ class MinecraftClient{
 	
 	public function newConnect(){
 		console("[DEBUG] Sending Handshake", true, true, 2);
-		$this->send("02", array(
+		$this->send(0x02, array(
 			0 => $this->protocol,
 			1 => $this->auth["user"],
 			2 => $this->server,
 			3 => $this->port,
 		));
-		$this->event("recieved_fd", 'newAuthentication', true);
-		$this->process("fd");
+		$this->event("received_fd", 'newAuthentication', true);
+		$this->process(0xfd);
 	}
 	
 	public function connect($user = "", $password = ""){
@@ -1085,11 +1090,11 @@ class MinecraftClient{
 			return;
 		}
 		console("[DEBUG] Sending Handshake", true, true, 2);
-		$this->send("02", array(
+		$this->send(0x02, array(
 			0 => $user.($this->protocol >= 28 ? ";".$this->server.":".$this->port:""),
 		));
-		$this->event("recieved_02", 'authentication', true);
-		$this->process("02");
+		$this->event("received_02", 'authentication', true);
+		$this->process(0x02);
 	}
 	public function sendSpoutMessage($pid, $version, $data){
 		if($this->spout === true){
@@ -1100,7 +1105,7 @@ class MinecraftClient{
 			$this->trigger("onSentSpoutPacket_".$pid, array("version" => $version, "data" => $data));
 			$this->trigger("onSentSpoutPacket", array("id" => $pid, "version" => $version, "data" => $data));
 			console("[DEBUG] [Spout] Sent packet ".$pid, true, true, 2);
-			$this->send("c3", array(
+			$this->send(0xc3, array(
 				0 => $pid,
 				1 => $version,
 				2 => strlen($p->raw),
@@ -1216,7 +1221,7 @@ class MinecraftClient{
 				console("[DEBUG] [Spout] Got waypoint ".$name." (".$x.",".$y.",".$z.")".($death === true ? " DEATH":""), true, true, 2);
 				$this->trigger("onSpoutWaypoint", array("coords" => array("x" => $x, "y" => $y, "z" => $z), "name" => $name, "death" => $death));
 				break;
-			case "recieved_c3":
+			case "received_c3":
 				$packetId = $data[0];
 				$version = $data[1];
 				$packet = $data[3];
@@ -1224,7 +1229,7 @@ class MinecraftClient{
 				$this->trigger("onRecievedSpoutPacket_".$packetId, array("version" => $version, "data" => $packet));
 				$this->trigger("onRecievedSpoutPacket", array("id" => $packetId, "version" => $version, "data" => $packet));
 				break;
-			case "recieved_12":
+			case "received_12":
 				if($data[0] === -42){
 					$this->spout = true;
 					$this->sendSpoutMessage(33,0,array(0 => SPOUT_VERSION));
@@ -1239,12 +1244,12 @@ class MinecraftClient{
 				}
 				break;
 			case "onConnect":
-				$this->send("12", array(
+				$this->send(0x12, array(
 					0 => -42,
 					1 => 1,				
 				));
 				console("[DEBUG] [Spout] Sent Spout verification packet", true, true, 2);
-				$this->event("recieved_12", 'spoutHandler', true);
+				$this->event("received_12", 'spoutHandler', true);
 				break;
 		}
 	

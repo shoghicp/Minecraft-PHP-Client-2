@@ -49,7 +49,7 @@ class Packet{
 		$this->raw = "";
 		$this->data = array();
 		if($pid !== false){
-			$this->addRaw(chr(hexdec($pid)));
+			$this->addRaw(chr($pid));
 		}
 		$this->struct = $struct;
 		$this->sock = $sock;
@@ -153,7 +153,7 @@ class Packet{
 			switch($type){
 				case "int":
 					$this->data[] = Utils::readInt($this->get(4));
-					if($field === 5 and $this->pid === "17" and $this->data[$field] === 0){
+					if($field === 5 and $this->pid === 0x17 and $this->data[$field] === 0){
 						$continue = false;
 					}
 					break;

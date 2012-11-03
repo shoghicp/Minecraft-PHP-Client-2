@@ -71,7 +71,7 @@ class Utils{
 		"f" => "1111",		
 	);
 	
-	public function getOS(){
+	public static function getOS(){
 		$uname = strtoupper(php_uname("s"));
 		if(strpos($uname, "WIN") !== false){
 			return "win";

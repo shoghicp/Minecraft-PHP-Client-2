@@ -1,7 +1,6 @@
 cmd.bat
 *.log
 *.ini
-pstruct_modifier.php
 smallClient
 data/*
 

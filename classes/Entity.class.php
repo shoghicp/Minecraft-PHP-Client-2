@@ -391,12 +391,12 @@ class Entity{
 			return array();
 		}
 		switch($pid){
-			case "0a":
+			case 0x0a:
 				return array(
 					$this->position["ground"],
 				);
 				break;
-			case "0b":
+			case 0x0b:
 				return array(
 					$this->position["x"],
 					$this->position["y"],
@@ -405,7 +405,7 @@ class Entity{
 					$this->position["ground"],
 				);
 				break;
-			case "0d":
+			case 0x0d:
 				return array(
 					$this->position["x"],
 					$this->position["y"],
