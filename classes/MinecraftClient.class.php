@@ -41,7 +41,7 @@ as the name is changed.
 
 class MinecraftClient{
 	private $server, $port, $player, $key, $material, $interface, $database, $proxymode;
-	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $actions, $useMap, $windows;
+	protected $spout, $events, $cnt, $responses, $info, $inventory, $timeState, $stop, $connected, $lastTick, $useMap, $windows;
 	var $time, $protocol, $map, $auth, $mapParser, $entities, $players, $mobs;
 	
 	
@@ -64,7 +64,7 @@ class MinecraftClient{
 		$this->mobs = array();
 		$this->inventory = array();
 		$this->connected = true;
-		$this->actions = array();
+		$this->lastTick = 0;
 		$this->spout = false;
 		$this->players = array();
 		$this->useMap = true;	
@@ -204,9 +204,23 @@ class MinecraftClient{
 		return false;
 	}
 
-	public function action($microseconds, $code){
-		$this->actions[] = array($microseconds / 1000000, microtime(true), $code);
+	public function action($microseconds, $code, $repeat = true){
+		$this->query("INSERT INTO actions (interval, last, code, repeat) VALUES(".($microseconds / 1000000).", ".microtime(true).", '".str_replace("'", "\\'", $code)."', ".($repeat === true ? 1:0).");");
 		console("[INTERNAL] Attached to action ".$microseconds, true, true, 3);
+	}
+	
+	public function tickerFunction(){
+		//actions that repeat every x time will go here
+		$time = microtime(true);
+		$actions = $this->query("SELECT * FROM actions WHERE last <= (".$time." - interval);");
+		while($action = $actions->fetchArray(SQLITE3_ASSOC)){
+			eval($action["code"]);
+			if($action["repeat"] === 0){
+				$this->query("DELETE FROM actions WHERE ID = ".$action["ID"].";");
+			}else{
+				$this->query("UPDATE actions SET last = ".$time." WHERE ID = ".$action["ID"].";");
+			}
+		}
 	}	
 	
 	public function toggleEvent($event){
@@ -375,17 +389,6 @@ class MinecraftClient{
 			3 => -1,
 			4 => array(-1),
 		));
-	}
-	
-	public function tickerFunction(){
-		//actions that repeat every x time will go here
-		$time = microtime(true);
-		foreach($this->actions as $id => $action){
-			if($action[1] <= ($time - $action[0])){
-				$this->actions[$id][1] = $time;
-				eval($action[2]);
-			}
-		}
 	}
 	
 	private function backgroundHandler($data, $event){
@@ -808,11 +811,19 @@ class MinecraftClient{
 		return $info;
 	}
 	
+	public function tick(){
+		$time = microtime(true);
+		if($this->lastTick <= ($time + 0.05)){
+			$this->lastTick = $time;
+			$this->trigger("onTick", $time);
+		}
+	}
+	
 	protected function startHandlers(){
 	
 		if(ACTION_MODE === 1){
 			declare(ticks=15);
-			register_tick_function(array($this, "tickerFunction"));
+			register_tick_function(array($this, "tick"));
 		}else{
 			$this->event("onRecievedPacket", "backgroundHandler", true);
 			$this->event("onSentPacket", "backgroundHandler", true);
@@ -862,7 +873,7 @@ class MinecraftClient{
 		$this->event("onPluginMessage_REGISTER", "backgroundHandler", true);
 		$this->event("onPluginMessage_UNREGISTER", "backgroundHandler", true);
 		register_shutdown_function(array($this, "logout"));
-		$this->action(50000, '$this->trigger("onTick", $time);');
+		$this->event("onTick", "tickerFunction", true);
 		$this->action(15000000, '$this->debugInfo(true);');
 		$this->action(1000000, '$this->query("DELETE FROM entities WHERE dead = 1;");');
 		$this->event("onTick", "handler", true);
