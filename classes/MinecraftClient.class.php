@@ -185,11 +185,11 @@ class MinecraftClient{
 	}
 	
 	public function trigger($event, $data = ""){
-		console("[INTERNAL] Event ". $event, true, true, 3);
-		$events = $this->query("SELECT * FROM events WHERE eventName = '".$event."' AND disabled = 0;");
+		$events = $this->query("SELECT ID FROM events WHERE eventName = '".$event."' AND disabled = 0;");
 		if($events === false or $events === true){
 			return;
 		}
+		console("[INTERNAL] Event ". $event, true, true, 3);
 		while($evn = $events->fetchArray(SQLITE3_ASSOC)){
 			$ev = $this->events[$event][$evn["ID"]];
 			if(isset($ev[1]) and ($ev[1] === true or is_object($ev[1]))){
@@ -217,7 +217,7 @@ class MinecraftClient{
 	public function tickerFunction(){
 		//actions that repeat every x time will go here
 		$time = microtime(true);
-		$actions = $this->query("SELECT * FROM actions WHERE last <= (".$time." - interval);");
+		$actions = $this->query("SELECT ID,code,repeat FROM actions WHERE last <= (".$time." - interval);");
 		if($actions === false or $actions === true){
 			return;
 		}

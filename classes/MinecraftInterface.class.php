@@ -81,9 +81,6 @@ class MinecraftInterface{
 			return array("pid" => 0xff, "data" => array(0 => 'Connection error', 1 => true));
 		}
 		$pid = ord($this->server->read(1, $mode));
-		if($pid === ""){
-			return false;
-		}
 		$struct = $this->getStruct($pid);
 		if($struct === false){
 			$this->server->unblock();
@@ -93,7 +90,7 @@ class MinecraftInterface{
 			logg($p, "packets", true, 3);
 			
 			$this->buffer = "";
-			$this->server->recieve("\xff".Utils::writeString('Bad packet id 0x'.Utils::strToHex(chr($pid)).''));
+			$this->server->receive("\xff".Utils::writeString('Bad packet id 0x'.Utils::strToHex(chr($pid)).''));
 			$this->writePacket(0xff, array(0 => 'Bad packet id '.$pid.''));
 			return array("pid" => 0xff, "data" => array(0 => 'Bad packet id 0x'.Utils::strToHex(chr($pid)).''));
 		}

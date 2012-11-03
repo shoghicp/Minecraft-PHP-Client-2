@@ -163,7 +163,7 @@ class Socket{
 		
 	}
 	
-	public function recieve($str){ //Auto write a packet
+	public function receive($str){ //Auto write a packet
 		if($str != ""){
 			$this->buffer .= $this->encryption === true ? $this->decrypt->decrypt($str):$str;
 		}
@@ -179,7 +179,7 @@ class Socket{
 		if(!isset($this->buffer{$len}) and $this->connected === true){
 			$read = @socket_read($this->sock, $len, PHP_BINARY_READ);
 			if($read !== "" and $read !== false){
-				$this->recieve($read);
+				$this->receive($read);
 			}elseif($read === false and isset($this->errors[socket_last_error($this->sock)])){
 				$this->close(socket_last_error($this->sock));
 			}elseif($read === ""){
