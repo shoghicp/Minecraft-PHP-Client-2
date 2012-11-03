@@ -28,7 +28,7 @@
  * Here's a short example of how to use this library:
  * <code>
  * <?php
- *    include('phpseclib/Crypt/Rijndael.php');
+ *    include('Crypt/Rijndael.php');
  *
  *    $rijndael = new Crypt_Rijndael();
  *
@@ -610,7 +610,7 @@ class Crypt_Rijndael {
                 }
 
                 if (!class_exists('Crypt_Hash')) {
-                    require_once('phpseclib/Crypt/Hash.php');
+                    require_once('Crypt/Hash.php');
                 }
 
                 $i = 1;

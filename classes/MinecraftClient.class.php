@@ -709,7 +709,7 @@ class MinecraftClient{
 				}
 				break;
 			case "recieved_64":
-				//$w = $this->windows[$data[0]] = new Window
+				$w = $this->windows[$data[0]] = new Window($data[0], $data[1], $data[2]);
 				break;
 			case "recieved_67":
 				if($data[0] === 0){

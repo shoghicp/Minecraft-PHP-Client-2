@@ -19,7 +19,7 @@
  * Here's a short example of how to use this library:
  * <code>
  * <?php
- *    include('phpseclib/Crypt/Hash.php');
+ *    include('Crypt/Hash.php');
  *
  *    $hash = new Crypt_Hash('sha1');
  *
@@ -183,6 +183,7 @@ class Crypt_Hash {
      */
     function setHash($hash)
     {
+        $hash = strtolower($hash);
         switch ($hash) {
             case 'md5-96':
             case 'sha1-96':

@@ -17,7 +17,7 @@
  * Here's a short example of how to use this library:
  * <code>
  * <?php
- *    include('phpseclib/Crypt/DES.php');
+ *    include('Crypt/DES.php');
  *
  *    $des = new Crypt_DES();
  *
@@ -398,7 +398,7 @@ class Crypt_DES {
                 }
 
                 if (!class_exists('Crypt_Hash')) {
-                    require_once('phpseclib/Crypt/Hash.php');
+                    require_once('Crypt/Hash.php');
                 }
 
                 $i = 1;

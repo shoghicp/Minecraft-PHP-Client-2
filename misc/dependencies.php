@@ -30,6 +30,7 @@ the Free Software Foundation, either version 3 of the License, or
 */
 
 require_once("misc/functions.php");
+require_once("classes/Utils.class.php");
 
 $errors = 0;
 
@@ -94,11 +95,10 @@ if($errors > 0){
 	die();
 }
 
-require_once("classes/Utils.class.php");
 require_once("classes/Packet.class.php");
 require_once("classes/Socket.class.php");
 require_once("classes/Entity.class.php");
-//require_once("classes/Window.class.php");
+require_once("classes/Window.class.php");
 require_once("classes/MapInterface.class.php");
 require_once("classes/Path.class.php");
 require_once("classes/MinecraftInterface.class.php");

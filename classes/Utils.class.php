@@ -62,6 +62,15 @@ class Utils{
 		"f" => "1111",		
 	);
 	
+	public function getOS(){
+		$uname = strtoupper(php_uname("s"));
+		if(strpos($uname, "WIN") !== false){
+			return "win";
+		}else{
+			return "linux";
+		}
+	}
+	
 	public static function hexdump($bin){
 		$output = "";
 		$bin = str_split($bin, 16);
@@ -72,6 +81,8 @@ class Utils{
 		}
 		return $output;
 	}
+	
+	
 
 	public static function generateKey($startEntropy = ""){
 		//not much entropy, but works ^^
