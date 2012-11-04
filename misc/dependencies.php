@@ -55,16 +55,9 @@ if(version_compare("5.4.0", PHP_VERSION) > 0){
 	define("HEX2BIN", true);
 }
 
-if(php_sapi_name()!=="cli"){
+if(php_sapi_name() !== "cli" and defined("CLI_REQUIRED") and CLI_REQUIRED === true){
 	console("[ERROR] Use PHP-CLI to execute the client or create your own", true, true, 0);
 	++$errors;
-}
-
-if(!extension_loaded("gmp")){
-	console("[NOTICE] Enable GMP extension to increase performance", true, true, 0);
-	define("GMPEXT", false);
-}else{
-	define("GMPEXT", true);
 }
 
 if(!extension_loaded("sqlite3")){
@@ -82,8 +75,6 @@ if(extension_loaded("mcrypt") and mcrypt_module_self_test(MCRYPT_RIJNDAEL_128)){
 	console("[NOTICE] Unable to find Mcrypt extension", true, true, 0);
 	define("CRYPTO_LIB", "openssl");
 }
-
-
 
 if(!function_exists("curl_init")){
 	console("[ERROR] Unable to find cURL functions", true, true, 0);

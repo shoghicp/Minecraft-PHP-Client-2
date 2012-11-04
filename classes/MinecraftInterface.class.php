@@ -80,7 +80,11 @@ class MinecraftInterface{
 		if($this->server->connected === false){
 			return array("pid" => 0xff, "data" => array(0 => 'Connection error', 1 => true));
 		}
-		$pid = ord($this->server->read(1, $mode));
+		$pid = $this->server->read(1, $mode);
+		if($pid == ""){
+			return false;
+		}
+		$pid = ord($pid);
 		$struct = $this->getStruct($pid);
 		if($struct === false){
 			$this->server->unblock();

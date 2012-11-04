@@ -56,7 +56,7 @@ class MinecraftClient{
 		$this->startDatabase();
 		$this->cnt = 1;
 		$this->proxymode = false;
-		$this->events = array(0xff => array(0 => array('close', true)), "disabled" => array());
+		$this->events = array("received_ff" => array(0 => array('close', true)), "disabled" => array());
 		$this->responses = array();
 		$this->info = array();
 		$this->windows = array();

@@ -38,10 +38,6 @@ as the name is changed.
 
 */
 
-
-if(!defined("GMPEXT")){
-	@define("GMPEXT", false);
-}
 if(!defined("HEX2BIN")){
 	@define("HEX2BIN", false);
 }

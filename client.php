@@ -101,6 +101,7 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 INFO;
 include("config.php");
+define("CLI_REQUIRED", true);
 require("misc/dependencies.php");
 require_once("classes/MinecraftClient.class.php");
 
