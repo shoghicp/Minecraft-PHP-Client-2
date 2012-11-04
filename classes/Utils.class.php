@@ -44,7 +44,7 @@ if(!defined("HEX2BIN")){
 
 define("BIG_ENDIAN", 0x00);
 define("LITTLE_ENDIAN", 0x01);
-define("ENDIANNESS", (pack('d', 1) === "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN:LITTLE_ENDIAN));
+define("ENDIANNESS", (pack("d", 1) === "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN:LITTLE_ENDIAN));
 console("[DEBUG] Endianness: ".(ENDIANNESS === LITTLE_ENDIAN ? "Little Endian":"Big Endian"), true, true, 2);
 
 class Utils{
@@ -81,7 +81,7 @@ class Utils{
 		$bin = str_split($bin, 16);
 		foreach($bin as $counter => $line){
 			$hex = chunk_split(chunk_split(str_pad(bin2hex($line), 32, " ", STR_PAD_RIGHT), 2, " "), 24, " ");
-			$ascii = preg_replace('#([^\x20-\x7E])#', '.', $line);
+			$ascii = preg_replace('#([^\x20-\x7E])#', ".", $line);
 			$output .= str_pad(dechex($counter << 4), 4, "0", STR_PAD_LEFT). "  " . $hex . " " . $ascii . PHP_EOL;		
 		}
 		return $output;
@@ -89,44 +89,51 @@ class Utils{
 	
 	
 
-	public static function generateKey($startEntropy = ""){
-		//not much entropy, but works ^^
-		$entropy = array(
-			implode(stat(__FILE__)),
-			lcg_value(),
-			print_r($_SERVER, true),
-			implode(mt_rand(0,394),get_defined_constants()),
-			get_current_user(),
-			print_r(ini_get_all(),true),
-			(string) memory_get_usage(),
-			php_uname(),
-			phpversion(),
-			zend_version(),
-			getmypid(),
-			mt_rand(),
-			rand(),
-			implode(get_loaded_extensions()),
-			sys_get_temp_dir(),
-			disk_free_space("."),
-			disk_total_space("."),
-			(function_exists("openssl_random_pseudo_bytes") and version_compare(PHP_VERSION, "5.3.4", ">=")) ? openssl_random_pseudo_bytes(16):microtime(true),
-			function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16, MCRYPT_DEV_URANDOM):microtime(true),
-			uniqid(microtime(true),true),
-			file_exists("/dev/urandom") ? fread(fopen("/dev/urandom", "rb"),16):microtime(true),
-		);
-		
-		shuffle($entropy);
-		$value = Utils::hexToStr(md5((string) $startEntropy));
-		unset($startEntropy);
-		foreach($entropy as $c){
-			$c = (string) $c;
-			for($i = 0; $i < 4; ++$i){
-				$value ^= md5($i . $c . microtime(true), true);
-				$value ^= substr(sha1($i . $c . microtime(true), true), $i, 16);
-			}			
+	public static function getRandomBytes($lenght = 16, $startEntropy = ""){
+		$output = b"";
+		$lenght = abs((int) $lenght);
+		for($j = 0; $j < $lenght; $j += 16){
+			//not much entropy, but works ^^
+			$entropy = array(
+				serialize(stat(__FILE__)),
+				__DIR__,
+				PHP_OS,
+				lcg_value(),
+				serialize($_SERVER),
+				serialize(get_defined_constants()),
+				get_current_user(),
+				serialize(ini_get_all()),
+				(string) memory_get_usage(),
+				php_uname(),
+				phpversion(),
+				zend_version(),
+				getmypid(),
+				(string) mt_rand(),
+				(string) rand(),
+				serialize(get_loaded_extensions()),
+				sys_get_temp_dir(),
+				disk_free_space("."),
+				disk_total_space("."),
+				(function_exists("openssl_random_pseudo_bytes") and version_compare(PHP_VERSION, "5.3.4", ">=")) ? openssl_random_pseudo_bytes(16):microtime(true),
+				function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16, MCRYPT_DEV_URANDOM) : microtime(true),
+				uniqid(microtime(true),true),
+				file_exists("/dev/urandom") ? fread(fopen("/dev/urandom", "rb"),256):microtime(true),
+			);
+			
+			shuffle($entropy);
+			$value = md5((string) $startEntropy, true);
+			foreach($entropy as $c){
+				$c = (string) $c;
+				for($i = 0; $i < 4; ++$i){
+					$value ^= md5($i . $c . microtime(true), true);
+					$value ^= substr(sha1($i . $c . microtime(true), true), $i, 16);
+				}			
+			}
+			unset($entropy);
+			$startEntropy = md5($value, true);
+			$output .= substr($value, 0, min($lenght - strlen($output), $lenght));
 		}
-		unset($entropy);
-		return $value;
+		return $output;
 	}
 	
 	public static function round($number){
@@ -159,7 +166,7 @@ class Utils{
 	
 	public static function curl_get($page){
 		$ch = curl_init($page);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client 2'));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("User-Agent: Minecraft PHP Client 2"));
 		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
@@ -177,7 +184,7 @@ class Utils{
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
 		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent: Minecraft PHP Client 2'));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("User-Agent: Minecraft PHP Client 2"));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, (int) $timeout);
 		$ret = curl_exec($ch);
@@ -297,25 +304,25 @@ class Utils{
 	}
 	
 	public static function readFloat($str){
-		list(,$value) = ENDIANNESS === BIG_ENDIAN?unpack('f', $str):unpack('f', strrev($str));
+		list(,$value) = ENDIANNESS === BIG_ENDIAN ? unpack("f", $str):unpack("f", strrev($str));
 		return $value;
 	}
 	
 	public static function writeFloat($value){
-		return ENDIANNESS === BIG_ENDIAN?pack('f', $value):strrev(pack('f', $value));
-	}
-
-	public static function readDouble($str){
-		list(,$value) = ENDIANNESS === BIG_ENDIAN?unpack('d', $str):unpack('d', strrev($str));
-		return $value;
+		return ENDIANNESS === BIG_ENDIAN ? pack("f", $value):strrev(pack("f", $value));
 	}
 	
 	public static function printFloat($value){
 		return preg_replace("/(\.\d+?)0+$/", "$1", sprintf("%F", $value));
 	}
 	
+	public static function readDouble($str){
+		list(,$value) = ENDIANNESS === BIG_ENDIAN ? unpack("d", $str):unpack("d", strrev($str));
+		return $value;
+	}
+	
 	public static function writeDouble($value){
-		return ENDIANNESS === BIG_ENDIAN?pack('d', $value):strrev(pack('d', $value));
+		return ENDIANNESS === BIG_ENDIAN ? pack("d", $value):strrev(pack("d", $value));
 	}
 
 	public static function readLong($str){

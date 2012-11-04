@@ -78,7 +78,7 @@ class MinecraftInterface{
 	
 	public function readPacket($mode = false){
 		if($this->server->connected === false){
-			return array("pid" => 0xff, "data" => array(0 => 'Connection error', 1 => true));
+			return array("pid" => 0xff, "data" => array(0 => "Connection error", 1 => true));
 		}
 		$pid = $this->server->read(1, $mode);
 		if($pid == ""){
@@ -94,9 +94,9 @@ class MinecraftInterface{
 			logg($p, "packets", true, 3);
 			
 			$this->buffer = "";
-			$this->server->receive("\xff".Utils::writeString('Bad packet id 0x'.Utils::strToHex(chr($pid)).''));
-			$this->writePacket(0xff, array(0 => 'Bad packet id '.$pid.''));
-			return array("pid" => 0xff, "data" => array(0 => 'Bad packet id 0x'.Utils::strToHex(chr($pid)).''));
+			$this->server->receive("\xff".Utils::writeString("Bad packet id 0x".Utils::strToHex(chr($pid))));
+			$this->writePacket(0xff, array(0 => "Bad packet id 0x".Utils::strToHex(chr($pid))));
+			return array("pid" => 0xff, "data" => array(0 => "Bad packet id 0x".Utils::strToHex(chr($pid))));
 		}
 		
 		$packet = new Packet($pid, $struct, $this->server);

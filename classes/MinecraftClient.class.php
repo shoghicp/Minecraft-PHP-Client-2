@@ -552,7 +552,7 @@ class MinecraftClient{
 				break;
 			case "received_04":
 				$this->time = ($this->protocol > 39 ? $data[1]:$data[0]) % 24000;
-				console("[DEBUG] Time: ".((intval($this->time/1000+6) % 24)).':'.str_pad(intval(($this->time/1000-floor($this->time/1000))*60),2,"0",STR_PAD_LEFT).', '.(($this->time > 23100 or $this->time < 12900) ? "day":"night"), true, true, 2);
+				console("[DEBUG] Time: ".((intval($this->time/1000+6) % 24)).":".str_pad(intval(($this->time/1000-floor($this->time/1000))*60),2,"0",STR_PAD_LEFT).", ".(($this->time > 23100 or $this->time < 12900) ? "day":"night"), true, true, 2);
 				$this->trigger("onTimeChange", $this->time);
 				$timeState = (($this->time > 23100 or $this->time < 12900) ? "day":"night");
 				if($this->timeState != $timeState){
@@ -924,7 +924,7 @@ class MinecraftClient{
 					0 => $this->protocol,
 					1 => $this->auth["user"],
 				));
-				$this->event("received_01", 'authentication', true);
+				$this->event("received_01", "authentication", true);
 				$this->process(0x01);
 				break;
 			case "received_01":
@@ -1012,7 +1012,7 @@ class MinecraftClient{
 				$rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
 				$rsa->loadKey($publicKey, CRYPT_RSA_PUBLIC_FORMAT_PKCS1);
 				console("[DEBUG] Generating simmetric key...", true, true, 2);
-				$this->key = Utils::generateKey($data[0].$data[4]);
+				$this->key = Utils::getRandomBytes(16, $data[0].$data[4]);
 				console("[INTERNAL] 128-bit Simmetric Key generated: 0x".strtoupper(Utils::strToHex($this->key)), true, true, 3);
 				console("[DEBUG] [RSA-1024] Encrypting simmetric key...", true, true, 2);
 				$encryptedKey = $rsa->encrypt($this->key);
@@ -1033,7 +1033,7 @@ class MinecraftClient{
 					3 => $encryptedToken,
 				));
 				console("[DEBUG] [RSA-1024] Sent encrypted shared secret and token", true, true, 2);
-				$this->event("received_fc", 'newAuthentication', true);
+				$this->event("received_fc", "newAuthentication", true);
 				$this->process(0xfc);
 				break;
 			case "received_fc":
@@ -1044,7 +1044,7 @@ class MinecraftClient{
 					$this->interface->server->startRC4($this->key);
 					$this->send(0x01, array());
 				}
-				$this->event("received_01", 'newAuthentication', true);
+				$this->event("received_01", "newAuthentication", true);
 				$this->process(0x01);
 				break;
 			case "received_01":
@@ -1076,7 +1076,7 @@ class MinecraftClient{
 			2 => $this->server,
 			3 => $this->port,
 		));
-		$this->event("received_fd", 'newAuthentication', true);
+		$this->event("received_fd", "newAuthentication", true);
 		$this->process(0xfd);
 	}
 	
@@ -1095,7 +1095,7 @@ class MinecraftClient{
 		$this->send(0x02, array(
 			0 => $user.($this->protocol >= 28 ? ";".$this->server.":".$this->port:""),
 		));
-		$this->event("received_02", 'authentication', true);
+		$this->event("received_02", "authentication", true);
 		$this->process(0x02);
 	}
 	public function sendSpoutMessage($pid, $version, $data){
@@ -1251,7 +1251,7 @@ class MinecraftClient{
 					1 => 1,				
 				));
 				console("[DEBUG] [Spout] Sent Spout verification packet", true, true, 2);
-				$this->event("received_12", 'spoutHandler', true);
+				$this->event("received_12", "spoutHandler", true);
 				break;
 		}
 	
