@@ -53,10 +53,11 @@ class MinecraftClient{
 		console("[INFO] Server: ".$this->server.":".$this->port);
 		console("[INFO] Protocol: ".$this->protocol);
 		$this->interface = new MinecraftInterface($server, $protocol, $port);
+		$this->events = array("disabled" => array());
 		$this->startDatabase();
 		$this->cnt = 1;
 		$this->proxymode = false;
-		$this->events = array("received_ff" => array(0 => array('close', true)), "disabled" => array());
+		$this->event("received_ff", "close", true);
 		$this->responses = array();
 		$this->info = array();
 		$this->windows = array();
@@ -409,7 +410,7 @@ class MinecraftClient{
 	private function backgroundHandler($data, $event){
 		switch($event){
 			case "onRecievedPacket":
-				$this->tickerFunction();
+				$this->tick();
 				break;
 			case "onPluginMessage_REGISTER":
 				foreach(explode("\x00", $data) as $channel){
@@ -830,8 +831,9 @@ class MinecraftClient{
 		$info["memory_usage"] = round((memory_get_usage(true) / 1024) / 1024, 2)."MB";
 		$info["memory_peak_usage"] = round((memory_get_peak_usage(true) / 1024) / 1024, 2)."MB";
 		$info["entities"] = count($this->entities);
+		$info["garbage"] = gc_collect_cycles();
 		if($console === true){
-			console("[DEBUG] Memory usage: ".$info["memory_usage"]." (Peak ".$info["memory_peak_usage"]."), Entities: ".$info["entities"], true, true, 2);
+			console("[DEBUG] Memory usage: ".$info["memory_usage"]." (Peak ".$info["memory_peak_usage"]."), Entities: ".$info["entities"].", Garbage: ".$info["garbage"], true, true, 2);
 		}
 		return $info;
 	}
