@@ -297,7 +297,7 @@ class Entity{
 		$angle = Utils::angle3D($pos2, $pos);
 		$this->position["yaw"] = $angle["yaw"];
 		$this->position["pitch"] = $angle["pitch"];
-	$this->client->query("UPDATE entities SET pitch = ".$this->position["pitch"].", yaw = ".$this->position["yaw"]." WHERE EID = ".$this->eid.";");
+		$this->client->query("UPDATE entities SET pitch = ".$this->position["pitch"].", yaw = ".$this->position["yaw"]." WHERE EID = ".$this->eid.";");
 	}
 	
 	public function setCoords($x, $y, $z){

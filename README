@@ -42,7 +42,7 @@ Also check the "docs" folder if you want info on events and methods of the Clien
 --- SPANISH ---
 Este cliente de Minecraft ha sido reescrito desde mi anterior cliente para que sea modular y mantenible.
 Esta orientado a objetos, tiene un sistema de eventos y acciones para poder diseñar plugins y clientes con el
-dacilmente. Soporta Spoutcraft
+facilmente. Soporta Spoutcraft
 
 Ejecuta "php client.php --help" en la consola para mas informacion
 tambien mira la carpeta "docs" si quieres mas informacion sobre eventos y metodos de la clase Cliente
