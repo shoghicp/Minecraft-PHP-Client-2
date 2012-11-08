@@ -89,15 +89,18 @@ class Utils{
 	
 	
 
-	public static function getRandomBytes($lenght = 16, $startEntropy = ""){
+	public static function getRandomBytes($lenght = 16, $startEntropy = "", $secure = true, &$rounds = 0){
 		$output = b"";
 		$lenght = abs((int) $lenght);
-		for($j = 0; $j < $lenght; $j += 16){
-			//not much entropy, but works ^^
+		$rounds = 0;
+		while(strlen($output) < $lenght){
+			//some entropy, but works ^^
 			$entropy = array(
+				$startEntropy,
 				serialize(stat(__FILE__)),
 				__DIR__,
 				PHP_OS,
+				microtime(),
 				lcg_value(),
 				serialize($_SERVER),
 				serialize(get_defined_constants()),
@@ -106,6 +109,7 @@ class Utils{
 				(string) memory_get_usage(),
 				php_uname(),
 				phpversion(),
+				extension_loaded("gmp") ? gmp_strval(gmp_random(4)):microtime(),
 				zend_version(),
 				getmypid(),
 				(string) mt_rand(),
@@ -115,23 +119,48 @@ class Utils{
 				disk_free_space("."),
 				disk_total_space("."),
 				(function_exists("openssl_random_pseudo_bytes") and version_compare(PHP_VERSION, "5.3.4", ">=")) ? openssl_random_pseudo_bytes(16):microtime(true),
-				function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16, MCRYPT_DEV_URANDOM) : microtime(true),
+				function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16, ($secure === true ? MCRYPT_DEV_RANDOM:MCRYPT_DEV_URANDOM)) : microtime(true),
 				uniqid(microtime(true),true),
+				//$secure === true ? (file_exists("/dev/random") ? fread(fopen("/dev/random", "rb"),8):microtime(true)):microtime(true),
 				file_exists("/dev/urandom") ? fread(fopen("/dev/urandom", "rb"),256):microtime(true),
 			);
 			
 			shuffle($entropy);
-			$value = md5((string) $startEntropy, true);
-			foreach($entropy as $c){
+			$value = str_repeat("\x00", 16);
+			foreach($entropy as $c){ //mixing entropy values with XOR
 				$c = (string) $c;
-				for($i = 0; $i < 4; ++$i){
-					$value ^= md5($i . $c . microtime(true), true);
-					$value ^= substr(sha1($i . $c . microtime(true), true), $i, 16);
-				}			
+				str_shuffle($c); //randomize characters
+				for($i = 0; $i < 32; $i += 16){
+					$value ^= hash("md5", $i . $c . microtime(), true);
+					$value ^= substr(hash("sha256", $i . $c . microtime(), true), $i, 16);
+					$value ^= hash("ripemd128", $i . $c . microtime(), true);
+				}
+				
 			}
 			unset($entropy);
-			$startEntropy = md5($value, true);
+			
+			if($secure === true){
+				//Von Neumann entropy extractor, increases entropy
+				$secureValue = "";
+				for($i = 0; $i < 128; $i += 2){
+					$a = ord($value{$i >> 3});
+					$b = 1 << ($i % 8);
+					$c = 1 << (($i % 8) + 1);
+					$b = ($a & $b) === $b ? "1":"0";
+					$c = ($a & $c) === $c ? "1":"0";
+					if($b !== $c){
+						$secureValue .= $b;
+					}
+				}
+				$value = "";
+				$secureValue = str_split($secureValue, 8);
+				foreach($secureValue as $c){
+					$value .= chr(bindec($c));
+				}
+			}
 			$output .= substr($value, 0, min($lenght - strlen($output), $lenght));
+			unset($value, $secureValue);
+			++$rounds;
 		}
 		return $output;
 	}

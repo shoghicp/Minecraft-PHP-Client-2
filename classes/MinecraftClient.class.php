@@ -1012,7 +1012,7 @@ class MinecraftClient{
 				$rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
 				$rsa->loadKey($publicKey, CRYPT_RSA_PUBLIC_FORMAT_PKCS1);
 				console("[DEBUG] Generating simmetric key...", true, true, 2);
-				$this->key = Utils::getRandomBytes(16, $data[0].$data[4]);
+				$this->key = Utils::getRandomBytes(16, $data[0].$data[4], true);
 				console("[INTERNAL] 128-bit Simmetric Key generated: 0x".strtoupper(Utils::strToHex($this->key)), true, true, 3);
 				console("[DEBUG] [RSA-1024] Encrypting simmetric key...", true, true, 2);
 				$encryptedKey = $rsa->encrypt($this->key);
