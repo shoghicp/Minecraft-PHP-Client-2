@@ -194,9 +194,9 @@ class MinecraftClient{
 		while($evn = $events->fetchArray(SQLITE3_ASSOC)){
 			$ev = $this->events[$event][$evn["ID"]];
 			if(isset($ev[1]) and ($ev[1] === true or is_object($ev[1]))){
-				$this->responses[$eid] = call_user_func(array(($ev[1] === true ? $this:$ev[1]), $ev[0]), $data, $event, $this);
+				$this->responses[$evn["ID"]] = call_user_func(array(($ev[1] === true ? $this:$ev[1]), $ev[0]), $data, $event, $this);
 			}else{
-				$this->responses[$eid] = call_user_func($ev[0], $data, $event, $this);
+				$this->responses[$evn["ID"]] = call_user_func($ev[0], $data, $event, $this);
 			}
 		}
 	}	
