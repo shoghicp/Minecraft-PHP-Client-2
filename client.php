@@ -40,6 +40,7 @@ as the name is changed.
 
 
 $versions = array(
+	"1.4.4" => 49,
 	"1.4.3" => 48,
 	"1.4.2" => 47,
 	"1.4.1" => 47,
