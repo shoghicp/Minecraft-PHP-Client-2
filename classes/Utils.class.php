@@ -89,19 +89,21 @@ class Utils{
 	
 	
 
-	public static function getRandomBytes($lenght = 16, $startEntropy = "", $secure = true, &$rounds = 0){
+	public static function getRandomBytes($length = 16, $secure = true, $raw = true, $startEntropy = "", &$rounds = 0, &$drop = 0){
 		$output = b"";
-		$lenght = abs((int) $lenght);
+		$length = abs((int) $length);
+		$secureValue = "";
 		$rounds = 0;
-		while(strlen($output) < $lenght){
+		$drop = 0;
+		while(!isset($output{$length - 1})){
 			//some entropy, but works ^^
-			$entropy = array(
-				$startEntropy,
+			$weakEntropy = array(
+				is_array($startEntropy) ? implode($startEntropy):$startEntropy,
 				serialize(stat(__FILE__)),
 				__DIR__,
 				PHP_OS,
 				microtime(),
-				lcg_value(),
+				(string) lcg_value(),
 				serialize($_SERVER),
 				serialize(get_defined_constants()),
 				get_current_user(),
@@ -111,58 +113,65 @@ class Utils{
 				phpversion(),
 				extension_loaded("gmp") ? gmp_strval(gmp_random(4)):microtime(),
 				zend_version(),
-				getmypid(),
+				(string) getmypid(),
 				(string) mt_rand(),
 				(string) rand(),
+				function_exists("zend_thread_id") ? ((string) zend_thread_id()):microtime(),
+				var_export(@get_browser(), true),
+				function_exists("sys_getloadavg") ? implode(";", sys_getloadavg()):microtime(),
 				serialize(get_loaded_extensions()),
 				sys_get_temp_dir(),
-				disk_free_space("."),
-				disk_total_space("."),
-				(function_exists("openssl_random_pseudo_bytes") and version_compare(PHP_VERSION, "5.3.4", ">=")) ? openssl_random_pseudo_bytes(16):microtime(true),
-				function_exists("mcrypt_create_iv") ? mcrypt_create_iv(16, ($secure === true ? MCRYPT_DEV_RANDOM:MCRYPT_DEV_URANDOM)) : microtime(true),
-				uniqid(microtime(true),true),
-				//$secure === true ? (file_exists("/dev/random") ? fread(fopen("/dev/random", "rb"),8):microtime(true)):microtime(true),
-				file_exists("/dev/urandom") ? fread(fopen("/dev/urandom", "rb"),256):microtime(true),
+				(string) disk_free_space("."),
+				(string) disk_total_space("."),
+				uniqid(microtime(),true),
 			);
 			
-			shuffle($entropy);
-			$value = str_repeat("\x00", 16);
-			foreach($entropy as $c){ //mixing entropy values with XOR
+			shuffle($weakEntropy);
+			$value = hash("sha256", implode($weakEntropy), true);
+			foreach($weakEntropy as $k => $c){ //mixing entropy values with XOR and hash randomness extractor
 				$c = (string) $c;
 				str_shuffle($c); //randomize characters
-				for($i = 0; $i < 32; $i += 16){
-					$value ^= hash("md5", $i . $c . microtime(), true);
-					$value ^= substr(hash("sha256", $i . $c . microtime(), true), $i, 16);
-					$value ^= hash("ripemd128", $i . $c . microtime(), true);
-				}
-				
+				$value ^= hash("md5", $c . microtime() . $k, true) . hash("md5", microtime() . $k . $c, true);
+				$value ^= hash("sha256", $c . microtime() . $k, true);
 			}
-			unset($entropy);
+			unset($weakEntropy);
 			
 			if($secure === true){
-				//Von Neumann entropy extractor, increases entropy
-				$secureValue = "";
-				for($i = 0; $i < 128; $i += 2){
-					$a = ord($value{$i >> 3});
+				$strongEntropy = array(
+					is_array($startEntropy) ? $startEntropy[($rounds + $drop) % count($startEntropy)]:$startEntropy, //Get a random index of the startEntropy, or just read it
+					file_exists("/dev/urandom") ? fread(fopen("/dev/urandom", "rb"), 512):"",
+					(function_exists("openssl_random_pseudo_bytes") and version_compare(PHP_VERSION, "5.3.4", ">=")) ? openssl_random_pseudo_bytes(512):"",
+					function_exists("mcrypt_create_iv") ? mcrypt_create_iv(512, MCRYPT_DEV_URANDOM) : "",
+					$value,
+				);
+				shuffle($strongEntropy);
+				$strongEntropy = implode($strongEntropy);
+				$value = "";
+				//Von Neumann randomness extractor, increases entropy
+				$len = strlen($strongEntropy) * 8;
+				for($i = 0; $i < $len; $i += 2){
+					$a = ord($strongEntropy{$i >> 3});
 					$b = 1 << ($i % 8);
 					$c = 1 << (($i % 8) + 1);
 					$b = ($a & $b) === $b ? "1":"0";
 					$c = ($a & $c) === $c ? "1":"0";
 					if($b !== $c){
 						$secureValue .= $b;
+						if(isset($secureValue{7})){
+							$value .= chr(bindec($secureValue));
+							$secureValue = "";
+						}
+						++$drop;
+					}else{
+						$drop += 2;
 					}
 				}
-				$value = "";
-				$secureValue = str_split($secureValue, 8);
-				foreach($secureValue as $c){
-					$value .= chr(bindec($c));
-				}
 			}
-			$output .= substr($value, 0, min($lenght - strlen($output), $lenght));
-			unset($value, $secureValue);
+			$output .= substr($value, 0, min($length - strlen($output), $length));
+			unset($value);
 			++$rounds;
 		}
-		return $output;
+		return $raw === false ? bin2hex($output):$output;
 	}
 	
 	public static function round($number){

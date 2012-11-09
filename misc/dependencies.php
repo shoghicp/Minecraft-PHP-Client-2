@@ -95,6 +95,8 @@ if($errors > 0){
 	die();
 }
 
+gc_enable();
+
 require_once("classes/Packet.class.php");
 require_once("classes/Socket.class.php");
 require_once("classes/Entity.class.php");
