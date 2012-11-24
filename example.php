@@ -33,17 +33,17 @@
 
 
 define("ACTION_MODE", 1);
-define("DEBUG", 1);
+define("DEBUG", 2);
 define("LOG", false);
 include("config.php");
 require("misc/dependencies.php");
 require_once("classes/MinecraftClient.class.php");
 
-$client = new MinecraftClient("127.0.0.1");
+$client = new MinecraftClient("127.0.0.1"); //Ping 127.0.0.1 (localhost) server
 $info = $client->ping();
 console("[INFO] Name: ".$info[0]);
 console("[INFO] Online players: ".$info[1]);
 console("[INFO] Max players: ".$info[2]);
 echo PHP_EOL;
-$client = new MinecraftClient("127.0.0.1");
+$client = new MinecraftClient("127.0.0.1"); //Connect to the server
 $client->connect("Player", "password"); //NO CODE IS EXECUTED AFTER THIS LINE. BE SURE TO CREATE EVENTS BEFORE THIS LINE
