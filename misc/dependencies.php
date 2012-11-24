@@ -69,12 +69,12 @@ if(extension_loaded("mcrypt") and mcrypt_module_self_test(MCRYPT_RIJNDAEL_128)){
 	define("CRYPTO_LIB", "openssl");
 }
 
-if(!function_exists("curl_init")){
-	console("[ERROR] Unable to find cURL functions", true, true, 0);
+if(!extension_loaded("curl")){
+	console("[ERROR] Unable to find cURL extension", true, true, 0);
 	++$errors;
 }
 
-if(!function_exists("gzinflate")){
+if(!extension_loaded("zlib")){
 	console("[ERROR] Unable to find Zlib extension", true, true, 0);
 	++$errors;
 }
