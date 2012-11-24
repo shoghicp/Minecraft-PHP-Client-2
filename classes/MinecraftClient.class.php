@@ -181,7 +181,7 @@ class MinecraftClient{
 			$packet = $this->interface->readPacket();
 			$this->trigger("onRecievedPacket", $packet);
 			$pid = $packet["pid"];
-			$this->trigger("received_".Utils::strTohex(chr($pid)), $packet["data"]);
+			$this->trigger("received_".Utils::strToHex(chr($pid)), $packet["data"]);
 		}
 	}
 	
@@ -226,10 +226,9 @@ class MinecraftClient{
 			eval($action["code"]);
 			if($action["repeat"] === 0){
 				$this->query("DELETE FROM actions WHERE ID = ".$action["ID"].";");
-			}else{
-				$this->query("UPDATE actions SET last = ".$time." WHERE ID = ".$action["ID"].";");
 			}
 		}
+		$this->query("UPDATE actions SET last = ".$time." WHERE last <= (".$time." - interval);");
 	}	
 	
 	public function toggleEvent($event){

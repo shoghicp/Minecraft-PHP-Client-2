@@ -61,6 +61,8 @@ class LagOMeter{
 				$this->lag = false;
 				$this->client->trigger("onLagEnd", microtime(true) - $this->start);
 				console("[DEBUG] [LagOMeter] Lag ended (".(microtime(true) - $this->start)." sec)", true, true, 2);
+			}else{
+				$this->client->trigger("onLag", microtime(true) - $this->start);
 			}
 		}elseif((microtime(true) - $this->last) >= $this->minTime){
 			$this->lag = true;

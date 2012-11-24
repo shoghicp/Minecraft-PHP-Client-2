@@ -58,7 +58,7 @@ class FollowPath{
 			return;
 		}
 		foreach($this->path as $i => $data){
-			if(($data["time"] + 2) <= microtime(true) - $this->start){
+			if($data["time"] <= (microtime(true) - $this->start)){
 				$ob->move($data["coords"]["x"], $data["coords"]["y"], $data["coords"]["z"]);
 				unset($this->path[$i]);
 			}

@@ -55,7 +55,7 @@ class LastLogin{
 	private $crypt, $location;
 	function __construct(){
 		$this->crypt = new PKCSKeyGenerator("passwordfile", "\x0c\x9d\x4a\xe4\x1e\x83\x15\xfc", 5, 1, PKCS_MD5);
-		$this->location = LastLogin::getLocation();'C:\Users\shoghicp\AppData\Roaming\.minecraft\lastlogin';
+		$this->location = LastLogin::getLocation();
 	}
 	
 	public static function getLocation(){
