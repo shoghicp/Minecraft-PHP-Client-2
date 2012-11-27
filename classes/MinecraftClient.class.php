@@ -63,6 +63,7 @@ class MinecraftClient{
 		$this->players = array();
 		$this->useMap = true;	
 		$this->auth = array();
+		$this->secure = "https";
 		include("misc/materials.php");
 		$this->material = $material;
 		register_shutdown_function("logg", "", "console", false, 0, true);
@@ -233,7 +234,7 @@ class MinecraftClient{
 			$this->events["disabled"][$event] = false;
 			$this->query("UPDATE events SET disabled = 1 WHERE eventName = '".$event."';");
 			console("[INTERNAL] Disabled event ".$event, true, true, 3);
-		}	
+		}
 	}
 	
 	public function event($event, $func, $in = false){
@@ -942,13 +943,13 @@ class MinecraftClient{
 	
 	public function loginMinecraft($username, $password, $secure = true){
 		if($secure !== false){
-			$proto = "https";
+			$this->secure = "https";
 			console("[DEBUG] Using secure HTTPS connection", true, true, 2);
 		}else{
-			$proto = "http";
+			$this->secure = "http";
 		}
 			
-		$response = Utils::curl_get($proto."://login.minecraft.net/?user=".$username."&password=".$password."&version=".LAUNCHER_VERSION);
+		$response = Utils::curl_get($this->secure."://login.minecraft.net/?user=".$username."&password=".$password."&version=".LAUNCHER_VERSION);
 		switch($response){
 			case "Bad login":
 			case "Bad Login":

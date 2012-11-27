@@ -102,12 +102,8 @@ class MinecraftInterface{
 	
 	public function writePacket($pid, $data = array(), $raw = false){
 		$struct = $this->getStruct($pid);
-		if($this->protocol >= 32){
-			if($pid === 0x01){
-				$struct = array();
-			}elseif($pid === 0x09){
-				$struct = array();
-			}
+		if(($pid === 0x01 or $pid === 0x09) and $this->protocol >= 32){
+			$struct = array();
 		}
 		if($raw === false){
 			$packet = new Packet($pid, $struct);

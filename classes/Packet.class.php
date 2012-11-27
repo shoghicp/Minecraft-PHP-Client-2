@@ -102,35 +102,6 @@ class Packet{
 		}
 	}
 	
-	public static function getMin($struct){
-		$offset = 0;
-		foreach($struct as $type){
-			switch($type){
-				case "float":
-				case "int":
-					$offset += 4;
-					break;
-				case "double":
-				case "long":
-					$offset += 8;
-					break;
-				case "bool":
-				case "boolean":
-				case "ubyte":
-				case "byte":
-					$offset += 1;
-					break;
-				case "short":
-					$offset += 2;
-					break;
-				case "string":
-					$offset += 2;
-					break;
-			}
-		}
-		return $offset;	
-	}
-	
 	private function get($len){
 		return $this->addRaw($this->sock->read($len));
 	}
@@ -228,18 +199,18 @@ class Packet{
 					$this->data[] = $this->get(max(0,$this->data[5]));
 					break;
 				case "multiblockArray":
-					$count = $this->data[$field - 1];
-					$d = array();
-					for($i=0;$i<$count;++$i){
-						$this->get(2);
+					$count = $this->data[$field - 1]; 
+					$d = array(0 => array(), 1 => array(), 2 => array());
+					for($i = 0; $i < $count; ++$i){
+						$d[0][] = $this->get(2);
 					}
-					for($i=0;$i<$count;++$i){
-						$this->get(1);
+					for($i = 0; $i < $count; ++$i){
+						$d[1][] = $this->get(1);
 					}
-					for($i=0;$i<$count;++$i){
-						$this->get(1);
+					for($i = 0; $i < $count; ++$i){
+						$d[2][] = $this->get(1);
 					}
-					$this->data[] = "";
+					$this->data[] = $d;
 					break;
 
 				case "newMultiblockArray":
@@ -250,12 +221,12 @@ class Packet{
 				case "slotData":
 					$scount = $type === "slotData" ? 1:$this->data[$field-1];
 					$d = array();
-					for($i=0;$i<$scount;++$i){
-						$id = Utils::readShort($this->get(2));
-						if($id != -1){
+					for($i = 0; $i < $scount; ++$i){
+						$id = Utils::readShort($this->get(2), false);
+						if($id !== -1){
 							$count = Utils::readByte($this->get(1));						
 							$meta = Utils::readShort($this->get(2));
-							$d[$i] = array($id,$count,$meta);
+							$d[$i] = array($id, $count, $meta);
 							$enchantable_items = array(
 								 0x103, #Flint and steel
 								 0x105, #Bow

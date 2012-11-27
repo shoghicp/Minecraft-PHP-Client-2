@@ -108,9 +108,7 @@ class Anvil{
 	public function getIndex($x, $y, $z){
 		$X = ($x >> 4) << 4;
 		$Z = ($z >> 4) << 4;
-		$aX = $x - $X;
-		$aZ = $z - $Z;
-		$index = ($y << $this->height) + ($aZ << 4) + $aX;
+		$index = ($y << $this->height) + (($z - $Z) << 4) + ($x - $X);
 		return array($X, $Z, $index);
 	}
 	

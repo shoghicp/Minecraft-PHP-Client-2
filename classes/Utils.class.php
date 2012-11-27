@@ -41,24 +41,6 @@ define("ENDIANNESS", (pack("d", 1) === "\77\360\0\0\0\0\0\0" ? BIG_ENDIAN:LITTLE
 console("[DEBUG] Endianness: ".(ENDIANNESS === LITTLE_ENDIAN ? "Little Endian":"Big Endian"), true, true, 2);
 
 class Utils{
-	public static $hexToBin = array(
-		"0" => "0000",
-		"1" => "0001",
-		"2" => "0010",
-		"3" => "0011",
-		"4" => "0100",
-		"5" => "0101",
-		"6" => "0110",
-		"7" => "0111",
-		"8" => "1000",
-		"9" => "1001",
-		"a" => "1010",
-		"b" => "1011",
-		"c" => "1100",
-		"d" => "1101",
-		"e" => "1110",
-		"f" => "1111",		
-	);
 	
 	public static function getOS(){
 		$uname = strtoupper(php_uname("s"));
@@ -221,42 +203,6 @@ class Utils{
 		$ret = curl_exec($ch);
 		curl_close($ch);
 		return $ret;
-	}
-	
-	public static function strToBin($str){
-		return Utils::hexToBin(Utils::strToHex($str));
-	}
-	
-	public static function hexToBin($hex){
-		$bin = "";
-		$len = strlen($hex);		
-		for($i = 0; $i < $len; ++$i){
-			$bin .= Utils::$hexToBin[$hex{$i}];
-		}
-		return $bin;
-	}
-	
-	public static function binToStr($bin){
-		$len = strlen($bin);
-		if(($len % 8) != 0){
-			$bin = substr($bin, 0, -($len % 8));
-		}
-		$str = "";
-		for($i = 0; $i < $len; $i += 8){
-			$str .= chr(bindec(substr($bin, $i, 8)));
-		}
-		return $str;
-	}
-	public static function binToHex($bin){
-		$len = strlen($bin);
-		if(($len % 8) != 0){
-			$bin = substr($bin, 0, -($len % 8));
-		}
-		$hex = "";
-		for($i = 0; $i < $len; $i += 4){
-			$hex .= dechex(bindec(substr($bin, $i, 4)));
-		}
-		return $hex;
 	}
 	
 	public static function strToHex($str){
