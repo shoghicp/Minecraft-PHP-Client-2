@@ -34,9 +34,8 @@
 
 class Stats{
 	var $stats;
-	protected $client, $file;
+	protected $file;
 	function __construct($client, $file){
-		$this->client = $client;
 		$this->file = $file;
 		$this->load();
 		console("[INFO] [Stats] Loaded");

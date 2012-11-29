@@ -223,7 +223,7 @@ class Packet{
 					$d = array();
 					for($i = 0; $i < $scount; ++$i){
 						$id = Utils::readShort($this->get(2), false);
-						if($id !== -1){
+						if($id !== 0xffff){
 							$count = Utils::readByte($this->get(1));						
 							$meta = Utils::readShort($this->get(2));
 							$d[$i] = array($id, $count, $meta);
@@ -249,7 +249,7 @@ class Packet{
 								 0x136, 0x137, 0x138, 0x139, #DIAMOND
 								 0x13A, 0x13B, 0x13C, 0x13D, #GOLD
 							);
-							if(($this->protocol >= 36 and $id != 0xff) or in_array($id, $enchantable_items)){
+							if($this->protocol >= 36 or in_array($id, $enchantable_items)){
 								$len = Utils::readShort($this->get(2));
 								if($len > -1){
 									$arr = $this->get($len);
