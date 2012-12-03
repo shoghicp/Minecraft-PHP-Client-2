@@ -106,7 +106,7 @@ class Anvil{
 	
 	//O(1)
 	public function getIndex($x, $y, $z){
-		$X = ($x >> 4) << 4;
+		$X = ($x >> 4) << 4; //Round to the next 16 multiple
 		$Z = ($z >> 4) << 4;
 		$index = ($y << $this->height) + (($z - $Z) << 4) + ($x - $X);
 		return array($X, $Z, $index);

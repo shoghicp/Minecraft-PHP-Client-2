@@ -40,14 +40,16 @@ define("ENTITY_PAINTING", 4);
 define("ENTITY_EXPERIENCE", 5);
 
 class Entity{
-	var $eid, $type, $name, $position, $dead, $metadata, $class;
+	var $eid, $type, $name, $position, $dead, $metadata, $class, $attach;
 	protected $health, $food, $client;
 	
 	function __construct($eid, $class, $type = 0, $client){ //$type = 0 ---> player
 		$this->client = $client;
 		$this->eid = (int) $eid;
 		$this->type = (int) $type;
-		$this->class = (int) $class;				
+		$this->class = (int) $class;
+		$this->attach = false;
+		$this->status = 0;
 		$this->health = 20;
 		$this->food = 20;
 		$this->dead = false;
@@ -75,6 +77,16 @@ class Entity{
 		$this->client->query("UPDATE entities SET dead = 1 WHERE EID = ".$this->eid.";");	
 	}
 	
+	public function attach($EID){
+		if($EID === -1){
+			$this->attach = false;
+			$this->client->query("UPDATE entities SET attach = 0 WHERE EID = ".$this->eid.";");
+		}else{
+			$this->attach = $EID;
+			$this->client->query("UPDATE entities SET attach = ".$EID." WHERE EID = ".$this->eid.";");
+		}
+	}
+	
 	public function getEID(){
 		return $this->eid;
 	}
@@ -97,6 +109,7 @@ class Entity{
 					$this->metadata["riding"] = ($value & 0x04) === 0x04 ? true:false;
 					$this->metadata["sprinting"] = ($value & 0x08) === 0x08 ? true:false;
 					$this->metadata["action"] = ($value & 0x10) === 0x10 ? true:false;
+					$this->metadata["invisible"] = ($value & 0x20) === 0x20 ? true:false;
 					break;
 				case 1:
 					$this->metadata["air"] = $value;
@@ -154,7 +167,7 @@ class Entity{
 								case 99:
 									$this->metadata["flower"] = $value === 1 ? true:false;
 									break;
-								case 120:
+								case 120://Villager
 									$this->metadata["type"] = $value;
 									break;
 							}

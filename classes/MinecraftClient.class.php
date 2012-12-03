@@ -699,6 +699,25 @@ class MinecraftClient{
 					$this->trigger("onEntityMove_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
 				}
 				break;
+			case "received_26":
+				if(isset($this->entities[$data[0]])){
+					$this->entities[$data[0]]->status($data[1]);
+					$this->trigger("onEntityStatusChange", $this->entities[$data[0]]);
+					$this->trigger("onEntityStatusChange_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
+				}
+				break;
+			case "received_27":
+				if(isset($this->entities[$data[0]])){
+					$this->entities[$data[0]]->attach($data[1]);
+					if($data[1] !== -1){
+						$this->trigger("onEntityAttach", $this->entities[$data[0]]);
+						$this->trigger("onEntityAttach_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);
+					}else{
+						$this->trigger("onEntityDeattach", $this->entities[$data[0]]);
+						$this->trigger("onEntityDeattach_".$this->entities[$data[0]]->eid, $this->entities[$data[0]]);					
+					}
+				}
+				break;
 			case "received_28":
 				if(isset($this->entities[$data[0]])){
 					$this->entities[$data[0]]->setMetadata($data[1]);
@@ -868,6 +887,7 @@ class MinecraftClient{
 		$this->event("received_1f", "handler", true);
 		$this->event("received_21", "handler", true);
 		$this->event("received_22", "handler", true);
+		$this->event("received_27", "handler", true);
 		$this->event("received_28", "handler", true);
 		$this->event("received_32", "mapHandler", true);
 		$this->event("received_33", "mapHandler", true);
