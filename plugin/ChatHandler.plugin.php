@@ -57,7 +57,11 @@ class ChatHandler{
 		$world = "";
 		$owner = "";
 		$receptor = "";
-		if(preg_match("/([a-zA-Z0-9_~]{2,16})\ whispers ([a-zA-Z0-9_]{2,16})/",$mess,$username) > 0){ //Default MP
+		if(preg_match("/\* ([a-zA-Z0-9_~]{2,16}) /",$mess,$username) > 0){ //Default MP
+			$owner = $username[1];
+			//$type = "me";
+			$message = ltrim(substr($mess, strpos($mess, $username[0]) + strlen($username[0])));
+		}elseif(preg_match("/([a-zA-Z0-9_~]{2,16}) whispers ([a-zA-Z0-9_]{2,16})/",$mess,$username) > 0){ //Default MP
 			$owner = $username[1];
 			$type = "private";
 			$receptor = $username[2];

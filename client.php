@@ -106,7 +106,7 @@ Parameters:
 \tlog => log the data from console and packets to file (default false)
 \tping => ping (packet 0xFE) a server, and returns info
 \tdebug => debug level (none => only errors, info => default, debug => debug info and packets, all => weird data)
-\towner => set owner username
+\towner => set owner usernames (separated by a comma)
 \tspout => enables or disables spout (default false)
 \tonly-food => only accept food as inventory items (default false)
 \taction-mode => Actions in client mode (internal => default, packets => when recieved a packet)
@@ -220,7 +220,10 @@ function clientHandler($message, $event, $ob){
 			require_once("plugin/ChatCommand.plugin.php");
 			$chat = new ChatCommand($ob);
 			$ob->event("onChatHandler", "clientHandler");
-			$chat->addOwner($owner);
+			$owner = explode(",", $owner);
+			foreach($owner as $ow){
+				$chat->addOwner($ow);
+			}
 			$chat->addOwner("Console");
 			$chat->addCommand("die", "clientHandler", true, true);
 			$chat->addCommand("say", "clientHandler", true, true);
