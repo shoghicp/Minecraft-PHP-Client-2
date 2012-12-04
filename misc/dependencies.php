@@ -79,6 +79,10 @@ if(!extension_loaded("zlib")){
 	++$errors;
 }
 
+if(!extension_loaded("gd")){
+	console("[NOTICE] Unable to find GD extension. You won't be able to use the MapPainter plugin", true, true, 0);
+}
+
 if(!function_exists("socket_create")){
 	console("[ERROR] Unable to find Socket functions", true, true, 0);
 	++$errors;
