@@ -193,7 +193,7 @@ class MinecraftClient{
 				$this->responses[$evn["ID"]] = call_user_func($ev[0], $data, $event, $this);
 			}
 		}
-	}	
+	}
 	
 	public function response($eid){
 		if(isset($this->responses[$eid])){
@@ -223,7 +223,7 @@ class MinecraftClient{
 			}
 		}
 		$this->query("UPDATE actions SET last = ".$time." WHERE last <= (".$time." - interval);");
-	}	
+	}
 	
 	public function toggleEvent($event){
 		if(isset($this->events["disabled"][$event])){
@@ -842,10 +842,15 @@ class MinecraftClient{
 		$info = array();
 		$info["memory_usage"] = round((memory_get_usage(true) / 1024) / 1024, 2)."MB";
 		$info["memory_peak_usage"] = round((memory_get_peak_usage(true) / 1024) / 1024, 2)."MB";
-		$info["entities"] = count($this->entities);
+		$info["entities"] = $this->query("SELECT count(EID) as count FROM entities;", true);
+		$info["entities"] = $info["entities"]["count"];
+		$info["events"] = $this->query("SELECT count(ID) as count FROM events;", true);
+		$info["events"] = $info["events"]["count"];
+		$info["actions"] = $this->query("SELECT count(ID) as count FROM actions;", true);
+		$info["actions"] = $info["actions"]["count"];
 		$info["garbage"] = gc_collect_cycles();
 		if($console === true){
-			console("[DEBUG] Memory usage: ".$info["memory_usage"]." (Peak ".$info["memory_peak_usage"]."), Entities: ".$info["entities"].", Garbage: ".$info["garbage"], true, true, 2);
+			console("[DEBUG] Memory usage: ".$info["memory_usage"]." (Peak ".$info["memory_peak_usage"]."), Entities: ".$info["entities"].", Events: ".$info["events"].", Actions: ".$info["actions"].", Garbage: ".$info["garbage"], true, true, 2);
 		}
 		return $info;
 	}
