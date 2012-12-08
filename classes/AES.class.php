@@ -65,8 +65,9 @@ if(CRYPTO_LIB === "openssl"){
 			if(!isset($str{$this->IVLenght - 1})){
 				$len = min($this->IVLenght, strlen($str));
 				$IV = substr($IV, $len) . substr($str, -$len);
+			}else{
+				$IV = substr($str, -$this->IVLenght);
 			}
-			$IV = substr($str, -$this->IVLenght);
 		}
 		
 		public function encrypt($plaintext){
