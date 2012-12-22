@@ -198,6 +198,9 @@ class Packet{
 				case "newChunkArray":
 					$this->data[] = $this->get(max(0,$this->data[5]));
 					break;
+				case "newNewChunkArray":
+					$this->data[] = $this->get(max(0,$this->data[1]));
+					break;
 				case "multiblockArray":
 					$count = $this->data[$field - 1]; 
 					$d = array(0 => array(), 1 => array(), 2 => array());

@@ -38,6 +38,6 @@ ini_set('default_charset', 'utf-8');
 define("FILE_PATH", dirname(__FILE__)."/");
 set_include_path(get_include_path() . PATH_SEPARATOR . FILE_PATH . PATH_SEPARATOR . FILE_PATH . "/classes/" . PATH_SEPARATOR . FILE_PATH . "/classes/phpseclib/");
 ini_set("memory_limit", "512M");
-define("CURRENT_PROTOCOL", 49);
+define("CURRENT_PROTOCOL", 51);
 define("LAUNCHER_VERSION", 13);
 define("SPOUT_VERSION", "1000");

@@ -117,6 +117,11 @@ class Entity{
 				case 8:
 					$this->metadata["effectColor"] = $value;
 					break;
+				case 10:
+					if($this->class === ENTITY_ITEM){
+						$this->type = $value;
+					}
+					break;
 				case 12:
 					$this->metadata["grow"] = $value;
 					break;

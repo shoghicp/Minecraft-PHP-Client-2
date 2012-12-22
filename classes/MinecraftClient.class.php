@@ -72,7 +72,7 @@ class MinecraftClient{
 	
 	public function startDatabase(){
 		$this->database = new SQLite3(":memory:");
-		$this->query("CREATE TABLE entities (EID INTEGER PRIMARY KEY, type NUMERIC, class NUMERIC, name TEXT, x NUMERIC, y NUMERIC, z NUMERIC, yaw NUMERIC, pitch NUMERIC, health NUMERIC, dead NUMERIC);");
+		$this->query("CREATE TABLE entities (EID INTEGER PRIMARY KEY, type NUMERIC, class NUMERIC, name TEXT, x NUMERIC, y NUMERIC, z NUMERIC, yaw NUMERIC, pitch NUMERIC, health NUMERIC, dead NUMERIC, attach NUMERIC);");
 		$this->query("CREATE TABLE metadata (EID INTEGER PRIMARY KEY, name TEXT, value TEXT);");
 		$this->query("CREATE TABLE actions (ID INTEGER PRIMARY KEY, interval NUMERIC, last NUMERIC, code TEXT, repeat NUMERIC);");
 		$this->query("CREATE TABLE events (ID INTEGER PRIMARY KEY, eventName TEXT, disabled INTEGER);");
@@ -441,29 +441,60 @@ class MinecraftClient{
 			case "received_38":
 				if($this->useMap === true){
 					$offset = 0;
-					$data[2] = gzinflate(substr($data[2],2));
-					$offsetData = 0;
-					for($x = 0; $x < $data[0]; ++$x){
-						$X = Utils::readInt(substr($data[3],$offset,4));
-						$offset += 4;
-						$Z = Utils::readInt(substr($data[3],$offset,4));
-						$offset += 4;
-						$bitmask = Utils::readShort(substr($data[3],$offset,2));
-						$offset += 2;
-						$add_bitmask = Utils::readShort(substr($data[3],$offset,2));
-						$offset += 2;
-						$d = "";
-						for($i = 0; $i < (HEIGHT_LIMIT >> 4); ++$i){
-							if($bitmask & (1 << $i)){
-								$d .= substr($data[2], $offsetData, $this->mapParser->sectionSize);
-								$offsetData += $this->mapParser->sectionSize;
+					if($this->protocol >= 50){
+						$data[3] = gzinflate(substr($data[3],2));
+						$offsetData = 0;
+						for($x = 0; $x < $data[0]; ++$x){
+							$X = Utils::readInt(substr($data[4],$offset,4));
+							$offset += 4;
+							$Z = Utils::readInt(substr($data[4],$offset,4));
+							$offset += 4;
+							$bitmask = Utils::readShort(substr($data[4],$offset,2));
+							$offset += 2;
+							$add_bitmask = Utils::readShort(substr($data[4],$offset,2));
+							$offset += 2;
+							$d = "";
+							for($i = 0; $i < (HEIGHT_LIMIT >> 4); ++$i){
+								if($bitmask & (1 << $i)){
+									$d .= substr($data[2], $offsetData, $this->mapParser->sectionSize - 2048);
+									$offsetData += $this->mapParser->sectionSize - 2048;
+								}
+								if($data[2] === true){
+									$d .= substr($data[2], $offsetData, 2048);
+									$offsetData += 2048;
+								}
+								if($add_bitmask & (1 << $i)){
+									$offsetData += 2048;
+								}
 							}
-							if($add_bitmask & (1 << $i)){
-								$offsetData += 2048;
-							}							
+							$offsetData += 256;
+							$this->mapParser->addChunk($X, $Z, $d, $bitmask, false, $add_bitmask);
+						}					
+					}else{
+						$data[2] = gzinflate(substr($data[2],2));
+						$offsetData = 0;
+						for($x = 0; $x < $data[0]; ++$x){
+							$X = Utils::readInt(substr($data[3],$offset,4));
+							$offset += 4;
+							$Z = Utils::readInt(substr($data[3],$offset,4));
+							$offset += 4;
+							$bitmask = Utils::readShort(substr($data[3],$offset,2));
+							$offset += 2;
+							$add_bitmask = Utils::readShort(substr($data[3],$offset,2));
+							$offset += 2;
+							$d = "";
+							for($i = 0; $i < (HEIGHT_LIMIT >> 4); ++$i){
+								if($bitmask & (1 << $i)){
+									$d .= substr($data[2], $offsetData, $this->mapParser->sectionSize);
+									$offsetData += $this->mapParser->sectionSize;
+								}
+								if($add_bitmask & (1 << $i)){
+									$offsetData += 2048;
+								}							
+							}
+							$offsetData += 256;
+							$this->mapParser->addChunk($X, $Z, $d, $bitmask, false, $add_bitmask);
 						}
-						$offsetData += 256;
-						$this->mapParser->addChunk($X, $Z, $d, $bitmask, false, $add_bitmask);
 					}
 				}
 				break;
@@ -641,13 +672,19 @@ class MinecraftClient{
 				break;
 			case "received_17":
 			case "received_18":
-				$this->entities[$data[0]] = new Entity($data[0], ($event === "received_17" ? ENTITY_OBJECT:ENTITY_MOB), $data[1], $this);
-				$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
-				if($event === "received_18"){
-					$this->mobs[$data[0]] =& $this->entities[$data[0]];
-					$this->entities[$data[0]]->setMetadata(($this->protocol > 29 ? $data[11]:$data[8]));
+				if($event === "received_17" and $data[1] == 2){
+					$this->entities[$data[0]] = new Entity($data[0], ENTITY_ITEM, 0, $this);
+					$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
+					console("[DEBUG] Item (EID: ".$data[0].") spawned at (".($data[4] / 32).",".($data[5] / 32).",".($data[6] / 32).")", true, true, 2);
+				}else{
+					$this->entities[$data[0]] = new Entity($data[0], ($event === "received_17" ? ENTITY_OBJECT:ENTITY_MOB), $data[1], $this);
+					$this->entities[$data[0]]->setCoords($data[2] / 32,$data[3] / 32,$data[4] / 32);
+					if($event === "received_18"){
+						$this->mobs[$data[0]] =& $this->entities[$data[0]];
+						$this->entities[$data[0]]->setMetadata(($this->protocol > 29 ? $data[11]:$data[8]));
+					}
+					console("[DEBUG] Entity (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
 				}
-				console("[DEBUG] Entity (EID: ".$data[0].") type ".$this->entities[$data[0]]->getName()." spawned at (".($data[2] / 32).",".($data[3] / 32).",".($data[4] / 32).")", true, true, 2);
 				$this->trigger("onEntitySpawn", $this->entities[$data[0]]);
 				break;
 			case "received_19":
