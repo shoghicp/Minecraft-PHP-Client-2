@@ -117,7 +117,7 @@ class Packet{
 			switch($type){
 				case "int":
 					$this->data[] = Utils::readInt($this->get(4));
-					if($field === 5 and $this->pid === 0x17 and $this->data[$field] === 0){
+					if((($this->protocol >= 50 and $field === 7) or ($this->protocol < 50 and $field === 5)) and $this->pid === 0x17 and $this->data[$field] === 0){
 						$continue = false;
 					}
 					break;
