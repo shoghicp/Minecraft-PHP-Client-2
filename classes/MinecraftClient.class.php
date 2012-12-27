@@ -456,11 +456,11 @@ class MinecraftClient{
 							$d = "";
 							for($i = 0; $i < (HEIGHT_LIMIT >> 4); ++$i){
 								if($bitmask & (1 << $i)){
-									$d .= substr($data[2], $offsetData, $this->mapParser->sectionSize - 2048);
+									$d .= substr($data[3], $offsetData, $this->mapParser->sectionSize - 2048);
 									$offsetData += $this->mapParser->sectionSize - 2048;
 								}
 								if($data[2] === true){
-									$d .= substr($data[2], $offsetData, 2048);
+									$d .= substr($data[3], $offsetData, 2048);
 									$offsetData += 2048;
 								}
 								if($add_bitmask & (1 << $i)){
