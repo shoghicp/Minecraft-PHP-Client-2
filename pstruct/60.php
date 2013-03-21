@@ -32,8 +32,8 @@
 */
 
 
-//51
-//1.4.7
+//60
+//1.5
 
 $pstruct = array(
 	0x00 => array(
@@ -396,6 +396,19 @@ $pstruct = array(
 		"byte",
 	),
 	
+	0x3f => array(
+		"string",
+		"float",
+		"float",
+		"float",
+		"float",
+		"float",
+		"float",
+		"float",
+		"float",
+		"int",
+	),
+
 	0x46 => array(
 		"byte",
 		"byte",
@@ -414,6 +427,7 @@ $pstruct = array(
 		"byte",
 		"string",
 		"byte",
+		"bool",
 	),
 	
 	0x65 => array(
@@ -520,6 +534,27 @@ $pstruct = array(
 	
 	0xcd => array(
 		"byte",
+	),
+	
+	0xce => array(
+		"string",
+		"string",
+		"byte",
+	),
+	
+	0xcf => array(
+		"string",
+		"scoreboardUpdate",
+	),
+	
+	0xd0 => array(
+		"byte",
+		"string",
+	),
+	
+	0xd1 => array(
+		"string",
+		"teamData",
 	),
 	
 	0xfa => array(

@@ -121,6 +121,28 @@ class Packet{
 						$continue = false;
 					}
 					break;
+				case "scoreboardUpdate":
+					$d = ord($this->get(1));
+					if($d === 0 or $d === 2){
+						Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
+						Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
+						Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
+						Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
+					}
+					if($d === 0 or $d === 3 or $d === 4){
+						$c = Utils::readShort($this->get(2));
+						for($i = 0; $i < $c; ++$i){
+							Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
+						}
+					}
+					break;
+				case "teamData":
+					$d = ord($this->get(1));
+					if($d === 0){
+						Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
+						$this->get(4);
+					}
+					break;
 				case "string":
 					$this->data[] = Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
 					break;
