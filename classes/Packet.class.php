@@ -121,7 +121,7 @@ class Packet{
 						$continue = false;
 					}
 					break;
-				case "scoreboardUpdate":
+				case "teamData":
 					$d = ord($this->get(1));
 					if($d === 0 or $d === 2){
 						Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
@@ -136,7 +136,7 @@ class Packet{
 						}
 					}
 					break;
-				case "teamData":
+				case "scoreboardUpdate":
 					$d = ord($this->get(1));
 					if($d === 0){
 						Utils::readString($this->get(Utils::readShort($this->get(2)) << 1));
